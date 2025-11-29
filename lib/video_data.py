@@ -216,9 +216,15 @@ def train_val_test_split(
             val_mask[key_idx[n_train : n_train + n_val]] = True
             test_mask[key_idx[n_train + n_val : n_train + n_val + n_test]] = True
 
-        train_df = df[train_mask.tolist()]
-        val_df = df[val_mask.tolist()]
-        test_df = df[test_mask.tolist()]
+        # Convert boolean masks to integer indices for Polars row selection
+        # Polars interprets df[list] as column selection, so we use integer indices
+        train_indices = np.where(train_mask)[0].tolist()
+        val_indices = np.where(val_mask)[0].tolist()
+        test_indices = np.where(test_mask)[0].tolist()
+        
+        train_df = df[train_indices]
+        val_df = df[val_indices]
+        test_df = df[test_indices]
 
     splits = {
         "train": train_df,
@@ -288,12 +294,14 @@ def stratified_kfold(
         
         # Verify balanced splits and log warnings if imbalanced
         if "label" in train_df.columns:
-            train_label_counts = train_df["label"].value_counts().sort_index()
-            val_label_counts = val_df["label"].value_counts().sort_index()
+            # Polars value_counts() returns a DataFrame with "label" and "count" columns
+            train_label_counts = train_df["label"].value_counts().sort("label")
+            val_label_counts = val_df["label"].value_counts().sort("label")
             
             # Check if all classes are present in both train and val
-            train_labels = set(train_label_counts.keys().to_list())
-            val_labels = set(val_label_counts.keys().to_list())
+            # Polars DataFrame: access the "label" column directly
+            train_labels = set(train_label_counts["label"].to_list())
+            val_labels = set(val_label_counts["label"].to_list())
             all_labels = train_labels | val_labels
             
             if len(all_labels) > 1:  # Binary or multi-class
@@ -302,8 +310,14 @@ def stratified_kfold(
                 val_total = val_df.height
                 
                 for label in all_labels:
-                    train_count = train_label_counts.get(label, 0)
-                    val_count = val_label_counts.get(label, 0)
+                    # Polars: filter DataFrame to get count for specific label
+                    train_row = train_label_counts.filter(pl.col("label") == label)
+                    val_row = val_label_counts.filter(pl.col("label") == label)
+                    
+                    # Extract count (value_counts returns one row per unique label)
+                    # Polars: get first value from Series, default to 0 if empty
+                    train_count = train_row["count"].to_list()[0] if train_row.height > 0 else 0
+                    val_count = val_row["count"].to_list()[0] if val_row.height > 0 else 0
                     
                     train_ratio = train_count / train_total if train_total > 0 else 0.0
                     val_ratio = val_count / val_total if val_total > 0 else 0.0

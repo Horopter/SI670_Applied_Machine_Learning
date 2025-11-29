@@ -121,11 +121,19 @@ def roc_auc(
         # Use probability of class 1 from softmax
         probs = logits.softmax(dim=1)[:, 1].numpy()
     y = labels.numpy()
+    
+    # Check if we have at least 2 classes before computing ROC AUC
+    # This prevents UndefinedMetricWarning from sklearn
+    unique_classes = set(y.tolist())
+    if len(unique_classes) < 2:
+        # ROC AUC is undefined when only one class is present
+        return float('nan')
+    
     try:
         return float(roc_auc_score(y, probs))
     except ValueError:
-        # Happens when only one class is present
-        return -1.0
+        # Fallback for any other ValueError
+        return float('nan')
 
 
 __all__ = [

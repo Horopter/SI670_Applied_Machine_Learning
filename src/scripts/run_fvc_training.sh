@@ -1,4 +1,16 @@
 #!/bin/bash
+#
+# FVC Binary Classifier Training Script
+#
+# Usage:
+#   Fresh run (default): sbatch src/scripts/run_fvc_training.sh
+#   Continue after timeout: FVC_CONTINUE_RUN=1 sbatch src/scripts/run_fvc_training.sh
+#
+# The FVC_CONTINUE_RUN flag controls whether to:
+#   - 0 (default): Start fresh - deletes runs/, logs/, models/, intermediate_data/
+#   - 1: Continue run - preserves all checkpoints, models, and progress
+#        Pipeline will resume from last checkpoint and skip completed models/folds
+#
 
 #SBATCH --job-name=fvc_binary_classifier
 #SBATCH --account=eecs442f25_class
@@ -15,6 +27,24 @@
 set -euo pipefail
 set -o errtrace
 umask 077
+
+# ============================================================================
+# Environment Cleanup (Early - Before Everything Else)
+# ============================================================================
+
+# Unset macOS malloc warnings (if they somehow leak into this environment)
+unset MallocStackLogging || true
+unset MallocStackLoggingNoCompact || true
+
+# Unset test mode to use full dataset (unless explicitly set by user)
+# User can override by setting FVC_TEST_MODE=1 in their environment
+# Note: Using echo instead of log() since log function is defined later
+if [ -z "${FVC_TEST_MODE:-}" ]; then
+    unset FVC_TEST_MODE || true
+    echo "Using full dataset (FVC_TEST_MODE not set)" >&2
+else
+    echo "Test mode enabled: FVC_TEST_MODE=${FVC_TEST_MODE}" >&2
+fi
 
 # Suppress Python warnings
 export PYTHONWARNINGS="ignore::UserWarning,ignore::DeprecationWarning,ignore::FutureWarning"
@@ -33,6 +63,47 @@ export PIP_CACHE_DIR="$PWD/.pip-cache"
 export WORK_DIR="${SLURM_TMPDIR:-$PWD}"
 export ORIG_DIR="${SLURM_SUBMIT_DIR:-$PWD}"
 export VENV_DIR="$ORIG_DIR/venv"
+
+# ============================================================================
+# Early Cleanup for Fresh Run (Before Everything Else)
+# ============================================================================
+
+# Control whether to continue from previous run or start fresh
+# Set FVC_CONTINUE_RUN=1 to preserve all checkpoints, models, and progress
+# Default (unset) = fresh run (deletes everything)
+CONTINUE_RUN="${FVC_CONTINUE_RUN:-0}"
+
+if [ "$CONTINUE_RUN" = "1" ]; then
+    # CONTINUE MODE: Preserve all progress, checkpoints, and models
+    echo "=== CONTINUE MODE: Preserving all progress ===" >&2
+    echo "✓ Checkpoints, models, and intermediate_data will be preserved" >&2
+    echo "✓ Pipeline will resume from last checkpoint and skip completed models" >&2
+    # Only ensure directories exist (don't delete anything)
+    mkdir -p "$ORIG_DIR/runs" "$ORIG_DIR/logs" "$ORIG_DIR/models" "$ORIG_DIR/intermediate_data"
+else
+    # FRESH RUN MODE: Clean up previous runs, logs, models, and intermediate_data
+    echo "=== FRESH RUN MODE: Cleaning up previous runs ===" >&2
+    if [ -d "$ORIG_DIR/runs" ]; then
+        rm -rf "$ORIG_DIR/runs"
+        echo "✓ Deleted $ORIG_DIR/runs" >&2
+    fi
+    if [ -d "$ORIG_DIR/logs" ]; then
+        rm -rf "$ORIG_DIR/logs"
+        echo "✓ Deleted $ORIG_DIR/logs" >&2
+    fi
+    if [ -d "$ORIG_DIR/models" ]; then
+        rm -rf "$ORIG_DIR/models"
+        echo "✓ Deleted $ORIG_DIR/models" >&2
+    fi
+    if [ -d "$ORIG_DIR/intermediate_data" ]; then
+        rm -rf "$ORIG_DIR/intermediate_data"
+        echo "✓ Deleted $ORIG_DIR/intermediate_data" >&2
+    fi
+    
+    # Recreate empty directories
+    mkdir -p "$ORIG_DIR/runs" "$ORIG_DIR/logs" "$ORIG_DIR/models"
+    echo "✓ Created fresh runs/, logs/, models/ directories" >&2
+fi
 
 # ============================================================================
 # Logging Functions
@@ -89,10 +160,8 @@ ln -snf "$WORK_DIR/runs" runs 2>/dev/null || true
 # Environment Variables for Performance
 # ============================================================================
 
-# Disable macOS-style malloc stack logging flags if they somehow leak into
-# this environment; on some systems they can cause noisy warnings.
-unset MallocStackLogging || true
-unset MallocStackLoggingNoCompact || true
+# Note: MallocStackLogging and MallocStackLoggingNoCompact are already unset above
+# This section is kept for documentation purposes
 
 export PYTORCH_ALLOC_CONF="expandable_segments:true,max_split_size_mb:128"
 export TOKENIZERS_PARALLELISM=false
@@ -298,41 +367,23 @@ if [ -n "${SLURM_TMPDIR:-}" ] && [ "$WORK_DIR" != "$ORIG_DIR" ]; then
 fi
 
 # ============================================================================
-# Cleanup Previous Instances (Fresh Run)
+# Cleanup Previous Instances (Process Cleanup Only)
 # ============================================================================
 
-log "=== Cleaning Previous Runs for Fresh Start ==="
-# Kill any previous instances
+# Note: Directory cleanup already happened earlier (conditional on FVC_CONTINUE_RUN)
+# This section only handles process cleanup (killing stale processes)
+
+log "=== Cleaning Previous Instances ==="
+# Kill any previous instances (safe to do even in continue mode)
 pkill -f "papermill.*fvc_binary_classifier" 2>/dev/null || true
 pkill -f "ipykernel.*fvc-binary-classifier" 2>/dev/null || true
 
-# Delete runs/, logs/, models/, and intermediate_data/ for completely fresh run
-# Preserve: archive/, data/video_index_input.csv, videos/
-log "Deleting runs/, logs/, models/, and intermediate_data/ directories..."
-
-if [ -d "$ORIG_DIR/runs" ]; then
-    rm -rf "$ORIG_DIR/runs"
-    log "✓ Deleted $ORIG_DIR/runs"
+if [ "$CONTINUE_RUN" = "1" ]; then
+    log "✓ Continue mode: All checkpoints and models preserved"
+    log "✓ Pipeline will resume from last checkpoint and skip completed models"
+else
+    log "✓ Fresh run mode: All previous data cleaned up"
 fi
-
-if [ -d "$ORIG_DIR/logs" ]; then
-    rm -rf "$ORIG_DIR/logs"
-    log "✓ Deleted $ORIG_DIR/logs"
-fi
-
-if [ -d "$ORIG_DIR/models" ]; then
-    rm -rf "$ORIG_DIR/models"
-    log "✓ Deleted $ORIG_DIR/models"
-fi
-
-if [ -d "$ORIG_DIR/intermediate_data" ]; then
-    rm -rf "$ORIG_DIR/intermediate_data"
-    log "✓ Deleted $ORIG_DIR/intermediate_data"
-fi
-
-# Recreate empty directories
-mkdir -p "$ORIG_DIR/runs" "$ORIG_DIR/logs" "$ORIG_DIR/models"
-log "✓ Created fresh runs/, logs/, models/ directories"
 
 # Also clean WORK_DIR if different
 if [ "$WORK_DIR" != "$ORIG_DIR" ]; then
