@@ -29,6 +29,9 @@ sys.path.insert(0, str(project_root))
 from lib.mlops_core import RunConfig, ExperimentTracker, create_run_directory
 from lib.mlops_pipeline import build_mlops_pipeline
 from lib.mlops_pipeline_kfold import build_kfold_pipeline
+from lib.mlops_pipeline_multimodel import build_multimodel_pipeline
+from lib.cleanup_utils import cleanup_runs_and_logs
+from lib.model_factory import list_available_models
 
 
 def main():
@@ -41,6 +44,10 @@ def main():
     
     project_root = os.path.abspath(project_root)
     data_csv = os.path.join(project_root, "data", "video_index_input.csv")
+    
+    # Clean up previous runs and logs before starting
+    logger.info("Cleaning up previous runs and logs...")
+    cleanup_runs_and_logs(project_root, keep_models=False)
     
     # Create run directory
     output_base = os.path.join(project_root, "runs")
@@ -70,8 +77,8 @@ def main():
         test_split=0.0,
         random_seed=42,
         
-        # Video config
-        num_frames=16,
+        # Video config (reduced for memory efficiency)
+        num_frames=8,  # Reduced from 16 to 8 to prevent OOM
         fixed_size=224,
         augmentation_config={
             'rotation_degrees': 15.0,
@@ -95,17 +102,17 @@ def main():
         },
         num_augmentations_per_video=3,
         
-        # Training config
-        batch_size=32,
+        # Training config (reduced for memory efficiency)
+        batch_size=8,  # Reduced from 32 to 8 to prevent OOM
         num_epochs=20,
         learning_rate=1e-4,
         weight_decay=1e-4,
-        gradient_accumulation_steps=1,
+        gradient_accumulation_steps=2,  # Increased to maintain effective batch size
         early_stopping_patience=5,
         
-        # System config
+        # System config (reduced for memory efficiency)
         device="cuda" if __import__("torch").cuda.is_available() else "cpu",
-        num_workers=4,
+        num_workers=2,  # Reduced from 4 to 2 to reduce memory usage
         use_amp=True,
         
         # Paths
@@ -124,9 +131,10 @@ def main():
         "pytorch_version": torch.__version__,
     })
     
-    # Build and run pipeline with K-fold cross-validation
+    # Build and run pipeline
     try:
-        # Use K-fold cross-validation to prevent overfitting/underfitting
+        # Configuration: Use multi-model pipeline or single model
+        use_multimodel = os.environ.get("USE_MULTIMODEL", "true").lower() == "true"
         use_kfold = True
         n_splits = 5
         
@@ -135,11 +143,47 @@ def main():
         checkpoint_dir = os.path.join(run_dir, "checkpoints")
         ckpt_manager = CheckpointManager(checkpoint_dir, run_id)
         
-        if use_kfold:
+        if use_multimodel:
+            # Multi-model pipeline: train all models sequentially
+            logger.info("=" * 80)
+            logger.info("MULTI-MODEL TRAINING MODE")
+            logger.info("=" * 80)
+            
+            # Define models to train (all models from proposal)
+            models_to_train = [
+                "logistic_regression",
+                "svm",
+                "naive_cnn",
+                "vit_gru",
+                "vit_transformer",
+                "slowfast",
+                "x3d",
+            ]
+            
+            # Allow override via environment variable
+            if "MODELS_TO_TRAIN" in os.environ:
+                env_models = os.environ["MODELS_TO_TRAIN"].split(",")
+                models_to_train = [m.strip() for m in env_models if m.strip() in list_available_models()]
+                logger.info("Using models from environment: %s", models_to_train)
+            
+            logger.info("Models to train: %s", models_to_train)
             logger.info("Using %d-fold stratified cross-validation", n_splits)
+            logger.info("Models will be trained sequentially with shared data pipeline")
+            logger.info("Each model has its own checkpoint directory and can be resumed independently")
+            
+            # Build multi-model pipeline
+            pipeline = build_multimodel_pipeline(
+                config, models_to_train, tracker, n_splits=n_splits, ckpt_manager=ckpt_manager
+            )
+            
+        elif use_kfold:
+            # Single model with k-fold
+            logger.info("Using %d-fold stratified cross-validation (single model: %s)", 
+                       n_splits, config.model_type)
             pipeline = build_kfold_pipeline(config, tracker, n_splits=n_splits, ckpt_manager=ckpt_manager)
         else:
-            logger.info("Using single train/val split")
+            # Single model, single split
+            logger.info("Using single train/val split (model: %s)", config.model_type)
             pipeline = build_mlops_pipeline(config, tracker)
             pipeline.ckpt_manager = ckpt_manager
         

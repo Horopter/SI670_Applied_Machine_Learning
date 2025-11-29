@@ -4,7 +4,6 @@ Teardown script for FVC dataset.
 Removes folders created by setup_fvc_dataset.py (FVC1, FVC2, FVC3, Metadata).
 Preserves data/ output folder and archive/ source files.
 """
-import os
 import sys
 import shutil
 from pathlib import Path
