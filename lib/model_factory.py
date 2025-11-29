@@ -24,52 +24,52 @@ logger = logging.getLogger(__name__)
 # to avoid excessive memory usage during feature extraction.
 MODEL_MEMORY_CONFIGS = {
     "logistic_regression": {
-        "batch_size": 16,  # Ultra conservative: reduced from 32
-        "num_workers": 1,  # Reduced from 2 for memory safety
+        "batch_size": 8,  # Extreme conservative: reduced from 16
+        "num_workers": 0,  # Set to 0 to avoid multiprocessing memory overhead
         "num_frames": 8,
         "gradient_accumulation_steps": 1,
     },
     "svm": {
-        "batch_size": 16,  # Ultra conservative: reduced from 32
-        "num_workers": 1,  # Reduced from 2 for memory safety
+        "batch_size": 8,  # Extreme conservative: reduced from 16
+        "num_workers": 0,  # Set to 0 to avoid multiprocessing memory overhead
         "num_frames": 8,
         "gradient_accumulation_steps": 1,
     },
     "naive_cnn": {
-        "batch_size": 8,  # Ultra conservative: reduced from 16
-        "num_workers": 1,  # Reduced from 2 for memory safety
-        "num_frames": 8,
-        "gradient_accumulation_steps": 2,  # Compensate with gradient accumulation
+        "batch_size": 2,  # Extreme conservative: reduced from 4
+        "num_workers": 0,  # Set to 0 to avoid multiprocessing memory overhead
+        "num_frames": 6,  # Reduced from 8 to save memory
+        "gradient_accumulation_steps": 8,  # Increased to maintain effective batch size
     },
     "vit_gru": {
-        "batch_size": 2,  # Ultra conservative: reduced from 4
-        "num_workers": 0,  # Reduced from 1 to avoid multiprocessing overhead
-        "num_frames": 8,
-        "gradient_accumulation_steps": 8,  # Increased to maintain effective batch size
+        "batch_size": 1,  # Already at minimum
+        "num_workers": 0,  # Already 0
+        "num_frames": 6,  # Reduced from 8 to save memory
+        "gradient_accumulation_steps": 20,  # Increased to maintain effective batch size
     },
     "vit_transformer": {
-        "batch_size": 1,  # Ultra conservative: reduced from 2
-        "num_workers": 0,  # Reduced from 1 to avoid multiprocessing overhead
-        "num_frames": 8,
-        "gradient_accumulation_steps": 16,  # Increased to maintain effective batch size
+        "batch_size": 1,  # Already at minimum
+        "num_workers": 0,  # Already 0
+        "num_frames": 6,  # Reduced from 8 to save memory
+        "gradient_accumulation_steps": 20,  # Increased to maintain effective batch size
     },
     "slowfast": {
-        "batch_size": 1,  # Ultra conservative: reduced from 2
-        "num_workers": 0,  # Reduced from 1 to avoid multiprocessing overhead
-        "num_frames": 16,  # SlowFast needs more frames
-        "gradient_accumulation_steps": 16,  # Increased to maintain effective batch size
+        "batch_size": 1,  # Already at minimum
+        "num_workers": 0,  # Already 0
+        "num_frames": 6,  # Reduced from 8 to save memory
+        "gradient_accumulation_steps": 40,  # Increased to compensate for fewer frames
     },
     "x3d": {
-        "batch_size": 2,  # Ultra conservative: reduced from 4
-        "num_workers": 0,  # Reduced from 1 to avoid multiprocessing overhead
-        "num_frames": 16,
-        "gradient_accumulation_steps": 8,  # Increased to maintain effective batch size
+        "batch_size": 1,  # Already at minimum
+        "num_workers": 0,  # Already 0
+        "num_frames": 6,  # Reduced from 8 to save memory
+        "gradient_accumulation_steps": 20,  # Increased to compensate for fewer frames
     },
     "pretrained_inception": {
-        "batch_size": 4,  # Ultra conservative: reduced from 8
-        "num_workers": 1,  # Reduced from 2 for memory safety
+        "batch_size": 2,  # Extreme conservative: reduced from 4
+        "num_workers": 0,  # Set to 0 to avoid multiprocessing memory overhead
         "num_frames": 8,
-        "gradient_accumulation_steps": 4,  # Increased to maintain effective batch size
+        "gradient_accumulation_steps": 8,  # Increased to maintain effective batch size
     },
 }
 

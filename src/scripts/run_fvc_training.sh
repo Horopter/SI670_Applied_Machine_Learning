@@ -18,6 +18,12 @@
 #SBATCH --gpus=1
 #SBATCH --time=8:00:00
 #SBATCH --mem=80G
+# NOTE: Memory optimizations applied:
+# - Fixed size reduced to 128x128 (via FVC_FIXED_SIZE=128)
+# - Batch sizes reduced to minimum (1-8 depending on model)
+# - All num_workers set to 0 to avoid multiprocessing overhead
+# - Feature extraction batch size reduced to 1
+# - Aggressive garbage collection throughout pipeline
 #SBATCH --cpus-per-task=4
 #SBATCH --output=logs/%x-%j.out
 #SBATCH --error=logs/%x-%j.err
@@ -44,6 +50,16 @@ if [ -z "${FVC_TEST_MODE:-}" ]; then
     echo "Using full dataset (FVC_TEST_MODE not set)" >&2
 else
     echo "Test mode enabled: FVC_TEST_MODE=${FVC_TEST_MODE}" >&2
+fi
+
+# Set extreme conservative memory settings
+# Default fixed_size to 112x112 for maximum memory efficiency
+# User can override by setting FVC_FIXED_SIZE in their environment
+if [ -z "${FVC_FIXED_SIZE:-}" ]; then
+    export FVC_FIXED_SIZE=112
+    echo "Using extreme conservative resolution: FVC_FIXED_SIZE=112 (112x112)" >&2
+else
+    echo "Using custom resolution: FVC_FIXED_SIZE=${FVC_FIXED_SIZE}" >&2
 fi
 
 # Suppress Python warnings

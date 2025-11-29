@@ -55,12 +55,12 @@ class LogisticRegressionBaseline:
         video_paths = df["video_path"].to_list()
         labels = df["label"].to_list()
         
-        # Extract features (ultra conservative batch size for OOM safety)
+        # Extract features (extreme conservative batch size for OOM safety)
         from .mlops_utils import aggressive_gc
         features = self.feature_extractor.extract_batch(
             video_paths,
             project_root,
-            batch_size=3,  # Ultra conservative: reduced from 5
+            batch_size=1,  # Extreme conservative: reduced from 3 to minimize memory
         )
         
         # Aggressive GC after feature extraction
@@ -96,12 +96,12 @@ class LogisticRegressionBaseline:
         
         video_paths = df["video_path"].to_list()
         
-        # Extract features (ultra conservative batch size for OOM safety)
+        # Extract features (extreme conservative batch size for OOM safety)
         from .mlops_utils import aggressive_gc
         features = self.feature_extractor.extract_batch(
             video_paths,
             project_root,
-            batch_size=3,  # Ultra conservative: reduced from 5
+            batch_size=1,  # Extreme conservative: reduced from 3 to minimize memory
         )
         
         # Aggressive GC after feature extraction
@@ -161,12 +161,12 @@ class SVMBaseline:
         video_paths = df["video_path"].to_list()
         labels = df["label"].to_list()
         
-        # Extract features (ultra conservative batch size for OOM safety)
+        # Extract features (extreme conservative batch size for OOM safety)
         from .mlops_utils import aggressive_gc
         features = self.feature_extractor.extract_batch(
             video_paths,
             project_root,
-            batch_size=3,  # Ultra conservative: reduced from 5
+            batch_size=1,  # Extreme conservative: reduced from 3 to minimize memory
         )
         
         # Aggressive GC after feature extraction

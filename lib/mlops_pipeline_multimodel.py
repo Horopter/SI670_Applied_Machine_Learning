@@ -249,6 +249,7 @@ def build_multimodel_pipeline(
 
         # Ultra aggressive GC after data loading
         aggressive_gc(clear_cuda=True)
+        log_memory_stats("after load_data", detailed=True)
         return {"metadata": filtered_df}
     
     pipeline.register_stage(PipelineStage("load_data", load_data))
@@ -294,6 +295,7 @@ def build_multimodel_pipeline(
             logger.info("Fold %d: Train=%d, Val=%d", i+1, train_df.height, val_df.height)
         
         aggressive_gc(clear_cuda=False)
+        log_memory_stats("after create_kfold_splits", detailed=True)
         return {"folds": folds}
     
     pipeline.register_stage(PipelineStage("create_kfold_splits", create_kfold_splits,
@@ -326,6 +328,9 @@ def build_multimodel_pipeline(
         all_train_df = pl.concat(all_train_videos).unique(subset=["video_path"])
         
         logger.info("Total unique videos: %d", all_train_df.height)
+        
+        # Log memory before augmentation generation
+        log_memory_stats("before augmentation generation", detailed=True)
         
         def _generate_and_persist_shared_aug() -> pl.DataFrame:
             logger.info("Generating shared augmentations...")
@@ -372,12 +377,19 @@ def build_multimodel_pipeline(
 
             df.write_csv(str(shared_aug_metadata_path))
             logger.info("✓ Generated %d shared augmented clips into %s", df.height, shared_aug_dir)
+            
+            # Log memory after augmentation generation
+            log_memory_stats("after augmentation generation", detailed=True)
+            
             return df
 
         if shared_aug_metadata_path.exists():
             logger.info("✓ Shared augmentations already exist. Loading from: %s", shared_aug_metadata_path)
             try:
+                log_memory_stats("before loading augmentation metadata", detailed=True)
                 shared_aug_df = pl.read_csv(str(shared_aug_metadata_path))
+                log_memory_stats("after loading augmentation metadata", detailed=True)
+                logger.info("Loaded augmentation DataFrame: %d rows", shared_aug_df.height)
                 # Handle case where file exists but is empty or has no rows
                 if shared_aug_df is None or shared_aug_df.height == 0:
                     logger.warning(
@@ -397,13 +409,17 @@ def build_multimodel_pipeline(
         else:
             shared_aug_df = _generate_and_persist_shared_aug()
         
+        # Log final memory after augmentation stage
+        log_memory_stats("after generate_shared_augmentations (final)", detailed=True)
+        logger.info("Augmentation DataFrame size: %d rows", shared_aug_df.height)
+        
         aggressive_gc(clear_cuda=True)
         return {"shared_aug_df": shared_aug_df, "video_cfg": video_cfg}
     
     pipeline.register_stage(PipelineStage("generate_shared_augmentations", generate_shared_augmentations,
                                          dependencies=["create_kfold_splits"]))
     
-    # Stage 5: Train all models sequentially
+    # Stage 5: Train all models sequentially with aggressive cleanup between models
     def train_all_models():
         folds = pipeline.artifacts["create_kfold_splits"]["folds"]
         shared_aug_df = pipeline.artifacts["generate_shared_augmentations"]["shared_aug_df"]
@@ -411,15 +427,47 @@ def build_multimodel_pipeline(
         
         all_model_results = {}
         
+        # CRITICAL: Clear shared_aug_df from memory after first use to save memory
+        # We'll reload it from disk for each model if needed
+        shared_aug_metadata_path = None
+        try:
+            project_root = config.project_root or os.getcwd()
+            config_hash = config.compute_hash()
+            global_aug_root = Path(project_root) / "intermediate_data" / "augmented_clips" / "shared"
+            shared_aug_dir = global_aug_root / config_hash
+            shared_aug_metadata_path = shared_aug_dir / "augmented_metadata.csv"
+        except Exception:
+            pass
+        
         for model_idx, model_type in enumerate(model_types):
             logger.info("=" * 80)
             logger.info("MODEL %d/%d: %s", model_idx + 1, len(model_types), model_type)
             logger.info("=" * 80)
             
+            # ULTRA AGGRESSIVE: Clear memory before starting next model
+            if model_idx > 0:
+                logger.info("Clearing memory before starting model %d/%d...", model_idx + 1, len(model_types))
+                log_memory_stats(f"before cleanup for model {model_idx + 1}", detailed=True)
+                for _ in range(3):
+                    aggressive_gc(clear_cuda=True)
+                import time
+                time.sleep(1)  # Allow system to reclaim memory
+                log_memory_stats(f"after cleanup for model {model_idx + 1}", detailed=True)
+            
             # Check if model is already complete
             if _check_model_complete(model_type, config.output_dir, n_splits):
                 logger.info("✓ Model %s already complete. Skipping.", model_type)
                 continue
+            
+            # Reload shared_aug_df if it was cleared
+            if shared_aug_df is None and shared_aug_metadata_path and shared_aug_metadata_path.exists():
+                try:
+                    logger.info("Reloading augmentation metadata for %s...", model_type)
+                    shared_aug_df = pl.read_csv(str(shared_aug_metadata_path))
+                    logger.info("Reloaded %d augmented samples", shared_aug_df.height)
+                except Exception as e:
+                    logger.warning("Failed to reload augmentation metadata: %s. Using original.", e)
+                    shared_aug_df = pipeline.artifacts["generate_shared_augmentations"]["shared_aug_df"]
             
             # Get model-specific memory config
             model_mem_config = get_model_config(model_type)
@@ -460,14 +508,20 @@ def build_multimodel_pipeline(
                     logger.info("=" * 80)
                     
                     # Filter shared augmentations for this fold
+                    log_memory_stats(f"before filtering augmentations for fold {fold_idx + 1}")
                     train_video_paths = set(train_df["video_path"].to_list())
                     aug_df = shared_aug_df.filter(
                         pl.col("original_video").is_in(list(train_video_paths))
                     )
+                    logger.info("Filtered augmentation DataFrame: %d rows for fold %d", aug_df.height, fold_idx + 1)
+                    log_memory_stats(f"after filtering augmentations for fold {fold_idx + 1}")
                     
                     # Create datasets
+                    log_memory_stats(f"before creating datasets for fold {fold_idx + 1}")
                     train_ds = VideoDataset(aug_df, config.project_root, config=video_cfg, train=False)
                     val_ds = VideoDataset(val_df, config.project_root, config=video_cfg, train=False)
+                    logger.info("Created datasets: train=%d samples, val=%d samples", len(train_ds), len(val_ds))
+                    log_memory_stats(f"after creating datasets for fold {fold_idx + 1}")
                     
                     # Create a fresh model instance for this fold
                     model = create_model(model_type, model_config)
@@ -782,9 +836,18 @@ def build_multimodel_pipeline(
                     
                     all_fold_results.append({"fold": fold_idx + 1, **metrics})
                     
-                    # Cleanup
-                    del model
-                    aggressive_gc(clear_cuda=False)
+                    # Ultra aggressive cleanup after baseline model
+                    # Move model to CPU and clear all references before deletion
+                    try:
+                        if hasattr(model, 'model') and isinstance(model.model, torch.nn.Module):
+                            model.model.to("cpu")
+                        del model
+                    except Exception:
+                        pass
+                    
+                    # Multiple aggressive GC passes
+                    for _ in range(2):
+                        aggressive_gc(clear_cuda=False)
                 
                 # Save fold results
                 if all_fold_results:
@@ -806,9 +869,52 @@ def build_multimodel_pipeline(
                     completion_file = os.path.join(config.output_dir, "models", model_type, "training_complete.pt")
                     torch.save({"complete": True}, completion_file)
             
-            # Aggressive cleanup after each model
-            aggressive_gc(clear_cuda=True)
+            # ULTRA AGGRESSIVE cleanup after each model - clear everything
+            logger.info("Performing ultra aggressive cleanup after %s...", model_type)
+            
+            # Clear all model-related variables
+            try:
+                if 'model' in locals():
+                    if isinstance(model, torch.nn.Module):
+                        model.to("cpu")
+                        for param in model.parameters():
+                            param.grad = None
+                    del model
+            except Exception:
+                pass
+            
+            # Clear augmentation DataFrame from memory (reload from disk if needed)
+            try:
+                del shared_aug_df
+                shared_aug_df = None
+            except Exception:
+                pass
+            
+            # Multiple aggressive GC passes
+            for _ in range(5):
+                aggressive_gc(clear_cuda=True)
+            
+            # Force Python to release memory
+            import gc as gc_module
+            gc_module.collect()
+            gc_module.collect()
+            
+            # Reload augmentation DataFrame from disk for next model (if needed)
+            if model_idx < len(model_types) - 1 and shared_aug_metadata_path and shared_aug_metadata_path.exists():
+                try:
+                    logger.info("Reloading augmentation metadata from disk for next model...")
+                    shared_aug_df = pl.read_csv(str(shared_aug_metadata_path))
+                    logger.info("Reloaded %d augmented samples", shared_aug_df.height)
+                except Exception as e:
+                    logger.warning("Failed to reload augmentation metadata: %s", e)
+                    # Fall back to original from artifacts
+                    shared_aug_df = pipeline.artifacts["generate_shared_augmentations"]["shared_aug_df"]
+            
             log_memory_stats(f"after {model_type}")
+            
+            # Add a small delay to allow system to reclaim memory
+            import time
+            time.sleep(2)
         
         return {"model_results": all_model_results}
     
