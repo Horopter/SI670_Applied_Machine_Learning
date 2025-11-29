@@ -1,0 +1,11 @@
+pandas
+tqdm
+opencv-python
+torch
+torchvision
+pyarrow
+polars
+papermill
+ipykernel
+av
+torchcodec

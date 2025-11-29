@@ -1,0 +1,74 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+lib/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Data and Models (keep structure, ignore large files)
+data/*.csv
+data/*.json
+!data/.gitkeep
+videos/
+models/*.pt
+models/*.pth
+runs/
+logs/*.log
+logs/*.out
+logs/*.err
+
+# Archive (DO NOT DELETE - but don't track zip files)
+archive/*.zip
+
+# Intermediate files
+*.feather
+*.parquet
+*.pt
+*.pth
+!lib/**/*.pt  # Keep library test files if any
+
+# OS
+.DS_Store
+Thumbs.db
+
+# SLURM
+*.out
+*.err
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/
+
