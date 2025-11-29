@@ -1,10 +1,10 @@
 """
-Data utilities for the FVC video classifier.
+Data loading and processing utilities.
 
-Includes:
-- Loading and cleaning the metadata CSV
-- Stratified train/val/test splits (with dup_group awareness to avoid leakage)
-- K-fold cross-validation splits
+Provides:
+- Metadata loading
+- Data splitting
+- K-fold cross-validation
 """
 
 from __future__ import annotations
@@ -58,7 +58,7 @@ def filter_existing_videos(df: pl.DataFrame, project_root: str, check_frames: bo
     Raises:
         ValueError: If no videos exist after filtering
     """
-    from .video_paths import check_video_path_exists, get_video_path_candidates, resolve_video_path
+    from lib.utils.paths import check_video_path_exists, get_video_path_candidates, resolve_video_path
     
     def _check_path(video_rel: str) -> bool:
         """Check if video file exists."""
@@ -77,7 +77,7 @@ def filter_existing_videos(df: pl.DataFrame, project_root: str, check_frames: bo
     
     # Second pass: optionally check for frames (slower, but prevents runtime errors)
     if check_frames:
-        from .video_modeling import _read_video_wrapper
+        from lib.models import _read_video_wrapper
         import gc
         
         def _check_has_frames(video_rel: str) -> bool:
@@ -116,7 +116,7 @@ def filter_existing_videos(df: pl.DataFrame, project_root: str, check_frames: bo
     # Validate that we have videos after filtering
     if filtered.height == 0:
         # Try to find at least one example path to show in error message
-        from .video_paths import get_video_path_candidates
+        from lib.utils.paths import get_video_path_candidates
         sample_paths = []
         if df.height > 0:
             sample_row = df.row(0, named=True)

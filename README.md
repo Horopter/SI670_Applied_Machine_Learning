@@ -57,12 +57,24 @@ python3 src/setup_fvc_dataset.py
 python3 src/run_mlops_pipeline.py
 ```
 
-**Option B: Using Jupyter Notebook**
+**Option B: Using 5-Stage Pipeline**
 ```bash
-jupyter notebook src/fvc_binary_classifier.ipynb
+python3 src/run_new_pipeline.py
 ```
 
-**Option C: Using SLURM (Cluster)**
+**Option C: Using Individual Stage Scripts**
+```bash
+# Run stages individually
+python3 src/scripts/run_stage1_augmentation.py
+python3 src/scripts/run_stage2_features.py
+python3 src/scripts/run_stage3_downscaling.py
+python3 src/scripts/run_stage4_downscaled_features.py
+python3 src/scripts/run_stage5_training.py
+```
+
+See [src/scripts/README.md](src/scripts/README.md) for detailed usage.
+
+**Option D: Using SLURM (Cluster)**
 ```bash
 sbatch src/scripts/run_fvc_training.sh
 ```

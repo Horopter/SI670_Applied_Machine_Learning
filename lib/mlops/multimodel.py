@@ -20,29 +20,29 @@ import polars as pl
 import torch
 import numpy as np
 
-from .mlops_core import (
+from .config import (
     RunConfig, ExperimentTracker, CheckpointManager, 
     DataVersionManager, create_run_directory
 )
-from ..utils.mlops_utils import (
+from lib.utils.memory import (
     aggressive_gc, check_oom_error, handle_oom_error, 
     safe_execute, log_memory_stats
 )
-from .mlops_pipeline import (
+from .pipeline import (
     PipelineStage, MLOpsPipeline, fit_with_tracking
 )
-from ..video_data import (
+from lib.data import (
     load_metadata,
     filter_existing_videos,
     stratified_kfold,
     make_balanced_batch_sampler,
     maybe_limit_to_small_test_subset,
 )
-from ..video_modeling import VideoConfig, VideoDataset, variable_ar_collate
-from ..augmentation.video_augmentation_pipeline import pregenerate_augmented_dataset
-from ..training.video_training import OptimConfig, TrainConfig
-from ..video_metrics import collect_logits_and_labels, basic_classification_metrics
-from ..training.model_factory import create_model, get_model_config, is_pytorch_model, download_pretrained_models
+from lib.models import VideoConfig, VideoDataset, variable_ar_collate
+from lib.augmentation.pregenerate import pregenerate_augmented_dataset
+from lib.training.trainer import OptimConfig, TrainConfig
+from lib.utils.metrics import collect_logits_and_labels, basic_classification_metrics
+from lib.training.model_factory import create_model, get_model_config, is_pytorch_model, download_pretrained_models
 
 from torch.utils.data import DataLoader
 
@@ -530,10 +530,10 @@ def build_multimodel_pipeline(
                     
                     # For CPU-only runs or when memory is constrained, use num_workers=0
                     # to avoid multiprocessing overhead and OOM from worker processes
-                    effective_num_workers = model_config.num_workers
-                    if not torch.cuda.is_available() or os.environ.get("FVC_TEST_MODE", "").strip().lower() in ("1", "true", "yes", "y"):
-                        effective_num_workers = 0
-                        logger.info("Using num_workers=0 (CPU-only or test mode to avoid OOM)")
+                    # For 4 CPUs and 80GB RAM, always use num_workers=0
+                    # to avoid multiprocessing overhead and OOM from worker processes
+                    effective_num_workers = 0
+                    logger.info("Using num_workers=0 (optimized for 4 CPUs, 80GB RAM to avoid OOM)")
                     
                     # Create loaders
                     try:

@@ -13,20 +13,19 @@ from __future__ import annotations
 
 import os
 import logging
-from pathlib import Path
-from typing import Dict, Any, Optional, List, Callable, Tuple
+from typing import Dict, Any, Optional, List, Callable
 import polars as pl
 import torch
 
-from .mlops_core import (
+from .config import (
     RunConfig, ExperimentTracker, CheckpointManager, 
     DataVersionManager, create_run_directory
 )
-from ..utils.mlops_utils import (
+from lib.utils.memory import (
     aggressive_gc, check_oom_error, handle_oom_error, 
     safe_execute, log_memory_stats
 )
-from ..video_data import (
+from lib.data import (
     load_metadata,
     filter_existing_videos,
     train_val_test_split,
@@ -34,9 +33,9 @@ from ..video_data import (
     stratified_kfold,
     maybe_limit_to_small_test_subset,
 )
-from ..video_modeling import VideoConfig, VideoDataset, variable_ar_collate, PretrainedInceptionVideoModel
-from ..augmentation.video_augmentation_pipeline import pregenerate_augmented_dataset
-from ..training.video_training import OptimConfig, TrainConfig
+from lib.models import VideoConfig, VideoDataset, variable_ar_collate, PretrainedInceptionVideoModel
+from lib.augmentation.pregenerate import pregenerate_augmented_dataset
+from lib.training.trainer import OptimConfig, TrainConfig
 from torch.utils.data import DataLoader
 
 logger = logging.getLogger(__name__)
@@ -266,6 +265,7 @@ def build_mlops_pipeline(config: RunConfig, tracker: ExperimentTracker,
         
         # Global augmentation cache across runs:
         # project_root/intermediate_data/augmented_clips/shared/<config_hash>/
+        from pathlib import Path
         project_root = config.project_root or os.getcwd()
         config_hash = config.compute_hash()
         global_aug_root = Path(project_root) / "intermediate_data" / "augmented_clips" / "shared"
@@ -327,14 +327,13 @@ def build_mlops_pipeline(config: RunConfig, tracker: ExperimentTracker,
         train_ds = pipeline.artifacts["create_datasets"]["train_dataset"]
         val_ds = pipeline.artifacts["create_datasets"]["val_dataset"]
         
-        from .video_data import make_balanced_batch_sampler
+        from lib.data import make_balanced_batch_sampler
         
-        # For CPU-only runs or when memory is constrained, use num_workers=0
+        # For 4 CPUs and 80GB RAM, always use num_workers=0
         # to avoid multiprocessing overhead and OOM from worker processes
-        effective_num_workers = config.num_workers
-        if not torch.cuda.is_available() or os.environ.get("FVC_TEST_MODE", "").strip().lower() in ("1", "true", "yes", "y"):
-            effective_num_workers = 0
-            logger.info("Using num_workers=0 (CPU-only or test mode to avoid OOM)")
+        # With only 4 CPUs, multiprocessing workers consume too much memory
+        effective_num_workers = 0
+        logger.info("Using num_workers=0 (optimized for 4 CPUs, 80GB RAM to avoid OOM)")
         
         # Try balanced sampling
         try:
@@ -452,7 +451,7 @@ def fit_with_tracking(
     ckpt_manager: CheckpointManager,
 ) -> torch.nn.Module:
     """Enhanced fit function with experiment tracking and aggressive GC."""
-    from ..training.video_training import train_one_epoch, evaluate, build_optimizer, build_scheduler
+    from lib.training.trainer import train_one_epoch, evaluate, build_optimizer, build_scheduler
     
     device = train_cfg.device
     model.to(device)

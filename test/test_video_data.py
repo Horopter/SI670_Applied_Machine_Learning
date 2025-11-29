@@ -4,7 +4,7 @@ import tempfile
 import os
 import numpy as np
 import polars as pl
-from lib.video_data import (
+from lib.data import (
     load_metadata,
     filter_existing_videos,
     train_val_test_split,

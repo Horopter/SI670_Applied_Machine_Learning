@@ -12,9 +12,15 @@ This document lists what we can borrow/reuse from the previous pipeline for the 
 - ✅ `mlops_utils.py` - Memory management (`aggressive_gc`, `log_memory_stats`)
 
 ### Stage 5 (Training)
-- ✅ `baseline_models.py` - LogisticRegression, SVM implementations
+- ✅ `logistic_regression.py` - LogisticRegressionBaseline
+- ✅ `svm.py` - SVMBaseline
+- ✅ `naive_cnn.py` - NaiveCNNBaseline
+- ✅ `vit_gru.py` - ViTGRUModel
+- ✅ `vit_transformer.py` - ViTTransformerModel
+- ✅ `slowfast.py` - SlowFastModel
+- ✅ `x3d.py` - X3DModel
 - ✅ `model_factory.py` - Model creation and configuration
-- ✅ `video_training.py` - Training utilities (now integrated)
+- ✅ `trainer.py` - Training utilities
 
 ## Components to Integrate into Stage 5
 
@@ -91,18 +97,18 @@ This document lists what we can borrow/reuse from the previous pipeline for the 
 
 ### 4. Model Architectures
 
-**Frame→Temporal Models** (`lib/frame_temporal_models.py`)
-- `ViTGRUModel` - ViT + GRU
-- `ViTTransformerModel` - ViT + Transformer
+**Frame→Temporal Models**
+- `ViTGRUModel` (`lib/training/vit_gru.py`) - ViT + GRU
+- `ViTTransformerModel` (`lib/training/vit_transformer.py`) - ViT + Transformer
 
-**Spatiotemporal Models** (`lib/spatiotemporal_models.py`)
-- `SlowFastModel` - SlowFast network
-- `X3DModel` - X3D network
+**Spatiotemporal Models**
+- `SlowFastModel` (`lib/training/slowfast.py`) - SlowFast network
+- `X3DModel` (`lib/training/x3d.py`) - X3D network
 
-**Baseline Models** (`lib/baseline_models.py`)
-- `LogisticRegressionBaseline`
-- `SVMBaseline`
-- `NaiveCNNBaseline`
+**Baseline Models**
+- `LogisticRegressionBaseline` (`lib/training/logistic_regression.py`)
+- `SVMBaseline` (`lib/training/svm.py`)
+- `NaiveCNNBaseline` (`lib/training/naive_cnn.py`)
 
 ### 5. Memory Management (`lib/mlops_utils.py`)
 

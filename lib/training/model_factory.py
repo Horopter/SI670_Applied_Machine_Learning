@@ -18,7 +18,7 @@ import torch.nn as nn
 # Import RunConfig - using TYPE_CHECKING to avoid circular import at runtime
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..mlops.mlops_core import RunConfig
+    from lib.mlops.config import RunConfig
 
 logger = logging.getLogger(__name__)
 
@@ -27,52 +27,52 @@ logger = logging.getLogger(__name__)
 # to avoid excessive memory usage during feature extraction.
 MODEL_MEMORY_CONFIGS = {
     "logistic_regression": {
-        "batch_size": 8,  # Extreme conservative: reduced from 16
-        "num_workers": 0,  # Set to 0 to avoid multiprocessing memory overhead
-        "num_frames": 8,
-        "gradient_accumulation_steps": 1,
+        "batch_size": 4,  # Reduced from 8 for 80GB RAM constraint
+        "num_workers": 0,  # Always 0 to avoid multiprocessing memory overhead
+        "num_frames": 6,  # Reduced from 8 to save memory
+        "gradient_accumulation_steps": 2,  # Maintain effective batch size of 8
     },
     "svm": {
-        "batch_size": 8,  # Extreme conservative: reduced from 16
-        "num_workers": 0,  # Set to 0 to avoid multiprocessing memory overhead
-        "num_frames": 8,
-        "gradient_accumulation_steps": 1,
+        "batch_size": 4,  # Reduced from 8 for 80GB RAM constraint
+        "num_workers": 0,  # Always 0 to avoid multiprocessing memory overhead
+        "num_frames": 6,  # Reduced from 8 to save memory
+        "gradient_accumulation_steps": 2,  # Maintain effective batch size of 8
     },
     "naive_cnn": {
-        "batch_size": 2,  # Extreme conservative: reduced from 4
-        "num_workers": 0,  # Set to 0 to avoid multiprocessing memory overhead
+        "batch_size": 1,  # Reduced from 2 for 80GB RAM constraint
+        "num_workers": 0,  # Always 0 to avoid multiprocessing memory overhead
         "num_frames": 6,  # Reduced from 8 to save memory
-        "gradient_accumulation_steps": 8,  # Increased to maintain effective batch size
+        "gradient_accumulation_steps": 8,  # Maintain effective batch size of 8
     },
     "vit_gru": {
-        "batch_size": 1,  # Already at minimum
-        "num_workers": 0,  # Already 0
+        "batch_size": 1,  # Minimum for memory efficiency
+        "num_workers": 0,  # Always 0 to avoid multiprocessing memory overhead
         "num_frames": 6,  # Reduced from 8 to save memory
-        "gradient_accumulation_steps": 20,  # Increased to maintain effective batch size
+        "gradient_accumulation_steps": 16,  # Maintain effective batch size of 16
     },
     "vit_transformer": {
-        "batch_size": 1,  # Already at minimum
-        "num_workers": 0,  # Already 0
+        "batch_size": 1,  # Minimum for memory efficiency
+        "num_workers": 0,  # Always 0 to avoid multiprocessing memory overhead
         "num_frames": 6,  # Reduced from 8 to save memory
-        "gradient_accumulation_steps": 20,  # Increased to maintain effective batch size
+        "gradient_accumulation_steps": 20,  # Maintain effective batch size of 20
     },
     "slowfast": {
-        "batch_size": 1,  # Already at minimum
-        "num_workers": 0,  # Already 0
+        "batch_size": 1,  # Minimum for memory efficiency
+        "num_workers": 0,  # Always 0 to avoid multiprocessing memory overhead
         "num_frames": 6,  # Reduced from 8 to save memory
-        "gradient_accumulation_steps": 40,  # Increased to compensate for fewer frames
+        "gradient_accumulation_steps": 40,  # Maintain effective batch size of 40
     },
     "x3d": {
-        "batch_size": 1,  # Already at minimum
-        "num_workers": 0,  # Already 0
+        "batch_size": 1,  # Minimum for memory efficiency
+        "num_workers": 0,  # Always 0 to avoid multiprocessing memory overhead
         "num_frames": 6,  # Reduced from 8 to save memory
-        "gradient_accumulation_steps": 20,  # Increased to compensate for fewer frames
+        "gradient_accumulation_steps": 20,  # Maintain effective batch size of 20
     },
     "pretrained_inception": {
-        "batch_size": 2,  # Extreme conservative: reduced from 4
-        "num_workers": 0,  # Set to 0 to avoid multiprocessing memory overhead
-        "num_frames": 8,
-        "gradient_accumulation_steps": 8,  # Increased to maintain effective batch size
+        "batch_size": 1,  # Reduced from 2 for 80GB RAM constraint
+        "num_workers": 0,  # Always 0 to avoid multiprocessing memory overhead
+        "num_frames": 6,  # Reduced from 8 to save memory
+        "gradient_accumulation_steps": 8,  # Maintain effective batch size of 8
     },
 }
 
@@ -90,10 +90,10 @@ def get_model_config(model_type: str) -> Dict[str, Any]:
     if model_type not in MODEL_MEMORY_CONFIGS:
         logger.warning(f"Unknown model type: {model_type}. Using default config.")
         return {
-            "batch_size": 8,
-            "num_workers": 2,
-            "num_frames": 8,
-            "gradient_accumulation_steps": 2,
+            "batch_size": 1,  # Conservative default for 80GB RAM
+            "num_workers": 0,  # Always 0 to avoid multiprocessing memory overhead
+            "num_frames": 6,  # Reduced from 8 to save memory
+            "gradient_accumulation_steps": 8,  # Maintain effective batch size
         }
     
     return MODEL_MEMORY_CONFIGS[model_type].copy()
@@ -133,28 +133,28 @@ def create_model(model_type: str, config: RunConfig) -> Any:
         return default
     
     if model_type == "logistic_regression":
-        from .baseline_models import LogisticRegressionBaseline
+        from .logistic_regression import LogisticRegressionBaseline
         return LogisticRegressionBaseline(
             cache_dir=get_param("feature_cache_dir", None),
             num_frames=get_param("num_frames", num_frames)
         )
     
     elif model_type == "svm":
-        from .baseline_models import SVMBaseline
+        from .svm import SVMBaseline
         return SVMBaseline(
             cache_dir=get_param("feature_cache_dir", None),
             num_frames=get_param("num_frames", num_frames)
         )
     
     elif model_type == "naive_cnn":
-        from .baseline_models import NaiveCNNBaseline
+        from .naive_cnn import NaiveCNNBaseline
         return NaiveCNNBaseline(
             num_frames=get_param("num_frames", num_frames),
             num_classes=2
         )
     
     elif model_type == "vit_gru":
-        from .frame_temporal_models import ViTGRUModel
+        from .vit_gru import ViTGRUModel
         return ViTGRUModel(
             num_frames=get_param("num_frames", num_frames),
             hidden_dim=get_param("hidden_dim", 256),
@@ -164,7 +164,7 @@ def create_model(model_type: str, config: RunConfig) -> Any:
         )
     
     elif model_type == "vit_transformer":
-        from .frame_temporal_models import ViTTransformerModel
+        from .vit_transformer import ViTTransformerModel
         return ViTTransformerModel(
             num_frames=get_param("num_frames", num_frames),
             d_model=get_param("d_model", 768),
@@ -176,7 +176,7 @@ def create_model(model_type: str, config: RunConfig) -> Any:
         )
     
     elif model_type == "slowfast":
-        from .spatiotemporal_models import SlowFastModel
+        from .slowfast import SlowFastModel
         return SlowFastModel(
             slow_frames=get_param("slow_frames", 16),
             fast_frames=get_param("fast_frames", 64),
@@ -186,14 +186,14 @@ def create_model(model_type: str, config: RunConfig) -> Any:
         )
     
     elif model_type == "x3d":
-        from .spatiotemporal_models import X3DModel
+        from .x3d import X3DModel
         return X3DModel(
             variant=get_param("variant", "x3d_m"),
             pretrained=get_param("pretrained", True)
         )
     
     elif model_type == "pretrained_inception":
-        from .video_modeling import PretrainedInceptionVideoModel
+        from lib.models import PretrainedInceptionVideoModel
         return PretrainedInceptionVideoModel(
             freeze_backbone=get_param("freeze_backbone", False)
         )

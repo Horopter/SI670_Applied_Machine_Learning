@@ -15,12 +15,23 @@ import sys
 import logging
 from pathlib import Path
 
-# Setup logging
+# Setup extensive logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    level=logging.DEBUG,  # Changed to DEBUG for extensive logs
+    format="%(asctime)s [%(levelname)s] [%(name)s:%(lineno)d] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger("mlops_runner")
+
+# Set specific loggers to appropriate levels
+logging.getLogger("lib").setLevel(logging.DEBUG)
+logging.getLogger("lib.mlops").setLevel(logging.DEBUG)
+logging.getLogger("lib.training").setLevel(logging.DEBUG)
+logging.getLogger("lib.data").setLevel(logging.DEBUG)
+logging.getLogger("lib.augmentation").setLevel(logging.DEBUG)
+logging.getLogger("lib.features").setLevel(logging.DEBUG)
+logging.getLogger("lib.models").setLevel(logging.DEBUG)
+logging.getLogger("lib.utils").setLevel(logging.DEBUG)
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -68,6 +79,13 @@ def main():
     logger.info("Run ID: %s", run_id)
     logger.info("Run Directory: %s", run_dir)
     logger.info("Project Root: %s", project_root)
+    logger.debug("Python version: %s", sys.version)
+    logger.debug("Python executable: %s", sys.executable)
+    logger.debug("Working directory: %s", os.getcwd())
+    logger.debug("Environment variables:")
+    for key in ["CUDA_VISIBLE_DEVICES", "FVC_FIXED_SIZE", "USE_MULTIMODEL", "MODELS_TO_TRAIN", "SKIP_MODELS"]:
+        if key in os.environ:
+            logger.debug("  %s=%s", key, os.environ[key])
     
     # Create experiment tracker
     tracker = ExperimentTracker(run_dir, run_id)
@@ -86,9 +104,9 @@ def main():
         test_split=0.0,
         random_seed=42,
         
-        # Video config (extreme conservative for memory efficiency)
-        num_frames=8,  # Reduced from 16 to 8 to prevent OOM
-        fixed_size=int(os.environ.get("FVC_FIXED_SIZE", 112)),  # Extreme conservative: 112x112 to minimize memory
+        # Video config (optimized for 1 GPU, 4 CPUs, 80GB RAM)
+        num_frames=6,  # Reduced from 8 to 6 for 80GB RAM constraint
+        fixed_size=int(os.environ.get("FVC_FIXED_SIZE", 112)),  # Conservative: 112x112 to minimize memory
         augmentation_config={
             'rotation_degrees': 15.0,
             'rotation_p': 0.5,
@@ -109,19 +127,19 @@ def main():
             'frame_dup_prob': 0.1,
             'reverse_prob': 0.1,
         },
-        num_augmentations_per_video=1,  # Extreme conservative: reduced from 3 to minimize memory
+        num_augmentations_per_video=1,  # Conservative: 1 augmentation to minimize memory
         
-        # Training config (reduced for memory efficiency)
-        batch_size=8,  # Reduced from 32 to 8 to prevent OOM
+        # Training config (optimized for 80GB RAM)
+        batch_size=4,  # Reduced from 8 to 4 for 80GB RAM constraint
         num_epochs=20,
         learning_rate=1e-4,
         weight_decay=1e-4,
-        gradient_accumulation_steps=2,  # Increased to maintain effective batch size
+        gradient_accumulation_steps=4,  # Increased to maintain effective batch size of 16
         early_stopping_patience=5,
         
-        # System config (reduced for memory efficiency)
+        # System config (optimized for 4 CPUs, 80GB RAM)
         device="cuda" if __import__("torch").cuda.is_available() else "cpu",
-        num_workers=2,  # Reduced from 4 to 2 to reduce memory usage
+        num_workers=0,  # Always 0 to avoid multiprocessing memory overhead with 4 CPUs
         use_amp=True,
         
         # Paths
@@ -129,16 +147,55 @@ def main():
         output_dir=run_dir,
     )
     
-    # Log system metadata
+    # Log system metadata with extensive details
     import torch
     import platform
-    tracker.log_metadata({
+    try:
+        import psutil
+        PSUTIL_AVAILABLE = True
+    except ImportError:
+        PSUTIL_AVAILABLE = False
+        logger.warning("psutil not available, skipping detailed system info")
+    import gc
+    
+    system_metadata = {
         "python_version": sys.version,
+        "python_executable": sys.executable,
         "platform": platform.platform(),
-        "cuda_available": torch.cuda.is_available(),
-        "cuda_version": torch.version.cuda if torch.cuda.is_available() else None,
+        "processor": platform.processor(),
         "pytorch_version": torch.__version__,
-    })
+        "cuda_available": torch.cuda.is_available(),
+    }
+    
+    if torch.cuda.is_available():
+        system_metadata.update({
+            "cuda_version": torch.version.cuda,
+            "cudnn_version": torch.backends.cudnn.version() if torch.backends.cudnn.is_available() else None,
+            "gpu_count": torch.cuda.device_count(),
+            "gpu_name": torch.cuda.get_device_name(0) if torch.cuda.device_count() > 0 else None,
+            "gpu_memory_total_gb": torch.cuda.get_device_properties(0).total_memory / 1e9 if torch.cuda.device_count() > 0 else None,
+        })
+        logger.info("CUDA Device: %s", system_metadata.get("gpu_name", "Unknown"))
+        logger.info("GPU Memory: %.2f GB", system_metadata.get("gpu_memory_total_gb", 0))
+    
+    if PSUTIL_AVAILABLE:
+        try:
+            system_metadata.update({
+                "cpu_count": psutil.cpu_count(),
+                "cpu_freq_mhz": psutil.cpu_freq().current if psutil.cpu_freq() else None,
+                "memory_total_gb": psutil.virtual_memory().total / 1e9,
+                "memory_available_gb": psutil.virtual_memory().available / 1e9,
+            })
+            logger.info("CPU Count: %d", system_metadata.get("cpu_count", 0))
+            logger.info("Total Memory: %.2f GB", system_metadata.get("memory_total_gb", 0))
+            logger.info("Available Memory: %.2f GB", system_metadata.get("memory_available_gb", 0))
+        except Exception as e:
+            logger.warning("Could not get system info: %s", e)
+    else:
+        logger.debug("psutil not available, skipping detailed system info")
+    
+    tracker.log_metadata(system_metadata)
+    logger.debug("System metadata logged: %s", system_metadata)
     
     # Build and run pipeline
     try:
@@ -189,9 +246,13 @@ def main():
                 logger.info("Using models from MODELS_TO_TRAIN: %s", models_to_train)
             
             logger.info("Models to train: %s", models_to_train)
+            logger.info("Total models: %d", len(models_to_train))
             logger.info("Using %d-fold stratified cross-validation", n_splits)
             logger.info("Models will be trained sequentially with shared data pipeline")
             logger.info("Each model has its own checkpoint directory and can be resumed independently")
+            logger.debug("Model training order:")
+            for i, model in enumerate(models_to_train, 1):
+                logger.debug("  %d. %s", i, model)
             
             # Build multi-model pipeline
             pipeline = build_multimodel_pipeline(
@@ -209,26 +270,61 @@ def main():
             pipeline = build_mlops_pipeline(config, tracker)
             pipeline.ckpt_manager = ckpt_manager
         
+        logger.info("=" * 80)
+        logger.info("Starting pipeline execution...")
+        logger.info("=" * 80)
+        logger.debug("Pipeline type: %s", "multi-model" if use_multimodel else ("k-fold" if use_kfold else "single-split"))
+        logger.debug("Checkpoint directory: %s", checkpoint_dir)
+        import time
+        pipeline_start = time.time()
+        
         artifacts = pipeline.run_pipeline(ckpt_manager=ckpt_manager)
         
+        pipeline_duration = time.time() - pipeline_start
         logger.info("=" * 80)
         logger.info("Pipeline completed successfully!")
         logger.info("Run ID: %s", run_id)
         logger.info("Results saved to: %s", run_dir)
+        logger.info("Total execution time: %.2f seconds (%.2f minutes)", 
+                   pipeline_duration, pipeline_duration / 60)
         logger.info("=" * 80)
         
-        # Print summary
+        # Print summary with extensive details
+        logger.debug("Retrieving metrics from tracker...")
         metrics_df = tracker.get_metrics()
+        logger.debug("Total metrics logged: %d", metrics_df.height if metrics_df.height > 0 else 0)
+        
         if metrics_df.height > 0:
+            logger.info("Metrics Summary:")
             best_val = tracker.get_best_metric("accuracy", phase="val", maximize=True)
             if best_val:
-                logger.info("Best validation accuracy: %.4f (epoch %d)", 
+                logger.info("  Best validation accuracy: %.4f (epoch %d)", 
                            best_val['value'], best_val['epoch'])
+            
+            # Log all available metrics
+            logger.debug("Available metrics:")
+            for col in metrics_df.columns:
+                logger.debug("  - %s", col)
+        
+        logger.debug("Pipeline artifacts: %s", list(artifacts.keys()) if artifacts else "None")
         
         return 0
     
+    except KeyboardInterrupt:
+        logger.warning("Pipeline interrupted by user (Ctrl+C)")
+        logger.info("Checkpoints saved. Pipeline can be resumed.")
+        return 130  # Standard exit code for SIGINT
     except Exception as e:
-        logger.error("Pipeline failed: %s", str(e), exc_info=True)
+        logger.error("=" * 80)
+        logger.error("PIPELINE FAILED")
+        logger.error("=" * 80)
+        logger.error("Error: %s", str(e))
+        logger.error("Exception type: %s", type(e).__name__)
+        logger.error("Full traceback:", exc_info=True)
+        logger.error("Run ID: %s", run_id)
+        logger.error("Run directory: %s", run_dir)
+        logger.error("Checkpoints may be available for resume")
+        logger.error("=" * 80)
         return 1
 
 

@@ -141,7 +141,7 @@ def generate_video_index():
         return True
     
     try:
-        from lib.cli import run_default_prep
+        from lib.data import run_default_prep
         run_default_prep()
         print("✓ Video index generated successfully")
         return True
@@ -209,7 +209,7 @@ def verify_paths_and_attributes():
         # Import centralized path utilities
         sys.path.insert(0, str(PROJECT_ROOT))
         try:
-            from lib.video_paths import resolve_video_path
+            from lib.utils.paths import resolve_video_path
         except ImportError:
             # Fallback if module not available
             def check_video_path_exists(video_rel, project_root):

@@ -198,7 +198,14 @@ The pipeline can be resumed from any stage:
 ## Integration with Existing Code
 
 - Uses existing `handcrafted_features.py` for Stage 2
-- Uses existing `baseline_models.py` for Stage 5
+- Uses model factory (`lib/training/model_factory.py`) to create models:
+  - `logistic_regression.py` - LogisticRegressionBaseline
+  - `svm.py` - SVMBaseline
+  - `naive_cnn.py` - NaiveCNNBaseline
+  - `vit_gru.py` - ViTGRUModel
+  - `vit_transformer.py` - ViTTransformerModel
+  - `slowfast.py` - SlowFastModel
+  - `x3d.py` - X3DModel
 - Uses existing `model_factory.py` for model creation
 - New pipeline modules are separate from old pipeline code
 

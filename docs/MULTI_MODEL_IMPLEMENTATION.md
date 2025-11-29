@@ -32,47 +32,47 @@ This document describes the implementation of 7 model architectures as specified
 
 **Caching**: Features are cached to disk to avoid recomputation across runs/folds.
 
-### Baseline Models (`lib/baseline_models.py`)
+### Baseline Models
 
-**LogisticRegressionBaseline**:
+**LogisticRegressionBaseline** (`lib/training/logistic_regression.py`):
 - Extracts handcrafted features per video
 - Trains sklearn LogisticRegression
 - Saves feature extractor + model + scaler
 
-**SVMBaseline**:
+**SVMBaseline** (`lib/training/svm.py`):
 - Same feature extraction
 - Trains sklearn LinearSVC
 - Converts decision function to probabilities via sigmoid
 
-**NaiveCNNBaseline**:
+**NaiveCNNBaseline** (`lib/training/naive_cnn.py`):
 - Simple 2D CNN: Conv2D blocks → GlobalAvgPool → FC
 - Processes frames independently, averages predictions
 - PyTorch nn.Module (can be trained with standard training loop)
 
-### Frame→Temporal Models (`lib/frame_temporal_models.py`)
+### Frame→Temporal Models
 
-**ViTGRUModel**:
+**ViTGRUModel** (`lib/training/vit_gru.py`):
 - Backbone: `timm.create_model('vit_base_patch16_224', pretrained=True)`
 - Extracts [CLS] token (768-dim) per frame
 - Temporal head: GRU (hidden_dim=256, num_layers=2)
 - Classification: Linear(256, 1)
 
-**ViTTransformerModel**:
+**ViTTransformerModel** (`lib/training/vit_transformer.py`):
 - Same ViT backbone
 - Temporal head: Transformer encoder (d_model=768, nhead=8, num_layers=2)
 - Mean pooling over temporal dimension
 - Classification: Linear(768, 1)
 
-### Spatiotemporal Models (`lib/spatiotemporal_models.py`)
+### Spatiotemporal Models
 
-**SlowFastModel**:
+**SlowFastModel** (`lib/training/slowfast.py`):
 - Uses `torchvision.models.video.slowfast_r50` if available
 - Fallback: Simplified SlowFast implementation
 - Slow pathway: 16 frames at 2 fps
 - Fast pathway: 64 frames at 8 fps
 - Fusion and binary classification head
 
-**X3DModel**:
+**X3DModel** (`lib/training/x3d.py`):
 - Uses `torchvision.models.video.x3d_m` (pretrained on Kinetics-400)
 - Fallback: Uses `r3d_18` as approximation
 - Binary classification head
@@ -98,7 +98,7 @@ MODEL_MEMORY_CONFIGS = {
 }
 ```
 
-## Multi-Model Pipeline (`lib/mlops_pipeline_multimodel.py`)
+## Multi-Model Pipeline (`lib/mlops/multimodel.py`)
 
 **Pipeline Stages**:
 1. **Load Data** (shared): Load and filter metadata
@@ -247,14 +247,26 @@ Each model has ultra-conservative memory settings:
 
 ```
 lib/
-  handcrafted_features.py      # Feature extraction
-  baseline_models.py           # LogisticRegression, SVM, NaiveCNN
-  frame_temporal_models.py    # ViT+GRU, ViT+Transformer
-  spatiotemporal_models.py   # SlowFast, X3D
-  model_factory.py            # Model creation and config
-  mlops_pipeline_multimodel.py # Multi-model pipeline
-  model_comparison.py          # Evaluation and comparison
-  mlops_core.py               # Extended RunConfig (model_type, model_specific_config)
+  training/
+    logistic_regression.py    # LogisticRegressionBaseline
+    svm.py                    # SVMBaseline
+    naive_cnn.py              # NaiveCNNBaseline
+    vit_gru.py                # ViTGRUModel
+    vit_transformer.py        # ViTTransformerModel
+    slowfast.py               # SlowFastModel
+    x3d.py                    # X3DModel
+    model_factory.py          # Model creation and config
+    trainer.py                # Training utilities
+    pipeline.py               # Training pipeline
+  features/
+    handcrafted.py            # Feature extraction
+    downscaled.py             # Downscaled feature extraction
+    pipeline.py               # Feature extraction pipeline
+  mlops/
+    multimodel.py             # Multi-model pipeline
+    kfold.py                  # K-fold pipeline
+    pipeline.py               # Main MLOps pipeline
+    config.py                 # RunConfig, ExperimentTracker, etc.
 ```
 
 ## Training Strategy

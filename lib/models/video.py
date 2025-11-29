@@ -22,9 +22,10 @@ import numpy as np
 import polars as pl
 import torch
 
-logger = logging.getLogger(__name__)
 import torch.nn as nn
 import torch.nn.functional as F
+
+logger = logging.getLogger(__name__)
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 import warnings
@@ -154,7 +155,7 @@ class VideoConfig:
     rolling_window: bool = False  # If True, use rolling windows instead of uniform sampling
     window_size: Optional[int] = None  # Size of rolling window (defaults to num_frames)
     window_stride: Optional[int] = None  # Stride between windows (defaults to window_size // 2)
-    # Augmentation configuration (see video_augmentations.py for details)
+    # Augmentation configuration (see lib.augmentation.transforms for details)
     augmentation_config: Optional[dict] = None  # Spatial augmentation parameters
     temporal_augmentation_config: Optional[dict] = None  # Temporal augmentation parameters
 
@@ -349,7 +350,7 @@ class VideoDataset(Dataset):
         
         # Use comprehensive augmentations if available, otherwise fallback to basic
         try:
-            from ..augmentation.video_augmentations import build_comprehensive_frame_transforms
+            from lib.augmentation.transforms import build_comprehensive_frame_transforms
             self._frame_transform, self._post_tensor_transform = build_comprehensive_frame_transforms(
                 train=train,
                 fixed_size=fixed_size,
@@ -379,7 +380,7 @@ class VideoDataset(Dataset):
         return row.to_dict()  # type: ignore[no-any-return]
 
     def _get_video_path(self, row: Dict[str, Any]) -> str:
-        from .video_paths import resolve_video_path
+        from lib.utils.paths import resolve_video_path
         video_rel = row["video_path"]
         return resolve_video_path(video_rel, self.project_root)
 
@@ -392,7 +393,7 @@ class VideoDataset(Dataset):
         # Check if this is a pre-computed augmented clip (.pt or .pth file)
         if video_path.endswith('.pt') or video_path.endswith('.pth'):
             try:
-                from ..augmentation.video_augmentation_pipeline import load_precomputed_clip
+                from lib.augmentation.pregenerate import load_precomputed_clip
                 clip = load_precomputed_clip(video_path)
                 # Ensure clip has correct shape: (T, C, H, W)
                 if clip.dim() == 4:
@@ -494,7 +495,7 @@ class VideoDataset(Dataset):
 
         # Apply temporal augmentations if available
         try:
-            from ..augmentation.video_augmentations import apply_temporal_augmentations
+            from lib.augmentation.transforms import apply_temporal_augmentations
             use_temporal_aug = True
             temporal_config = getattr(self.config, 'temporal_augmentation_config', None) or {}
         except ImportError:

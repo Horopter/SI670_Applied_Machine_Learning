@@ -1,6 +1,6 @@
 """CLI entry point for FVC data preparation"""
 from .config import FVCConfig
-from .build_index import build_video_index
+from .index import build_video_index
 
 
 def run_default_prep():

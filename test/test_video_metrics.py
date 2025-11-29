@@ -2,7 +2,7 @@
 import pytest
 import torch
 import numpy as np
-from lib.video_metrics import (
+from lib.utils.metrics import (
     collect_logits_and_labels,
     basic_classification_metrics,
     confusion_matrix,

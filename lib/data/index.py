@@ -3,8 +3,8 @@ import os
 from typing import Optional
 import pandas as pd
 from .config import FVCConfig
-from .metadata_parser import parse_metadata
-from .video_scan import scan_videos
+from .metadata import parse_metadata
+from .scan import scan_videos
 
 
 def build_video_index(

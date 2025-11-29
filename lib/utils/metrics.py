@@ -1,10 +1,9 @@
 """
-Metrics and evaluation helpers for the FVC video classifier.
+Evaluation metrics utilities.
 
-Includes:
-- Accuracy, precision, recall, F1
-- ROC-AUC (if sklearn is available)
-- Confusion matrix
+Provides:
+- Classification metrics
+- Logit collection
 """
 
 from __future__ import annotations
@@ -142,5 +141,3 @@ __all__ = [
     "confusion_matrix",
     "roc_auc",
 ]
-
-
