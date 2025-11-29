@@ -13,6 +13,8 @@ from __future__ import annotations
 import os
 import logging
 import random
+import gc
+import csv
 from pathlib import Path
 from typing import List, Optional
 import numpy as np
@@ -20,7 +22,9 @@ import polars as pl
 import torch
 from tqdm import tqdm
 
-from ..video_modeling import VideoConfig, _read_video_wrapper
+from ..video_modeling import VideoConfig, _read_video_wrapper, uniform_sample_indices
+from ..video_paths import resolve_video_path
+from ..utils.mlops_utils import log_memory_stats, aggressive_gc
 from .video_augmentations import build_comprehensive_frame_transforms, apply_temporal_augmentations
 
 logger = logging.getLogger(__name__)
@@ -55,7 +59,6 @@ def generate_augmented_clips(
     
     # CRITICAL MEMORY OPTIMIZATION: Don't load entire video into memory
     # Instead, get video metadata first, then decode only the frames we need
-    from ..utils.mlops_utils import log_memory_stats, aggressive_gc
     
     # Get video frame count without loading all frames
     try:
@@ -100,7 +103,6 @@ def generate_augmented_clips(
         )
         
         # Sample frame indices (uniform sampling)
-        from ..video_modeling import uniform_sample_indices
         indices = uniform_sample_indices(total_frames, config.num_frames)
         
         # CRITICAL: Decode only the frames we need, not the entire video
@@ -240,7 +242,6 @@ def generate_augmented_clips(
         del clip
         
         # Aggressive GC after each augmentation
-        from ..utils.mlops_utils import aggressive_gc
         aggressive_gc(clear_cuda=False)
     
     # Return count instead of actual clips to save memory
@@ -271,8 +272,7 @@ def pregenerate_augmented_dataset(
     Returns:
         New DataFrame with paths to augmented clips
     """
-    from ..video_paths import resolve_video_path
-    from ..video_modeling import uniform_sample_indices  # Import once for efficiency
+    # Imports already at module level
     
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -289,7 +289,6 @@ def pregenerate_augmented_dataset(
     metadata_path.parent.mkdir(parents=True, exist_ok=True)
     
     # Initialize CSV with header
-    import csv
     with open(metadata_path, 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(["video_path", "label", "original_video", "augmentation_idx"])
@@ -297,8 +296,6 @@ def pregenerate_augmented_dataset(
     total_rows_written = 0
     
     # Process videos one at a time to minimize memory
-    import gc
-    from ..utils.mlops_utils import aggressive_gc
     
     for batch_start in tqdm(range(0, df.height, batch_size), desc="Processing videos"):
         batch_end = min(batch_start + batch_size, df.height)
@@ -306,7 +303,6 @@ def pregenerate_augmented_dataset(
         
         # Log memory before processing batch (every 10 videos)
         if batch_start % 10 == 0:
-            from ..utils.mlops_utils import log_memory_stats
             log_memory_stats(f"before processing video {batch_start + 1}", detailed=True)
         
         for idx in range(batch_df.height):
@@ -319,7 +315,6 @@ def pregenerate_augmented_dataset(
                 
                 # Log memory before processing this video
                 if idx == 0:  # Log for first video in batch
-                    from ..utils.mlops_utils import log_memory_stats
                     log_memory_stats(f"before processing video: {Path(video_path).name}")
                 
                 # Generate augmented clips (saves automatically to save_dir)
