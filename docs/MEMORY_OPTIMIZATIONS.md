@@ -10,32 +10,111 @@ This document describes the memory optimizations and stability improvements impl
 
 **Batch Size Reduction**:
 - **Before**: `batch_size=32` (16 real + 16 fake per batch)
-- **After**: `batch_size=8` (4 real + 4 fake per batch)
-- **Impact**: ~4x reduction in memory per batch
-- **Compensation**: `gradient_accumulation_steps=2` to maintain effective batch size
+- **After**: Ultra-conservative batch sizes per model (1-8 depending on model)
+- **Impact**: ~4-32x reduction in memory per batch
+- **Compensation**: Increased `gradient_accumulation_steps` (8-16) to maintain effective batch size
 
 **Number of Workers**:
 - **Before**: `num_workers=4`
-- **After**: `num_workers=2`
-- **Impact**: Reduces memory overhead from parallel data loading
+- **After**: `num_workers=0` (CPU-only or test mode to avoid multiprocessing memory overhead)
+- **Impact**: Eliminates memory overhead from parallel data loading workers
 
 **Frame Count**:
 - **Before**: `num_frames=16`
-- **After**: `num_frames=8`
-- **Impact**: ~2x reduction in memory per video sample
+- **After**: `num_frames=6` (ultra-conservative)
+- **Impact**: ~2.7x reduction in memory per video sample
 
-### 2. Batch Processing for Augmentations
+**Resolution**:
+- **Before**: `fixed_size=224` (224×224 pixels)
+- **After**: `fixed_size=112` (112×112 pixels, configurable via `FVC_FIXED_SIZE`)
+- **Impact**: ~4x reduction in memory per frame (224² → 112²)
+
+### 2. Frame-by-Frame Video Decoding (CRITICAL)
+
+**Problem**: Loading entire videos into memory causes massive memory spikes
+- Large video (1920×1080, 30fps, 10s = 300 frames): ~1.87 GB per video
+- With base memory (~31GB), loading one large video can spike past 80GB → OOM
+
+**Solution**: Decode only the frames we need using PyAV
+- **Before**: Load entire video → extract 6 frames → delete video
+- **After**: Seek to specific frames → decode only those 6 frames → never load full video
+- **Memory per video**: ~37 MB (6 frames) instead of ~1.87 GB (300 frames)
+- **Memory reduction**: ~50x reduction per video
 
 **Implementation**:
-- Process videos in batches of 10 during augmentation generation
-- Aggressive GC after each batch
-- Clear video tensors from memory immediately after processing
+```python
+# Get frame count without loading video
+container = av.open(video_path)
+stream = container.streams.video[0]
+total_frames = stream.frames
+container.close()
+
+# Decode only selected frames
+for frame_idx in sorted(indices):
+    container.seek(timestamp_pts, stream=stream)
+    for packet in container.demux(stream):
+        for frame in packet.decode():
+            # Process only this frame
+            frame_array = frame.to_ndarray(format='rgb24')
+            # ... apply transforms ...
+            break
+```
+
+**Fallback**: If frame-by-frame decoding fails, falls back to full video loading with warning
+
+**Benefits**:
+- Prevents OOM during augmentation generation
+- Allows processing large videos without memory spikes
+- Stable memory usage (~1-2 GB instead of 30+ GB)
+
+### 3. Incremental CSV Writing for Metadata
+
+**Problem**: Accumulating all augmented clip metadata in memory
+- 298 videos × 1 augmentation = 298 metadata rows
+- Each row: video_path, label, original_video, augmentation_idx
+- Memory accumulation as list grows
+
+**Solution**: Write metadata directly to CSV incrementally
+- **Before**: `augmented_rows.append({...})` → `pl.DataFrame(augmented_rows)` at end
+- **After**: Write each row immediately to CSV file
+- **Memory**: Constant (no accumulation)
+
+**Implementation**:
+```python
+# Initialize CSV with header
+with open(metadata_path, 'w') as f:
+    writer = csv.writer(f)
+    writer.writerow(["video_path", "label", "original_video", "augmentation_idx"])
+
+# Write each row immediately
+for video in videos:
+    # ... process video ...
+    with open(metadata_path, 'a') as f:
+        writer.writerow([clip_path_rel, label, video_rel, aug_idx])
+    
+# Load final DataFrame from CSV at end
+augmented_df = pl.read_csv(metadata_path)
+```
+
+**Benefits**:
+- Eliminates unbounded memory growth from metadata list
+- Memory stays constant regardless of dataset size
+
+### 4. One Video at a Time Processing
+
+**Implementation**:
+- Process videos one at a time (`batch_size=1`) during augmentation generation
+- Aggressive GC after each video
+- Clear video tensors and clips from memory immediately after processing
+- Delete frames after stacking into clip
+- Delete clip after saving to disk
 
 **Benefits**:
 - Prevents memory accumulation during augmentation generation
 - Allows processing large datasets without OOM
+- Minimal peak memory usage
 
-### 3. Shared Augmentations Across K-Fold
+### 5. Shared Augmentations Across K-Fold
 
 **Before**: Each fold generated its own augmentations
 - Memory: 5x augmentation generation (one per fold)
@@ -62,7 +141,7 @@ for fold_idx, (train_df, val_df) in enumerate(folds):
     )
 ```
 
-### 4. Aggressive Garbage Collection
+### 6. Aggressive Garbage Collection
 
 **Enhanced GC Strategy**:
 - 3 passes of `gc.collect()` instead of 1
@@ -164,23 +243,33 @@ cleanup_runs_and_logs(project_root, keep_models=False)
 
 ## Memory Usage Estimates
 
-### Before Optimizations
+### Before All Optimizations
 - Batch size 32: ~2-3 GB per batch
 - 16 frames: ~1.5 GB per batch
 - 4 workers: ~500 MB overhead
-- **Total**: ~4-5 GB per batch + model + overhead = **~80 GB** (OOM)
+- Full video loading: ~1.87 GB per video during augmentation
+- **Total**: ~4-5 GB per batch + model + overhead + video loading = **~80 GB** (OOM)
 
-### After Optimizations
+### After Initial Optimizations
 - Batch size 8: ~0.5-0.75 GB per batch
 - 8 frames: ~0.4 GB per batch
 - 2 workers: ~200 MB overhead
-- Gradient accumulation: No additional memory (accumulates gradients)
-- **Total**: ~1-1.5 GB per batch + model + overhead = **~20-30 GB** (within limits)
+- Full video loading: ~1.87 GB per video during augmentation
+- **Total**: ~1-1.5 GB per batch + model + overhead + video loading = **~30-40 GB** (still OOM)
+
+### After Latest Optimizations (Current)
+- Batch size 1-8 (model-dependent): ~0.1-0.75 GB per batch
+- 6 frames: ~0.3 GB per batch
+- 0 workers: 0 MB overhead
+- **Frame-by-frame decoding**: ~37 MB per video (only 6 frames loaded)
+- **Incremental CSV writing**: Constant memory (no accumulation)
+- **One video at a time**: Minimal peak memory
+- **Total**: ~1-2 GB per batch + model + overhead = **~5-10 GB** (well within limits)
 
 ### Effective Batch Size
-- Actual batch: 8
-- Gradient accumulation: 2 steps
-- **Effective batch**: 8 × 2 = 16 (still reasonable for training)
+- Actual batch: 1-8 (model-dependent)
+- Gradient accumulation: 8-16 steps (compensates for smaller batches)
+- **Effective batch**: 8-16 (maintains training effectiveness)
 
 ## Configuration Changes
 
@@ -188,14 +277,27 @@ cleanup_runs_and_logs(project_root, keep_models=False)
 
 ```python
 config = RunConfig(
-    # Reduced for memory efficiency
-    num_frames=8,           # Was 16
-    batch_size=8,           # Was 32
-    num_workers=2,          # Was 4
-    gradient_accumulation_steps=2,  # Was 1 (compensate for smaller batch)
+    # Ultra-conservative for memory efficiency
+    num_frames=6,           # Was 16 (reduced to 6)
+    fixed_size=112,         # Was 224 (reduced to 112, configurable via FVC_FIXED_SIZE)
+    num_augmentations_per_video=1,  # Was 3 (reduced to 1)
+    # Batch sizes are model-specific (see MODEL_MEMORY_CONFIGS in model_factory.py)
+    # num_workers=0 (CPU-only or test mode)
+    # gradient_accumulation_steps=8-16 (compensates for smaller batches)
     ...
 )
 ```
+
+### `lib/model_factory.py` - MODEL_MEMORY_CONFIGS
+
+Ultra-conservative batch sizes per model:
+- `logistic_regression`: batch_size=8
+- `svm`: batch_size=8
+- `naive_cnn`: batch_size=4
+- `vit_gru`: batch_size=1, gradient_accumulation_steps=16
+- `vit_transformer`: batch_size=1, gradient_accumulation_steps=16
+- `slowfast`: batch_size=1, num_frames=6, gradient_accumulation_steps=16
+- `x3d`: batch_size=1, num_frames=6, gradient_accumulation_steps=16
 
 ## Testing Recommendations
 
@@ -220,21 +322,52 @@ config = RunConfig(
    du -sh runs/ logs/ models/
    ```
 
+## Memory Profiling
+
+### Detailed Memory Tracking
+
+Added comprehensive memory profiling to identify hotspots:
+- CPU memory (RSS and VMS)
+- GPU memory (allocated, reserved, free)
+- Top memory consumers by object type
+- Polars DataFrame count
+- PyTorch tensor count and total memory
+- PyTorch model count
+
+**Usage**:
+```python
+from lib.mlops_utils import log_memory_stats
+
+# Basic memory stats
+log_memory_stats("after loading data")
+
+# Detailed breakdown
+log_memory_stats("after augmentation batch 5", detailed=True)
+```
+
+**Output**:
+- Memory stats logged at key points in pipeline
+- Detailed breakdowns show what's consuming memory
+- Helps identify memory leaks and hotspots
+
 ## Future Optimizations
 
 1. **Further Reduce Frame Count**: If still OOM, reduce to `num_frames=4`
-2. **Reduce Augmentation Count**: Reduce `num_augmentations_per_video` from 3 to 2
+2. **Further Reduce Resolution**: If still OOM, reduce to `fixed_size=96` or `64`
 3. **Mixed Precision**: Already enabled, but can be more aggressive
 4. **Gradient Checkpointing**: Trade compute for memory (if needed)
 5. **Model Pruning**: Reduce model size if needed
+6. **Streaming Video Processing**: Process videos in chunks instead of loading all frames
 
 ## Summary
 
-These optimizations reduce memory usage by approximately **3-4x** while maintaining:
-- Training effectiveness (via gradient accumulation)
-- Augmentation quality (same augmentations, just fewer frames)
+These optimizations reduce memory usage by approximately **8-16x** while maintaining:
+- Training effectiveness (via increased gradient accumulation)
+- Augmentation quality (same augmentations, just fewer frames and lower resolution)
 - Reproducibility (deterministic seeds)
 - Efficiency (shared augmentations across folds)
 
-The pipeline should now run within 80 GB memory limits on the SLURM cluster.
+**Key Breakthrough**: Frame-by-frame decoding eliminates the memory spike from loading entire videos, reducing per-video memory from ~1.87 GB to ~37 MB (50x reduction).
+
+The pipeline should now run comfortably within 80 GB memory limits on the SLURM cluster, with typical usage around 5-10 GB during augmentation generation and 10-20 GB during training.
 

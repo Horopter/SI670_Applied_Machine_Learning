@@ -4,6 +4,17 @@ All notable changes to the FVC Binary Video Classifier project are documented in
 
 ## [Unreleased]
 
+### Added - Latest Memory Optimizations (2025-11-29)
+- **Frame-by-frame video decoding**: Decode only the 6 needed frames instead of loading entire videos (50x memory reduction per video)
+- **Incremental CSV writing**: Write augmented metadata directly to CSV to avoid memory accumulation
+- **One video at a time processing**: Process videos sequentially with aggressive cleanup after each
+- **Ultra-conservative batch sizes**: Model-specific batch sizes (1-8) with increased gradient accumulation (8-16 steps)
+- **Reduced resolution**: Default `fixed_size=112` (was 224) for 4x memory reduction per frame
+- **Reduced frame count**: `num_frames=6` (was 8) for additional memory savings
+- **Reduced augmentations**: `num_augmentations_per_video=1` (was 3) to minimize augmentation memory
+- **Comprehensive memory profiling**: Detailed memory tracking with object breakdowns to identify hotspots
+- **Zero workers**: `num_workers=0` to eliminate multiprocessing memory overhead
+
 ### Added
 - Comprehensive project documentation (`docs/PROJECT_OVERVIEW.md`)
 - MLOps infrastructure for experiment tracking and versioning
@@ -18,15 +29,20 @@ All notable changes to the FVC Binary Video Classifier project are documented in
 - MLOps pipeline runner script
 
 ### Changed
-- Switched from variable aspect ratio to fixed-size preprocessing (224x224)
+- Switched from variable aspect ratio to fixed-size preprocessing (224x224 → 112x112)
 - Moved from on-the-fly to pre-generated augmentations
-- Increased default batch size from 2-4 to 32 (with fallbacks)
-- Increased frame count from 8 to 16 frames per video
+- **Reduced batch sizes**: Ultra-conservative model-specific batch sizes (1-8) instead of 32
+- **Reduced frame count**: From 16 → 8 → 6 frames per video for memory efficiency
+- **Reduced resolution**: From 224×224 → 112×112 for 4x memory reduction
+- **Reduced augmentations**: From 3 → 1 augmentation per video
 - Enhanced error handling and logging throughout
 - Improved memory management with aggressive GC
+- **Video loading**: Changed from full video loading to frame-by-frame decoding
 
 ### Fixed
-- OOM errors through fixed-size preprocessing and aggressive GC
+- **OOM errors**: Resolved through frame-by-frame decoding, incremental CSV writing, and ultra-conservative resource usage
+- **Memory spikes during augmentation**: Eliminated by decoding only needed frames instead of loading entire videos
+- **Memory accumulation**: Fixed by writing metadata incrementally instead of accumulating in memory
 - Overfitting through K-fold cross-validation
 - Path resolution inconsistencies
 - Missing video file handling

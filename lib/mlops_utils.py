@@ -145,7 +145,10 @@ def get_memory_stats() -> Dict[str, float]:
     try:
         import psutil
         process = psutil.Process(os.getpid())
-        stats['cpu_memory_mb'] = process.memory_info().rss / 1024 / 1024
+        mem_info = process.memory_info()
+        stats['cpu_memory_mb'] = mem_info.rss / 1024 / 1024
+        stats['cpu_memory_gb'] = mem_info.rss / 1024 / 1024 / 1024
+        stats['cpu_vms_mb'] = mem_info.vms / 1024 / 1024
     except ImportError:
         pass
     
@@ -159,10 +162,80 @@ def get_memory_stats() -> Dict[str, float]:
     return stats
 
 
-def log_memory_stats(context: str = "") -> None:
+def get_detailed_memory_breakdown() -> Dict[str, Any]:
+    """Get detailed memory breakdown by object type."""
+    breakdown = {}
+    
+    try:
+        import sys
+        import gc
+        
+        # Count objects by type
+        type_counts = {}
+        type_sizes = {}
+        
+        for obj in gc.get_objects():
+            obj_type = type(obj).__name__
+            type_counts[obj_type] = type_counts.get(obj_type, 0) + 1
+            
+            # Estimate size
+            try:
+                size = sys.getsizeof(obj)
+                type_sizes[obj_type] = type_sizes.get(obj_type, 0) + size
+            except Exception:
+                pass
+        
+        # Get top memory consumers
+        top_types = sorted(type_sizes.items(), key=lambda x: x[1], reverse=True)[:20]
+        
+        breakdown['top_memory_consumers'] = {
+            name: {
+                'count': type_counts.get(name, 0),
+                'total_size_mb': size / 1024 / 1024
+            }
+            for name, size in top_types
+        }
+        
+        # Count Polars DataFrames
+        try:
+            import polars as pl
+            df_count = sum(1 for obj in gc.get_objects() if isinstance(obj, pl.DataFrame))
+            breakdown['polars_dataframes'] = df_count
+        except Exception:
+            pass
+        
+        # Count PyTorch tensors
+        tensor_count = sum(1 for obj in gc.get_objects() if isinstance(obj, torch.Tensor))
+        tensor_memory = sum(obj.numel() * obj.element_size() for obj in gc.get_objects() 
+                          if isinstance(obj, torch.Tensor)) / 1024 / 1024
+        breakdown['torch_tensors'] = {
+            'count': tensor_count,
+            'total_memory_mb': tensor_memory
+        }
+        
+        # Count models
+        model_count = sum(1 for obj in gc.get_objects() if isinstance(obj, torch.nn.Module))
+        breakdown['torch_models'] = model_count
+        
+    except Exception as e:
+        breakdown['error'] = str(e)
+    
+    return breakdown
+
+
+def log_memory_stats(context: str = "", detailed: bool = False) -> None:
     """Log current memory statistics."""
     stats = get_memory_stats()
     logger.info("Memory stats%s: %s", f" ({context})" if context else "", stats)
+    
+    if detailed:
+        breakdown = get_detailed_memory_breakdown()
+        logger.info("Detailed memory breakdown%s:", f" ({context})" if context else "")
+        for key, value in breakdown.items():
+            if key != 'error':
+                logger.info("  %s: %s", key, value)
+            else:
+                logger.warning("  Error getting breakdown: %s", value)
 
 
 __all__ = [
@@ -172,5 +245,6 @@ __all__ = [
     "safe_execute",
     "get_memory_stats",
     "log_memory_stats",
+    "get_detailed_memory_breakdown",
 ]
 

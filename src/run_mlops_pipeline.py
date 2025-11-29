@@ -86,9 +86,9 @@ def main():
         test_split=0.0,
         random_seed=42,
         
-        # Video config (reduced for memory efficiency)
+        # Video config (extreme conservative for memory efficiency)
         num_frames=8,  # Reduced from 16 to 8 to prevent OOM
-        fixed_size=224,
+        fixed_size=int(os.environ.get("FVC_FIXED_SIZE", 112)),  # Extreme conservative: 112x112 to minimize memory
         augmentation_config={
             'rotation_degrees': 15.0,
             'rotation_p': 0.5,
@@ -109,7 +109,7 @@ def main():
             'frame_dup_prob': 0.1,
             'reverse_prob': 0.1,
         },
-        num_augmentations_per_video=3,
+        num_augmentations_per_video=1,  # Extreme conservative: reduced from 3 to minimize memory
         
         # Training config (reduced for memory efficiency)
         batch_size=8,  # Reduced from 32 to 8 to prevent OOM

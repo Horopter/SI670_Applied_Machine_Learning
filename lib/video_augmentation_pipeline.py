@@ -53,13 +53,34 @@ def generate_augmented_clips(
         video_path_str = str(video_path)
         seed = int(hashlib.md5(video_path_str.encode()).hexdigest()[:8], 16) % (2**31)
     
-    # Read video
-    video = _read_video_wrapper(video_path)
-    if video.shape[0] == 0:
+    # CRITICAL MEMORY OPTIMIZATION: Don't load entire video into memory
+    # Instead, get video metadata first, then decode only the frames we need
+    from .mlops_utils import log_memory_stats, aggressive_gc
+    
+    # Get video frame count without loading all frames
+    try:
+        import av
+        container = av.open(video_path)
+        stream = container.streams.video[0]
+        total_frames = stream.frames
+        if total_frames == 0:
+            # Fallback: try to get from duration and fps
+            total_frames = int(stream.duration * stream.average_rate / stream.time_base) if stream.duration else 0
+        container.close()
+    except Exception:
+        # Fallback: load video to get frame count (unavoidable for some formats)
+        log_memory_stats(f"before loading video (fallback): {Path(video_path).name}")
+        video = _read_video_wrapper(video_path)
+        total_frames = video.shape[0]
+        if total_frames == 0:
+            logger.warning(f"Video has no frames: {video_path}")
+            return []
+        del video  # Clear immediately
+        aggressive_gc(clear_cuda=False)
+    
+    if total_frames == 0:
         logger.warning(f"Video has no frames: {video_path}")
         return []
-    
-    total_frames = video.shape[0]
     
     augmented_clips = []
     
@@ -78,20 +99,104 @@ def generate_augmented_clips(
             augmentation_config=config.augmentation_config,
         )
         
-        # Sample frames (uniform sampling)
+        # Sample frame indices (uniform sampling)
         from .video_modeling import uniform_sample_indices
         indices = uniform_sample_indices(total_frames, config.num_frames)
         
+        # CRITICAL: Decode only the frames we need, not the entire video
+        log_memory_stats(f"before decoding frames for aug {aug_idx}: {Path(video_path).name}")
+        
+        # Decode only selected frames using PyAV (memory-efficient)
         frames = []
-        for i in indices:
-            frame = video[i].numpy().astype(np.uint8)  # (H, W, C)
-            frame_tensor = spatial_transform(frame)  # (C, H, W)
+        try:
+            import av
+            container = av.open(video_path)
+            stream = container.streams.video[0]
             
-            # Apply post-tensor augmentations
-            if post_tensor_transform is not None:
-                frame_tensor = post_tensor_transform(frame_tensor)
+            # Get frame rate and time base for seeking
+            fps = float(stream.average_rate) if stream.average_rate else 30.0
+            time_base = float(stream.time_base) if stream.time_base else 1.0 / fps
             
-            frames.append(frame_tensor)
+            # Decode frames one by one (only the ones we need)
+            for frame_idx in sorted(indices):  # Sort to decode in order
+                # Seek to approximate timestamp (in seconds)
+                timestamp_sec = frame_idx / fps
+                timestamp_pts = int(timestamp_sec / time_base)
+                
+                try:
+                    # Seek to frame
+                    container.seek(timestamp_pts, stream=stream)
+                    
+                    # Decode frames until we get the one we want
+                    frame_count = 0
+                    for packet in container.demux(stream):
+                        for frame in packet.decode():
+                            if frame_count == frame_idx or abs(frame_count - frame_idx) < 2:
+                                # Convert to numpy array
+                                frame_array = frame.to_ndarray(format='rgb24')  # (H, W, 3)
+                                frame_tensor = spatial_transform(frame_array)  # (C, H, W)
+                                
+                                # Apply post-tensor augmentations
+                                if post_tensor_transform is not None:
+                                    frame_tensor = post_tensor_transform(frame_tensor)
+                                
+                                frames.append(frame_tensor)
+                                break
+                            frame_count += 1
+                        if len(frames) > len(indices):
+                            break
+                    if len(frames) >= len(indices):
+                        break
+                except Exception as seek_error:
+                    logger.debug(f"Seek failed for frame {frame_idx}: {seek_error}, trying alternative method")
+                    # Alternative: decode all frames but only keep the ones we need
+                    container.seek(0)
+                    frame_count = 0
+                    for packet in container.demux(stream):
+                        for frame in packet.decode():
+                            if frame_count in indices:
+                                frame_array = frame.to_ndarray(format='rgb24')
+                                frame_tensor = spatial_transform(frame_array)
+                                if post_tensor_transform is not None:
+                                    frame_tensor = post_tensor_transform(frame_tensor)
+                                frames.append(frame_tensor)
+                            frame_count += 1
+                            if len(frames) >= len(indices):
+                                break
+                        if len(frames) >= len(indices):
+                            break
+                    break
+            
+            container.close()
+            
+            # If we didn't get enough frames, fall back to full video loading
+            if len(frames) < len(indices):
+                raise ValueError(f"Only decoded {len(frames)}/{len(indices)} frames")
+                
+        except Exception as e:
+            # Fallback: load entire video if frame-by-frame decoding fails
+            logger.warning(f"Frame-by-frame decoding failed for {video_path}: {e}. Loading full video (memory intensive).")
+            log_memory_stats(f"before loading full video (fallback): {Path(video_path).name}")
+            video = _read_video_wrapper(video_path)
+            video_size_mb = video.numel() * video.element_size() / 1024 / 1024
+            logger.warning("Loaded full video: %.2f MB (shape: %s) - this is memory intensive!", video_size_mb, video.shape)
+            
+            for i in indices:
+                if i < video.shape[0]:
+                    frame = video[i].numpy().astype(np.uint8)  # (H, W, C)
+                    frame_tensor = spatial_transform(frame)  # (C, H, W)
+                    
+                    # Apply post-tensor augmentations
+                    if post_tensor_transform is not None:
+                        frame_tensor = post_tensor_transform(frame_tensor)
+                    
+                    frames.append(frame_tensor)
+            
+            # Clear video immediately after extracting frames
+            del video
+            aggressive_gc(clear_cuda=False)
+        
+        log_memory_stats(f"after decoding frames for aug {aug_idx}: {Path(video_path).name}")
         
         # Apply temporal augmentations (with seed for reproducibility)
         frames = apply_temporal_augmentations(
@@ -116,7 +221,9 @@ def generate_augmented_clips(
             frames = frames[:target_frames]
         
         clip = torch.stack(frames, dim=0)  # (T, C, H, W)
-        augmented_clips.append(clip)
+        
+        # Clear frames from memory immediately after stacking
+        del frames
         
         # Always save if save_dir provided
         if save_dir:
@@ -127,8 +234,18 @@ def generate_augmented_clips(
             save_path.parent.mkdir(parents=True, exist_ok=True)
             torch.save(clip, save_path)
             logger.debug("Saved augmented clip: %s", save_path)
+        
+        # CRITICAL: Don't keep clips in memory - we only need the count
+        # Clear clip immediately after saving (we'll verify file exists later)
+        del clip
+        
+        # Aggressive GC after each augmentation
+        from .mlops_utils import aggressive_gc
+        aggressive_gc(clear_cuda=False)
     
-    return augmented_clips
+    # Return count instead of actual clips to save memory
+    # The caller can verify files exist by checking disk
+    return [None] * num_augmentations  # Return list with correct length for counting
 
 
 def pregenerate_augmented_dataset(
@@ -137,7 +254,7 @@ def pregenerate_augmented_dataset(
     config: VideoConfig,
     output_dir: str,
     num_augmentations_per_video: int = 3,
-    batch_size: int = 10,  # Process videos in batches to reduce memory
+    batch_size: int = 1,  # Extreme conservative: process one video at a time to minimize memory
 ) -> pl.DataFrame:
     """
     Pre-generate augmented clips for all videos in the dataset.
@@ -166,15 +283,31 @@ def pregenerate_augmented_dataset(
     logger.info("This will create %d total augmented clips", df.height * num_augmentations_per_video)
     logger.info("Processing in batches of %d videos to reduce memory usage", batch_size)
     
-    augmented_rows = []
+    # CRITICAL: Write incrementally to avoid memory accumulation
+    # Instead of accumulating all rows in memory, write to CSV incrementally
+    metadata_path = Path(output_dir) / "augmented_metadata_temp.csv"
+    metadata_path.parent.mkdir(parents=True, exist_ok=True)
     
-    # Process videos in batches to reduce memory usage
+    # Initialize CSV with header
+    import csv
+    with open(metadata_path, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(["video_path", "label", "original_video", "augmentation_idx"])
+    
+    total_rows_written = 0
+    
+    # Process videos one at a time to minimize memory
     import gc
     from .mlops_utils import aggressive_gc
     
-    for batch_start in tqdm(range(0, df.height, batch_size), desc="Processing batches"):
+    for batch_start in tqdm(range(0, df.height, batch_size), desc="Processing videos"):
         batch_end = min(batch_start + batch_size, df.height)
         batch_df = df.slice(batch_start, batch_end - batch_start)
+        
+        # Log memory before processing batch (every 10 videos)
+        if batch_start % 10 == 0:
+            from .mlops_utils import log_memory_stats
+            log_memory_stats(f"before processing video {batch_start + 1}", detailed=True)
         
         for idx in range(batch_df.height):
             row = batch_df.row(idx, named=True)
@@ -183,6 +316,11 @@ def pregenerate_augmented_dataset(
             
             try:
                 video_path = resolve_video_path(video_rel, project_root)
+                
+                # Log memory before processing this video
+                if idx == 0:  # Log for first video in batch
+                    from .mlops_utils import log_memory_stats
+                    log_memory_stats(f"before processing video: {Path(video_path).name}")
                 
                 # Generate augmented clips (saves automatically to save_dir)
                 # Seed is deterministic based on video path, ensuring same augmentations across runs/folds
@@ -198,13 +336,19 @@ def pregenerate_augmented_dataset(
                     logger.warning("No clips generated for video: %s", video_path)
                     continue
                 
-                # Create entries for each augmented clip
                 # Clips are already saved by generate_augmented_clips
+                # We only need the count, not the actual clip tensors
+                num_clips = len(clips)
+                
+                # Clear clips list immediately (clips are already saved to disk)
+                del clips
+                
+                # Create entries for each augmented clip
                 video_id = Path(video_path).stem
                 # Sanitize filename (same as in generate_augmented_clips)
                 video_id = "".join(c if c.isalnum() or c in ('-', '_') else '_' for c in video_id)
                 
-                for aug_idx in range(len(clips)):
+                for aug_idx in range(num_clips):
                     clip_filename = f"{video_id}_aug{aug_idx}.pt"
                     clip_path = output_path / clip_filename
                     
@@ -220,15 +364,14 @@ def pregenerate_augmented_dataset(
                         # If not relative, use absolute path
                         clip_path_rel = str(clip_path)
                     
-                    augmented_rows.append({
-                        "video_path": clip_path_rel,
-                        "label": label,
-                        "original_video": video_rel,
-                        "augmentation_idx": aug_idx,
-                    })
+                    # Write immediately to CSV to avoid memory accumulation
+                    with open(metadata_path, 'a', newline='') as f:
+                        writer = csv.writer(f)
+                        writer.writerow([clip_path_rel, label, video_rel, aug_idx])
+                    total_rows_written += 1
                 
-                # Clear video from memory after processing
-                del clips
+                # Aggressive GC after each video to prevent memory accumulation
+                aggressive_gc(clear_cuda=False)
                 
             except Exception as e:
                 logger.error("Failed to process video %s: %s", video_rel, str(e))
@@ -236,10 +379,24 @@ def pregenerate_augmented_dataset(
         
         # Aggressive GC after each batch
         aggressive_gc(clear_cuda=True)
+        
+        # Log memory after batch if it's a checkpoint batch (every 10 videos)
+        if (batch_start + batch_size) % 10 == 0 or batch_end >= df.height:
+            from .mlops_utils import log_memory_stats
+            log_memory_stats(f"after processing {batch_end} videos", detailed=True)
+            logger.info("Written %d augmented clip rows so far", total_rows_written)
     
-    # Create new DataFrame
-    if augmented_rows:
-        augmented_df = pl.DataFrame(augmented_rows)
+    # Load final DataFrame from CSV
+    if total_rows_written > 0:
+        logger.info("Loading augmented metadata from CSV...")
+        augmented_df = pl.read_csv(str(metadata_path))
+        
+        # Rename temp file to final name
+        final_metadata_path = Path(output_dir) / "augmented_metadata.csv"
+        if final_metadata_path.exists():
+            final_metadata_path.unlink()
+        metadata_path.rename(final_metadata_path)
+        
         logger.info("✓ Generated %d augmented clips from %d videos", 
                    augmented_df.height, df.height)
         logger.info("  Average: %.1f augmentations per video", 
@@ -247,6 +404,9 @@ def pregenerate_augmented_dataset(
         return augmented_df
     else:
         logger.error("No augmented clips generated!")
+        # Clean up temp file
+        if metadata_path.exists():
+            metadata_path.unlink()
         return pl.DataFrame()
 
 
