@@ -85,16 +85,16 @@ This document describes the implementation of 7 model architectures as specified
 - `list_available_models()`: Lists all available model types
 - `is_pytorch_model(model_type)`: Checks if model is PyTorch or sklearn
 
-**Memory-Optimized Configs**:
+**Memory-Optimized Configs** (Ultra-Conservative):
 ```python
 MODEL_MEMORY_CONFIGS = {
-    "logistic_regression": {"batch_size": 64, "num_workers": 2, ...},
-    "svm": {"batch_size": 64, "num_workers": 2, ...},
-    "naive_cnn": {"batch_size": 16, "num_workers": 2, ...},
-    "vit_gru": {"batch_size": 4, "num_workers": 1, "gradient_accumulation": 4, ...},
-    "vit_transformer": {"batch_size": 2, "num_workers": 1, "gradient_accumulation": 8, ...},
-    "slowfast": {"batch_size": 2, "num_workers": 1, "gradient_accumulation": 8, ...},
-    "x3d": {"batch_size": 4, "num_workers": 1, "gradient_accumulation": 4, ...},
+    "logistic_regression": {"batch_size": 8, "num_workers": 0, ...},
+    "svm": {"batch_size": 8, "num_workers": 0, ...},
+    "naive_cnn": {"batch_size": 4, "num_workers": 0, ...},
+    "vit_gru": {"batch_size": 1, "num_workers": 0, "gradient_accumulation_steps": 16, ...},
+    "vit_transformer": {"batch_size": 1, "num_workers": 0, "gradient_accumulation_steps": 16, ...},
+    "slowfast": {"batch_size": 1, "num_workers": 0, "num_frames": 6, "gradient_accumulation_steps": 16, ...},
+    "x3d": {"batch_size": 1, "num_workers": 0, "num_frames": 6, "gradient_accumulation_steps": 16, ...},
 }
 ```
 
@@ -200,19 +200,33 @@ The pipeline automatically:
 
 ## Memory Optimizations
 
+### Frame-by-Frame Video Decoding
+
+- **Critical Optimization**: Decode only the 6 needed frames instead of loading entire videos
+- Reduces per-video memory from ~1.87 GB to ~37 MB (50x reduction)
+- Uses PyAV to seek and decode specific frames
+- Fallback to full video loading if frame-by-frame decoding fails
+
+### Incremental CSV Writing
+
+- Write augmented metadata directly to CSV to avoid memory accumulation
+- Memory stays constant regardless of dataset size
+
 ### Per-Model Configurations
 
-Each model has conservative memory settings:
-- **Baselines**: Large batch sizes (64), minimal memory
-- **Frame→Temporal**: Small batches (2-4), gradient accumulation (4-8x)
-- **Spatiotemporal**: Very small batches (2-4), high gradient accumulation (4-8x)
+Each model has ultra-conservative memory settings:
+- **Baselines**: Moderate batch sizes (8), minimal memory, `num_workers=0`
+- **Frame→Temporal**: Very small batches (1), high gradient accumulation (16x), `num_workers=0`
+- **Spatiotemporal**: Very small batches (1), 6 frames (reduced from 8), high gradient accumulation (16x), `num_workers=0`
 
 ### Aggressive Garbage Collection
 
-- After each model
-- After each fold
+- After each model (with 2-second delay for memory to settle)
+- After each fold (move model to CPU, delete, aggressive GC)
 - After each epoch (during training)
+- After each video (during augmentation generation)
 - After each batch (for augmentation generation)
+- Multiple GC passes with threshold manipulation
 
 ### OOM Handling
 

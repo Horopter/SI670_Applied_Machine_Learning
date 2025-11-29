@@ -28,14 +28,14 @@ This project implements a binary video classifier for the FVC (Fake Video Classi
   - Custom collate function for batch padding
   
 - **Evolution**: Fixed-size preprocessing with letterboxing
-  - Resize to fixed 224x224 with letterboxing (black bars for aspect ratio preservation)
-  - Benefits: Consistent batch dimensions, better GPU memory utilization, larger batch sizes
-  - Trade-off: Slight information loss from letterboxing, but significant memory gains
+  - Resize to fixed 112x112 (configurable via `FVC_FIXED_SIZE`, default 112) with letterboxing
+  - Benefits: Consistent batch dimensions, better GPU memory utilization, 4x memory reduction vs 224x224
+  - Trade-off: Slight information loss from letterboxing and lower resolution, but significant memory gains
 
 #### Frame Sampling
 - **Uniform Sampling**: Extract `num_frames` frames uniformly across video duration
 - **Rolling Window**: Optional temporal windowing for longer videos (not used in final implementation)
-- **Frame Count**: Started with 8 frames, increased to 16 frames after memory optimizations
+- **Frame Count**: Started with 8 frames, increased to 16, then reduced to 6 frames for ultra-conservative memory usage
 
 ### 3. Data Augmentation Strategy
 
@@ -59,9 +59,11 @@ This project implements a binary video classifier for the FVC (Fake Video Classi
   - Temporal reversal: Reverse video sequence
   
 - **Implementation**: 
-  - Pre-generate 3 augmented versions per training video
+  - Pre-generate 1 augmented version per training video (reduced from 3 for memory efficiency)
   - Store as `.pt` (PyTorch tensor) files
-  - Benefits: Faster training, reproducibility, can cache on disk
+  - **Frame-by-frame decoding**: Decode only the 6 needed frames instead of loading entire videos (50x memory reduction)
+  - **Incremental CSV writing**: Write metadata directly to CSV to avoid memory accumulation
+  - Benefits: Faster training, reproducibility, can cache on disk, minimal memory usage
 
 ### 4. Training Strategy
 
@@ -110,21 +112,29 @@ This project implements a binary video classifier for the FVC (Fake Video Classi
 - Insufficient garbage collection
 
 **Solutions Implemented**:
-1. **Fixed-Size Preprocessing**: Downscale all videos to 224x224 with letterboxing
-   - Reduces memory per sample by ~10-20x
-   - Enables larger batch sizes (32 vs. 2-4)
+1. **Fixed-Size Preprocessing**: Downscale all videos to 112x112 with letterboxing (configurable)
+   - Reduces memory per sample by ~40-80x vs original high-res videos
+   - Enables larger batch sizes (though we use conservative batch sizes 1-8)
    
-2. **Aggressive Garbage Collection**:
-   - `aggressive_gc()` function: `gc.collect()` + `torch.cuda.empty_cache()` + `torch.cuda.synchronize()`
-   - Called after every pipeline stage, every 5 batches, after each epoch
+2. **Frame-by-Frame Video Decoding**: Decode only the 6 needed frames instead of loading entire videos
+   - Reduces per-video memory from ~1.87 GB to ~37 MB (50x reduction)
+   - Uses PyAV to seek and decode specific frames
+   - Fallback to full video loading if frame-by-frame decoding fails
    
-3. **Memory-Optimized Data Loading**:
-   - Increased `num_workers` to 4 (parallel loading)
-   - Enabled `pin_memory` for faster GPU transfers
-   - Enabled `persistent_workers` to keep workers alive
-   - Set `prefetch_factor=2` for better throughput
+3. **Incremental CSV Writing**: Write augmented metadata directly to CSV
+   - Eliminates unbounded memory growth from accumulating metadata lists
+   - Memory stays constant regardless of dataset size
    
-4. **OOM Error Handling**:
+4. **Aggressive Garbage Collection**:
+   - `aggressive_gc()` function: Multiple passes of `gc.collect()` + `torch.cuda.empty_cache()` + `torch.cuda.synchronize()`
+   - Called after every pipeline stage, every video, every batch, after each epoch
+   
+5. **Memory-Optimized Data Loading**:
+   - Set `num_workers=0` (CPU-only or test mode to avoid multiprocessing memory overhead)
+   - Process videos one at a time during augmentation generation
+   - Clear video tensors and clips immediately after processing
+   
+6. **OOM Error Handling**:
    - `check_oom_error()`: Detects OOM from multiple error messages
    - `handle_oom_error()`: Performs cleanup and logging
    - `safe_execute()`: Wraps functions with retry logic
@@ -245,13 +255,13 @@ This project implements a binary video classifier for the FVC (Fake Video Classi
 ### Model
 - **Backbone**: `torchvision.models.video.r3d_18` (Kinetics-400 weights)
 - **Head**: Inception3DBlock → AdaptiveAvgPool3d → Dropout(0.5) → Linear(512, 1)
-- **Input**: (N, C=3, T=16, H=224, W=224)
+- **Input**: (N, C=3, T=6, H=112, W=112) - Ultra-conservative for memory efficiency
 - **Output**: Binary logits (N, 1)
 
 ### Data Pipeline
 1. **Setup**: `setup_fvc_dataset.py` extracts videos and generates metadata
-2. **Preprocessing**: Fixed-size 224x224 with letterboxing, uniform frame sampling (16 frames)
-3. **Augmentation**: Pre-generated (3x per video) with spatial + temporal augmentations
+2. **Preprocessing**: Fixed-size 112x112 with letterboxing, uniform frame sampling (6 frames)
+3. **Augmentation**: Pre-generated (1x per video) with spatial + temporal augmentations, frame-by-frame decoding
 4. **Loading**: Polars DataFrames, PyTorch DataLoader with balanced batch sampling
 
 ### Training Pipeline
@@ -271,16 +281,19 @@ This project implements a binary video classifier for the FVC (Fake Video Classi
 ## Performance Optimizations
 
 ### Memory
-- Fixed-size preprocessing (224x224) reduces memory by 10-20x
-- Aggressive GC after every stage/batch/epoch
+- Fixed-size preprocessing (112x112) reduces memory by 40-80x vs original videos
+- Frame-by-frame decoding reduces per-video memory by 50x (only 6 frames loaded)
+- Incremental CSV writing eliminates memory accumulation
+- Ultra-conservative batch sizes (1-8) with high gradient accumulation (8-16 steps)
+- Aggressive GC after every stage/video/batch/epoch
 - OOM error detection and automatic retry
-- Progressive batch size fallback
+- Comprehensive memory profiling with detailed object breakdowns
 
 ### Speed
 - Pre-generated augmentations (no augmentation overhead during training)
-- Parallel data loading (4 workers)
+- Frame-by-frame decoding (only decode needed frames, not entire videos)
 - Mixed precision training (AMP)
-- Persistent workers and prefetching
+- Sequential processing (one video at a time) to minimize memory spikes
 
 ### Robustness
 - K-fold cross-validation for better generalization
@@ -298,8 +311,11 @@ fvc/
 │   └── video_index_input.json
 ├── docs/                       # Documentation
 │   ├── PROJECT_OVERVIEW.md     # This file
-│   ├── MLOPS_OPTIMIZATIONS.md
-│   └── OOM_AND_KFOLD_OPTIMIZATIONS.md
+│   ├── CHANGELOG.md            # Project changelog
+│   ├── MEMORY_OPTIMIZATIONS.md  # Comprehensive memory optimizations
+│   ├── MLOPS_OPTIMIZATIONS.md  # MLOps system design
+│   ├── MULTI_MODEL_IMPLEMENTATION.md  # Multi-model architecture details
+│   └── GIT_SETUP.md            # Git repository setup
 ├── lib/                        # Core library modules
 │   ├── mlops_core.py          # MLOps infrastructure
 │   ├── mlops_utils.py         # MLOps utilities (GC, OOM handling)
