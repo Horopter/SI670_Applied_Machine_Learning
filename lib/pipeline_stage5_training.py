@@ -7,6 +7,12 @@ Train models using:
 - P additional features (from Stage 4)
 
 No augmentation or feature generation in this stage - only training.
+
+Borrows from previous pipeline:
+- Training utilities (fit_with_tracking, train_one_epoch, evaluate)
+- Metrics (basic_classification_metrics, confusion_matrix, roc_auc)
+- MLOps infrastructure (ExperimentTracker, CheckpointManager)
+- Model factory and baseline models
 """
 
 from __future__ import annotations
@@ -22,8 +28,24 @@ from torch.utils.data import Dataset, DataLoader
 from .video_data import stratified_kfold
 from .baseline_models import LogisticRegressionBaseline, SVMBaseline
 from .model_factory import create_model, get_model_config, is_pytorch_model
-from .video_training import fit_with_tracking
-from .mlops_utils import aggressive_gc, log_memory_stats
+from .video_training import (
+    fit_with_tracking,
+    train_one_epoch,
+    evaluate,
+    build_optimizer,
+    build_scheduler,
+    OptimConfig,
+    TrainConfig,
+    EarlyStopping
+)
+from .video_metrics import (
+    collect_logits_and_labels,
+    basic_classification_metrics,
+    confusion_matrix,
+    roc_auc
+)
+from .mlops_core import ExperimentTracker, CheckpointManager, RunConfig, create_run_directory
+from .mlops_utils import aggressive_gc, log_memory_stats, safe_execute
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +143,8 @@ def stage5_train_models(
     model_types: List[str],
     n_splits: int = 5,
     num_frames: int = 8,
-    output_dir: str = "data/training_results"
+    output_dir: str = "data/training_results",
+    use_tracking: bool = True
 ) -> Dict:
     """
     Stage 5: Train models using downscaled videos + M + P features.
@@ -146,6 +169,14 @@ def stage5_train_models(
     logger.info("Stage 5: Starting training pipeline...")
     logger.info(f"Stage 5: Models to train: {model_types}")
     logger.info(f"Stage 5: K-fold splits: {n_splits}")
+    logger.info(f"Stage 5: Experiment tracking: {use_tracking}")
+    
+    # Create experiment tracker for Stage 5 (if tracking enabled)
+    if use_tracking:
+        from .mlops_core import create_run_directory
+        run_dir, run_id = create_run_directory(str(output_dir), "stage5_training")
+        stage5_tracker = ExperimentTracker(str(run_dir), run_id)
+        logger.info(f"Stage 5: Run ID: {run_id}")
     
     # Load metadata
     metadata_df = pl.read_csv(downscaled_metadata_path)
@@ -217,15 +248,82 @@ def stage5_train_models(
             
             # Train model
             if is_pytorch_model(model_type):
-                # PyTorch model training
+                # PyTorch model training - use existing training utilities
                 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
                 model = create_model(model_type, model_config)
                 model = model.to(device)
                 
-                # Training loop (simplified - use existing training utilities)
-                # This is a placeholder - integrate with existing training code
+                # Create optimizer and scheduler
+                optim_cfg = OptimConfig(
+                    lr=model_config.get("learning_rate", 1e-4),
+                    weight_decay=model_config.get("weight_decay", 1e-4)
+                )
+                train_cfg = TrainConfig(
+                    num_epochs=model_config.get("num_epochs", 20),
+                    device=device,
+                    use_amp=model_config.get("use_amp", True),
+                    gradient_accumulation_steps=model_config.get("gradient_accumulation_steps", 1),
+                    early_stopping_patience=model_config.get("early_stopping_patience", 5)
+                )
+                
+                # Create tracker and checkpoint manager for this fold
+                fold_output_dir = output_dir / model_type / f"fold_{fold_idx + 1}"
+                fold_output_dir.mkdir(parents=True, exist_ok=True)
+                
+                tracker = ExperimentTracker(str(fold_output_dir))
+                ckpt_manager = CheckpointManager(str(fold_output_dir))
+                
                 logger.info(f"Training PyTorch model {model_type} on fold {fold_idx + 1}...")
-                # TODO: Integrate with fit_with_tracking
+                
+                # Use existing fit_with_tracking for training
+                try:
+                    trained_model = safe_execute(
+                        lambda: fit_with_tracking(
+                            model,
+                            train_loader,
+                            val_loader,
+                            optim_cfg,
+                            train_cfg,
+                            tracker,
+                            ckpt_manager
+                        ),
+                        context=f"training {model_type} fold {fold_idx + 1}",
+                        oom_retry=True,
+                        max_retries=1
+                    )
+                    
+                    # Evaluate final model
+                    val_loss, val_acc = evaluate(trained_model, val_loader, device)
+                    
+                    # Collect predictions for detailed metrics
+                    logits, labels = collect_logits_and_labels(trained_model, val_loader, device)
+                    metrics = basic_classification_metrics(logits, labels)
+                    metrics["val_loss"] = val_loss
+                    metrics["val_accuracy"] = val_acc
+                    
+                    # Add confusion matrix and ROC AUC
+                    cm = confusion_matrix(logits, labels)
+                    metrics["confusion_matrix"] = cm.tolist()
+                    
+                    roc_auc_score = roc_auc(logits, labels)
+                    if not np.isnan(roc_auc_score):
+                        metrics["roc_auc"] = roc_auc_score
+                    
+                    model_results.append({
+                        "fold": fold_idx + 1,
+                        "model_type": model_type,
+                        **metrics
+                    })
+                    
+                    logger.info(f"✓ Fold {fold_idx + 1} results: {metrics}")
+                    
+                except Exception as e:
+                    logger.error(f"Failed to train {model_type} on fold {fold_idx + 1}: {e}", exc_info=True)
+                    model_results.append({
+                        "fold": fold_idx + 1,
+                        "model_type": model_type,
+                        "error": str(e)
+                    })
                 
             else:
                 # Baseline model (sklearn)
@@ -263,8 +361,35 @@ def stage5_train_models(
                 X_val = np.concatenate(X_val, axis=0)
                 y_val = np.concatenate(y_val, axis=0)
                 
-                # Evaluate (placeholder - use existing metrics)
+                # Evaluate using existing metrics
                 logger.info(f"Evaluating {model_type} on fold {fold_idx + 1}...")
+                
+                predictions = model.predict(X_val)
+                probabilities = model.predict_proba(X_val) if hasattr(model, 'predict_proba') else None
+                
+                # Convert to tensors for metrics
+                if probabilities is not None:
+                    pred_tensor = torch.from_numpy(probabilities[:, 1] if probabilities.shape[1] > 1 else probabilities.flatten()).float()
+                else:
+                    pred_tensor = torch.from_numpy(predictions).float()
+                label_tensor = torch.from_numpy(y_val).long()
+                
+                # Use existing metrics
+                metrics = basic_classification_metrics(pred_tensor, label_tensor)
+                cm = confusion_matrix(pred_tensor, label_tensor)
+                metrics["confusion_matrix"] = cm.tolist()
+                
+                roc_auc_score = roc_auc(pred_tensor, label_tensor)
+                if not np.isnan(roc_auc_score):
+                    metrics["roc_auc"] = roc_auc_score
+                
+                model_results.append({
+                    "fold": fold_idx + 1,
+                    "model_type": model_type,
+                    **metrics
+                })
+                
+                logger.info(f"✓ Fold {fold_idx + 1} results: {metrics}")
             
             # Clear memory
             aggressive_gc(clear_cuda=True)
