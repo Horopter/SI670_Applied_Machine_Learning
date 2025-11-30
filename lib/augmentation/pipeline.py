@@ -325,17 +325,28 @@ def stage1_augment_videos(
                 # Skip if augmentation already exists and we're not deleting
                 if aug_path.exists() and not delete_existing:
                     logger.info(f"Augmentation {aug_idx + 1}/{len(augmented_videos)} already exists: {aug_path}, skipping...")
-                    # Still write metadata if needed
+                    # Check if metadata entry already exists
                     aug_path_rel = str(aug_path.relative_to(project_root))
-                    with open(metadata_path, 'a', newline='') as f:
-                        writer = csv.writer(f)
-                        writer.writerow([
-                            aug_path_rel,
-                            label,
-                            video_rel,
-                            aug_idx,
-                            False
-                        ])
+                    metadata_entry_exists = False
+                    if existing_metadata is not None:
+                        for row in existing_metadata.iter_rows(named=True):
+                            if (row.get("video_path") == aug_path_rel and 
+                                row.get("original_video") == video_rel and 
+                                row.get("augmentation_idx") == aug_idx):
+                                metadata_entry_exists = True
+                                break
+                    
+                    # Only write metadata if it doesn't already exist
+                    if not metadata_entry_exists:
+                        with open(metadata_path, 'a', newline='') as f:
+                            writer = csv.writer(f)
+                            writer.writerow([
+                                aug_path_rel,
+                                label,
+                                video_rel,
+                                aug_idx,
+                                False
+                            ])
                     continue
                 
                 logger.info(f"Saving augmentation {aug_idx + 1}/{len(augmented_videos)} to {aug_path}")
