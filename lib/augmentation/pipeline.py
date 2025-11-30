@@ -69,6 +69,23 @@ def augment_video(
             'gaussian_noise', 'gaussian_blur', 'affine', 'elastic', 'none'
         ]
     
+    # Ensure diversity: use each augmentation type at least once
+    # If num_augmentations <= len(augmentation_types), use each type exactly once (shuffled)
+    # If num_augmentations > len(augmentation_types), cycle through types
+    if num_augmentations <= len(augmentation_types):
+        # Use each type exactly once, shuffled deterministically for variety
+        selected_types = augmentation_types[:num_augmentations].copy()
+        random.seed(base_seed)  # Deterministic shuffle based on video path
+        random.shuffle(selected_types)
+    else:
+        # Cycle through types if we need more augmentations than types available
+        selected_types = []
+        for i in range(num_augmentations):
+            selected_types.append(augmentation_types[i % len(augmentation_types)])
+        # Shuffle the first len(augmentation_types) to ensure initial diversity
+        random.seed(base_seed)
+        random.shuffle(selected_types[:len(augmentation_types)])
+    
     augmented_videos = []
     
     for aug_idx in range(num_augmentations):
@@ -76,8 +93,8 @@ def augment_video(
         random.seed(aug_seed)
         np.random.seed(aug_seed)
         
-        # Select augmentation type
-        aug_type = random.choice(augmentation_types) if len(augmentation_types) > 1 else augmentation_types[0]
+        # Use pre-selected augmentation type (ensures diversity - no duplicates)
+        aug_type = selected_types[aug_idx]
         
         # Apply augmentation to all frames
         augmented_frames = []
