@@ -169,11 +169,12 @@ def stage1_augment_videos(
     
     # Load existing metadata if it exists and we're not deleting
     existing_metadata = None
-    existing_video_ids = set()
+    existing_video_ids_with_all_augs = set()  # Videos that have all augmentations
     if metadata_path.exists() and not delete_existing:
         try:
             existing_metadata = pl.read_csv(str(metadata_path))
-            # Extract video IDs that already have all augmentations
+            # Count augmentations per video to find which have all augmentations
+            video_aug_counts = {}
             for row in existing_metadata.iter_rows(named=True):
                 original_video = row.get("original_video", "")
                 aug_idx = row.get("augmentation_idx", -1)
@@ -183,8 +184,14 @@ def stage1_augment_videos(
                     if len(video_path_obj.parts) >= 2:
                         video_id = video_path_obj.parts[-2]
                         video_id = "".join(c if c.isalnum() or c in ('-', '_') else '_' for c in video_id)
-                        existing_video_ids.add(video_id)
-            logger.info(f"Stage 1: Found {len(existing_video_ids)} videos with existing augmentations")
+                        video_aug_counts[video_id] = video_aug_counts.get(video_id, 0) + 1
+            
+            # Only mark videos that have all required augmentations
+            for video_id, count in video_aug_counts.items():
+                if count >= num_augmentations:
+                    existing_video_ids_with_all_augs.add(video_id)
+            
+            logger.info(f"Stage 1: Found {len(existing_video_ids_with_all_augs)} videos with all {num_augmentations} augmentations")
         except Exception as e:
             logger.warning(f"Could not load existing metadata: {e}, will regenerate")
             existing_metadata = None
@@ -247,30 +254,18 @@ def stage1_augment_videos(
             video_id = "".join(c if c.isalnum() or c in ('-', '_') else '_' for c in video_id)
             
             # Check if this video already has all augmentations
-            if video_id in existing_video_ids and not delete_existing:
-                # Check if all augmentations exist
+            if video_id in existing_video_ids_with_all_augs and not delete_existing:
+                # Double-check that all augmentation files actually exist
                 all_augmentations_exist = True
                 for aug_idx in range(num_augmentations):
                     aug_path = output_dir / f"{video_id}_aug{aug_idx}.mp4"
                     if not aug_path.exists():
                         all_augmentations_exist = False
+                        logger.warning(f"Video {video_id} missing augmentation {aug_idx}, will regenerate")
                         break
                 
                 if all_augmentations_exist:
                     logger.info(f"Video {video_id} already has all {num_augmentations} augmentations, skipping...")
-                    # Still write metadata if not already in existing metadata
-                    if existing_metadata is None or video_id not in existing_video_ids:
-                        original_output = output_dir / f"{video_id}_original.mp4"
-                        if original_output.exists():
-                            with open(metadata_path, 'a', newline='') as f:
-                                writer = csv.writer(f)
-                                writer.writerow([
-                                    str(original_output.relative_to(project_root)),
-                                    label,
-                                    video_rel,
-                                    -1,  # -1 indicates original
-                                    True
-                                ])
                     continue
             
             original_output = output_dir / f"{video_id}_original.mp4"
@@ -278,8 +273,16 @@ def stage1_augment_videos(
                 import shutil
                 shutil.copy2(video_path, original_output)
             
-            # Write original video metadata immediately to CSV (only if not already exists)
-            if not (existing_metadata is not None and video_id in existing_video_ids):
+            # Write original video metadata immediately to CSV (only if not already exists in metadata)
+            # Check if original is already in metadata
+            original_already_in_metadata = False
+            if existing_metadata is not None:
+                for row in existing_metadata.iter_rows(named=True):
+                    if row.get("original_video") == video_rel and row.get("is_original") == True:
+                        original_already_in_metadata = True
+                        break
+            
+            if not original_already_in_metadata:
                 with open(metadata_path, 'a', newline='') as f:
                     writer = csv.writer(f)
                     writer.writerow([
