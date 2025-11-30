@@ -250,6 +250,21 @@ def apply_simple_augmentation(
         frame_array = np.array(pil_image)
         # Just return original for now (can be enhanced)
         pass
+    elif aug_type == 'cutout':
+        # Random cutout augmentation
+        frame_array = np.array(pil_image)
+        h, w = frame_array.shape[:2]
+        num_holes = random.randint(1, 3)
+        length = random.randint(16, 32)
+        for _ in range(num_holes):
+            y = random.randint(0, h - 1)
+            x = random.randint(0, w - 1)
+            y1 = max(0, y - length // 2)
+            y2 = min(h, y + length // 2)
+            x1 = max(0, x - length // 2)
+            x2 = min(w, x + length // 2)
+            frame_array[y1:y2, x1:x2] = 0
+        pil_image = Image.fromarray(frame_array)
     
     return np.array(pil_image)
 
