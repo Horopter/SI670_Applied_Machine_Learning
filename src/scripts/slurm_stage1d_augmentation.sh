@@ -20,11 +20,11 @@
 #
 
 #SBATCH --job-name=fvc_stage1d_aug
-#SBATCH --account=si670f25_class
+#SBATCH --account=eecs442f25_class
 #SBATCH --partition=standard
-#SBATCH --time=4:00:00
-#SBATCH --mem=64G
-#SBATCH --cpus-per-task=1
+#SBATCH --time=8:00:00
+#SBATCH --mem=80G
+#SBATCH --cpus-per-task=4
 #SBATCH --output=logs/stage1d_aug-%j.out
 #SBATCH --error=logs/stage1d_aug-%j.err
 #SBATCH --mail-user=santoshd@umich.edu

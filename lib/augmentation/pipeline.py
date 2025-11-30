@@ -30,33 +30,65 @@ def augment_video(
     video_path: str,
     num_augmentations: int = 10,
     augmentation_types: Optional[List[str]] = None,
-    max_frames: Optional[int] = 1000
+    max_frames: Optional[int] = 1000,
+    chunk_size: int = 1000
 ) -> List[List[np.ndarray]]:
     """
-    Generate augmented versions of a video.
+    Generate augmented versions of a video, processing in chunks to handle long videos.
     
     Args:
         video_path: Path to video file
         num_augmentations: Number of augmentations to generate
         augmentation_types: List of augmentation types to use
-        max_frames: Maximum frames to load (default: 1000)
+        max_frames: Maximum frames to load per chunk (default: 1000)
+        chunk_size: Number of frames to process per chunk (default: 1000)
     
     Returns:
-        List of augmented frame sequences
+        List of augmented frame sequences (one per augmentation)
     """
     logger.info(f"Loading video: {video_path}")
     
     if max_frames is None:
         max_frames = 1000
-        logger.warning(f"No max_frames specified, limiting to {max_frames} frames")
+    if chunk_size is None:
+        chunk_size = 1000
     
-    original_frames, fps = load_frames(video_path, max_frames=max_frames)
-    
-    if not original_frames:
-        logger.warning(f"No frames loaded from {video_path}")
+    # First, get total frame count and FPS
+    container = None
+    try:
+        container = av.open(video_path)
+        stream = container.streams.video[0]
+        fps = float(stream.average_rate) if stream.average_rate else 30.0
+        total_frames = stream.frames if stream.frames > 0 else 0
+        
+        # If we can't get frame count, estimate from duration
+        if total_frames == 0 and stream.duration:
+            total_frames = int(stream.duration * stream.average_rate / stream.time_base)
+        
+        container.close()
+        container = None
+    except Exception as e:
+        logger.error(f"Failed to get video info: {e}")
         return []
+    finally:
+        if container is not None:
+            try:
+                container.close()
+            except Exception:
+                pass
     
-    logger.info(f"Loaded {len(original_frames)} frames from {video_path}")
+    if total_frames == 0:
+        logger.warning(f"Could not determine total frames for {video_path}")
+        # Fallback: try loading first chunk
+        original_frames, fps = load_frames(video_path, max_frames=chunk_size, start_frame=0)
+        if not original_frames:
+            return []
+        total_frames = len(original_frames)
+        # If we got exactly chunk_size frames, there might be more
+        if len(original_frames) == chunk_size:
+            logger.warning(f"Video might have more than {chunk_size} frames, but exact count unknown")
+    
+    logger.info(f"Video has {total_frames} frames, processing in chunks of {chunk_size}")
     
     # Generate deterministic seed from video path
     video_path_str = str(video_path)
@@ -70,51 +102,71 @@ def augment_video(
         ]
     
     # Ensure diversity: use each augmentation type at least once
-    # If num_augmentations <= len(augmentation_types), use each type exactly once (shuffled)
-    # If num_augmentations > len(augmentation_types), cycle through types
     if num_augmentations <= len(augmentation_types):
-        # Use each type exactly once, shuffled deterministically for variety
         selected_types = augmentation_types[:num_augmentations].copy()
-        random.seed(base_seed)  # Deterministic shuffle based on video path
+        random.seed(base_seed)
         random.shuffle(selected_types)
     else:
-        # Cycle through types if we need more augmentations than types available
         selected_types = []
         for i in range(num_augmentations):
             selected_types.append(augmentation_types[i % len(augmentation_types)])
-        # Shuffle the first len(augmentation_types) to ensure initial diversity
         random.seed(base_seed)
         random.shuffle(selected_types[:len(augmentation_types)])
     
-    augmented_videos = []
+    # Initialize augmented videos (one list per augmentation)
+    augmented_videos = [[] for _ in range(num_augmentations)]
     
-    for aug_idx in range(num_augmentations):
-        aug_seed = base_seed + aug_idx
-        random.seed(aug_seed)
-        np.random.seed(aug_seed)
+    # Process video in chunks
+    num_chunks = (total_frames + chunk_size - 1) // chunk_size  # Ceiling division
+    logger.info(f"Processing {num_chunks} chunk(s)")
+    
+    for chunk_idx in range(num_chunks):
+        start_frame = chunk_idx * chunk_size
+        end_frame = min(start_frame + chunk_size, total_frames)
+        frames_in_chunk = end_frame - start_frame
         
-        # Use pre-selected augmentation type (ensures diversity - no duplicates)
-        aug_type = selected_types[aug_idx]
+        logger.info(f"Processing chunk {chunk_idx + 1}/{num_chunks} (frames {start_frame}-{end_frame-1})")
         
-        # Apply augmentation to all frames
-        augmented_frames = []
-        for frame_idx, frame in enumerate(original_frames):
-            augmented_frame = apply_simple_augmentation(frame, aug_type, aug_seed + frame_idx)
-            augmented_frames.append(augmented_frame)
+        # Load chunk
+        chunk_frames, chunk_fps = load_frames(video_path, max_frames=chunk_size, start_frame=start_frame)
+        
+        if not chunk_frames:
+            logger.warning(f"No frames loaded for chunk {chunk_idx + 1}, skipping")
+            continue
+        
+        if len(chunk_frames) != frames_in_chunk:
+            logger.warning(f"Expected {frames_in_chunk} frames, got {len(chunk_frames)}")
+        
+        # Augment each chunk
+        for aug_idx in range(num_augmentations):
+            aug_seed = base_seed + aug_idx + (chunk_idx * 1000)  # Different seed per chunk
+            random.seed(aug_seed)
+            np.random.seed(aug_seed)
             
-            # Aggressive GC every 100 frames
-            if (frame_idx + 1) % 100 == 0:
-                aggressive_gc(clear_cuda=False)
+            # Use pre-selected augmentation type
+            aug_type = selected_types[aug_idx]
+            
+            # Apply augmentation to all frames in chunk
+            augmented_chunk = []
+            for frame_idx, frame in enumerate(chunk_frames):
+                augmented_frame = apply_simple_augmentation(frame, aug_type, aug_seed + frame_idx)
+                augmented_chunk.append(augmented_frame)
+                
+                # Aggressive GC every 100 frames
+                if (frame_idx + 1) % 100 == 0:
+                    aggressive_gc(clear_cuda=False)
+            
+            # Append chunk to the corresponding augmentation
+            augmented_videos[aug_idx].extend(augmented_chunk)
+            logger.debug(f"Chunk {chunk_idx + 1}: Generated augmentation {aug_idx + 1}/{num_augmentations} with type '{aug_type}' ({len(augmented_chunk)} frames)")
+            
+            del augmented_chunk
+            aggressive_gc(clear_cuda=False)
         
-        augmented_videos.append(augmented_frames)
-        logger.info(f"Generated augmentation {aug_idx + 1}/{num_augmentations} with type '{aug_type}'")
-        
-        del augmented_frames
+        del chunk_frames
         aggressive_gc(clear_cuda=False)
     
-    del original_frames
-    aggressive_gc(clear_cuda=False)
-    
+    logger.info(f"Completed augmentation: {[len(frames) for frames in augmented_videos]} frames per augmentation")
     return augmented_videos
 
 
@@ -518,12 +570,13 @@ def stage1_augment_videos(
                     ])
                 total_videos_processed += 1
             
-            # Generate augmentations with frame limit
-            max_frames_per_video = 1000
+            # Generate augmentations with chunked processing
+            # Process in chunks of 1000 frames to handle long videos without losing data
+            chunk_size = 1000
             augmented_videos = augment_video(
                 video_path, 
                 num_augmentations=num_augmentations,
-                max_frames=max_frames_per_video
+                chunk_size=chunk_size
             )
             
             # Get FPS from original video
