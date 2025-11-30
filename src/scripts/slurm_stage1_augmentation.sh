@@ -10,6 +10,18 @@
 #   sbatch --time=4:00:00 src/scripts/slurm_stage1_augmentation.sh
 #   sbatch --mem=64G src/scripts/slurm_stage1_augmentation.sh
 #
+# Environment variables:
+#   FVC_NUM_AUGMENTATIONS: Number of augmentations per video (default: 10)
+#   FVC_STAGE1_OUTPUT_DIR: Output directory (default: data/augmented_videos)
+#   FVC_DELETE_EXISTING: Set to 1/true/yes to delete existing augmentations (default: 0, preserves existing)
+#
+# Examples:
+#   # Preserve existing augmentations (default)
+#   sbatch src/scripts/slurm_stage1_augmentation.sh
+#
+#   # Delete and regenerate all augmentations
+#   FVC_DELETE_EXISTING=1 sbatch src/scripts/slurm_stage1_augmentation.sh
+#
 
 #SBATCH --job-name=fvc_stage1_aug
 #SBATCH --account=eecs442f25_class
