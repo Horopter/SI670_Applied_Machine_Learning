@@ -22,7 +22,6 @@
 #SBATCH --job-name=fvc_stage1c_aug
 #SBATCH --account=si670f25_class
 #SBATCH --partition=gpu
-#SBATCH --gpus=0
 #SBATCH --time=4:00:00
 #SBATCH --mem=64G
 #SBATCH --cpus-per-task=1
@@ -185,13 +184,21 @@ log "✅ All prerequisites verified"
 # Calculate Video Range (50-75%)
 # ============================================================================
 
-# Get total number of videos from CSV
+# Get total number of videos from CSV (BEFORE filtering)
+# This counts all videos in the metadata, not just existing ones
 TOTAL_VIDEOS=$(python -c "
 import polars as pl
 import sys
 try:
     df = pl.read_csv('$DATA_CSV')
-    print(df.height)
+    # Count original videos only (before augmentation)
+    # If there's an 'is_original' column, filter to True, otherwise count all
+    if 'is_original' in df.columns:
+        original_df = df.filter(pl.col('is_original') == True)
+        print(original_df.height)
+    else:
+        # No is_original column means this is the input CSV with only original videos
+        print(df.height)
 except Exception as e:
     print('0', file=sys.stderr)
     sys.exit(1)

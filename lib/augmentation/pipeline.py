@@ -218,18 +218,55 @@ def stage1_augment_videos(
             logger.warning(f"Could not load existing metadata: {e}, will regenerate")
             existing_metadata = None
     
-    # If deleting existing, remove all augmented files
+    # If deleting existing, remove all augmented files, logs, and run files
     if delete_existing:
-        logger.info("Stage 1: Deleting existing augmentations...")
+        logger.info("Stage 1: Deleting existing augmentations, logs, and run files...")
         if metadata_path.exists():
             metadata_path.unlink()
             logger.info(f"Deleted existing metadata: {metadata_path}")
         
         # Delete all augmented video files (keep original videos)
+        aug_files_deleted = 0
         for aug_file in output_dir.glob("*_aug*.mp4"):
             aug_file.unlink()
+            aug_files_deleted += 1
             logger.debug(f"Deleted existing augmentation: {aug_file}")
-        logger.info("Stage 1: Deleted all existing augmentations")
+        logger.info(f"Stage 1: Deleted {aug_files_deleted} existing augmentation files")
+        
+        # Delete log files
+        log_dir = project_root / "logs"
+        if log_dir.exists():
+            log_files_deleted = 0
+            for log_file in log_dir.glob("stage1*_aug*.log"):
+                log_file.unlink()
+                log_files_deleted += 1
+                logger.debug(f"Deleted log file: {log_file}")
+            for log_file in log_dir.glob("stage1*_aug*.out"):
+                log_file.unlink()
+                log_files_deleted += 1
+                logger.debug(f"Deleted output file: {log_file}")
+            for log_file in log_dir.glob("stage1*_aug*.err"):
+                log_file.unlink()
+                log_files_deleted += 1
+                logger.debug(f"Deleted error file: {log_file}")
+            logger.info(f"Stage 1: Deleted {log_files_deleted} log/run files")
+        
+        # Delete SLURM output files
+        slurm_out_dir = project_root / "logs"
+        if slurm_out_dir.exists():
+            slurm_files_deleted = 0
+            for slurm_file in slurm_out_dir.glob("stage1*_aug-*.out"):
+                slurm_file.unlink()
+                slurm_files_deleted += 1
+                logger.debug(f"Deleted SLURM output: {slurm_file}")
+            for slurm_file in slurm_out_dir.glob("stage1*_aug-*.err"):
+                slurm_file.unlink()
+                slurm_files_deleted += 1
+                logger.debug(f"Deleted SLURM error: {slurm_file}")
+            if slurm_files_deleted > 0:
+                logger.info(f"Stage 1: Deleted {slurm_files_deleted} SLURM output files")
+        
+        logger.info("Stage 1: Cleanup complete - ready for fresh run")
     
     # Open metadata file for writing (append if resuming, write if new)
     mode = 'a' if metadata_path.exists() and not delete_existing else 'w'
