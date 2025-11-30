@@ -122,7 +122,9 @@ def stage1_augment_videos(
     project_root: str,
     num_augmentations: int = 10,
     output_dir: str = "data/augmented_videos",
-    delete_existing: bool = False
+    delete_existing: bool = False,
+    start_idx: Optional[int] = None,
+    end_idx: Optional[int] = None
 ) -> pl.DataFrame:
     """
     Stage 1: Augment all videos.
@@ -132,6 +134,8 @@ def stage1_augment_videos(
         num_augmentations: Number of augmentations per video (default: 10)
         output_dir: Directory to save augmented videos
         delete_existing: If True, delete existing augmentations before regenerating (default: False)
+        start_idx: Start index for video range (0-based, inclusive). If None, starts from 0.
+        end_idx: End index for video range (0-based, exclusive). If None, processes all videos.
     
     Returns:
         DataFrame with metadata for all videos (original + augmented)
@@ -159,7 +163,25 @@ def stage1_augment_videos(
     df = load_metadata(str(input_metadata_path))
     df = filter_existing_videos(df, str(project_root))
     
-    logger.info(f"Stage 1: Found {df.height} original videos")
+    total_videos = df.height
+    
+    # Apply range filtering if specified
+    if start_idx is not None or end_idx is not None:
+        start = start_idx if start_idx is not None else 0
+        end = end_idx if end_idx is not None else total_videos
+        if start < 0:
+            start = 0
+        if end > total_videos:
+            end = total_videos
+        if start >= end:
+            logger.warning(f"Invalid range: start_idx={start}, end_idx={end}, total_videos={total_videos}. Skipping.")
+            return pl.DataFrame()
+        df = df.slice(start, end - start)
+        logger.info(f"Stage 1: Processing video range [{start}, {end}) of {total_videos} total videos")
+    else:
+        logger.info(f"Stage 1: Processing all {total_videos} videos")
+    
+    logger.info(f"Stage 1: Found {df.height} videos to process")
     logger.info(f"Stage 1: Generating {num_augmentations} augmentation(s) per video")
     logger.info(f"Stage 1: Output directory: {output_dir}")
     logger.info(f"Stage 1: Delete existing augmentations: {delete_existing}")

@@ -87,6 +87,18 @@ Examples:
         action="store_true",
         help="Delete existing augmentations before regenerating (default: False, preserves existing)"
     )
+    parser.add_argument(
+        "--start-idx",
+        type=int,
+        default=None,
+        help="Start index for video range (0-based, inclusive). If not specified, starts from 0."
+    )
+    parser.add_argument(
+        "--end-idx",
+        type=int,
+        default=None,
+        help="End index for video range (0-based, exclusive). If not specified, processes all videos."
+    )
     
     args = parser.parse_args()
     
@@ -115,6 +127,10 @@ Examples:
     logger.info("Number of augmentations per video: %d", args.num_augmentations)
     logger.info("Resume mode: %s", "Enabled" if args.resume else "Disabled")
     logger.info("Delete existing augmentations: %s", "Yes" if args.delete_existing else "No (preserved)")
+    if args.start_idx is not None or args.end_idx is not None:
+        logger.info("Video range: [%s, %s)", 
+                   args.start_idx if args.start_idx is not None else "0",
+                   args.end_idx if args.end_idx is not None else "all")
     logger.info("Log file: %s", log_file)
     logger.debug("Python version: %s", sys.version)
     logger.debug("Python executable: %s", sys.executable)
@@ -181,7 +197,9 @@ Examples:
             project_root=str(project_root),
             num_augmentations=args.num_augmentations,
             output_dir=args.output_dir,
-            delete_existing=args.delete_existing
+            delete_existing=args.delete_existing,
+            start_idx=args.start_idx,
+            end_idx=args.end_idx
         )
         
         stage_duration = time.time() - stage_start
