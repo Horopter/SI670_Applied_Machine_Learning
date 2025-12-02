@@ -32,11 +32,13 @@ def augment_video(
     video_path: str,
     num_augmentations: int = 10,
     augmentation_types: Optional[List[str]] = None,
-    max_frames: Optional[int] = 1000,
-    chunk_size: int = 1000,
+    max_frames: Optional[int] = 250,
+    chunk_size: int = 250,
     checkpoint_dir: Optional[Path] = None,
-    resume: bool = True
-) -> List[List[np.ndarray]]:
+    resume: bool = True,
+    output_dir: Optional[Path] = None,
+    video_id: Optional[str] = None,
+) -> List[str]:
     """
     Generate augmented versions of a video, processing in chunks to handle long videos.
     
@@ -53,14 +55,14 @@ def augment_video(
         resume: If True and checkpoint_dir is set, resume from existing checkpoints
     
     Returns:
-        List of augmented frame sequences (one per augmentation)
+        List of final augmented video paths (one per augmentation)
     """
     logger.info(f"Loading video: {video_path}")
     
     if max_frames is None:
-        max_frames = 1000
+        max_frames = 250
     if chunk_size is None:
-        chunk_size = 1000
+        chunk_size = 250
     
     # Always count frames manually for reliability (metadata can be corrupted)
     container = None
@@ -95,6 +97,8 @@ def augment_video(
                     break
             if frame_count > MAX_REASONABLE_FRAMES:
                 break
+        # Free any temporary decoding buffers as soon as frame counting is done
+        aggressive_gc(clear_cuda=False)
         
         total_frames = frame_count
         
@@ -117,6 +121,7 @@ def augment_video(
         
     except Exception as e:
         logger.error(f"Failed to count frames manually: {e}")
+        aggressive_gc(clear_cuda=False)
         if container is not None:
             try:
                 container.close()
@@ -145,6 +150,7 @@ def augment_video(
                     pass
         except Exception as e2:
             logger.error(f"Failed to estimate from first chunk: {e2}")
+            aggressive_gc(clear_cuda=False)
             return []
     
     logger.info(f"Video has {total_frames} frames, processing in chunks of {chunk_size}")
@@ -315,39 +321,37 @@ def augment_video(
         
         # Stitch all intermediate files together for each augmentation
         logger.info("Stitching intermediate chunks together...")
-        augmented_videos = []
+        augmented_paths: List[str] = []
         
         for aug_idx in range(num_augmentations):
             if not intermediate_files[aug_idx]:
                 logger.warning(f"No intermediate files for augmentation {aug_idx + 1}, skipping")
-                augmented_videos.append([])
+                augmented_paths.append("")
                 continue
             
-            # Create stitched video file from intermediate chunks
-            stitched_video_path = temp_dir / f"stitched_aug_{aug_idx}.mp4"
-            if concatenate_videos(intermediate_files[aug_idx], str(stitched_video_path), fps=fps):
-                logger.info(f"Stitched augmentation {aug_idx + 1}/{num_augmentations} from {len(intermediate_files[aug_idx])} chunks")
-                
-                # Load the stitched video to return frames (required by API)
-                stitched_frames, _ = load_frames(str(stitched_video_path), max_frames=None)
-                augmented_videos.append(stitched_frames)
-                logger.info(f"Loaded stitched augmentation {aug_idx + 1}: {len(stitched_frames)} total frames")
-                
-                # Delete stitched video file (we have frames in memory now)
-                try:
-                    stitched_video_path.unlink()
-                except Exception as e:
-                    logger.debug(f"Could not delete stitched video: {e}")
+            # Determine final output path for this augmentation
+            if output_dir is not None and video_id is not None:
+                final_path = output_dir / f"{video_id}_aug{aug_idx}.mp4"
+            else:
+                # Fallback: place stitched file in temp directory
+                final_path = temp_dir / f"stitched_aug_{aug_idx}.mp4"
+            
+            if concatenate_videos(intermediate_files[aug_idx], str(final_path), fps=fps):
+                logger.info(
+                    f"Stitched augmentation {aug_idx + 1}/{num_augmentations} into {final_path} "
+                    f"from {len(intermediate_files[aug_idx])} chunks"
+                )
+                augmented_paths.append(str(final_path))
             else:
                 logger.error(f"Failed to stitch augmentation {aug_idx + 1}")
-                augmented_videos.append([])
+                augmented_paths.append("")
         
         # Clean up intermediate chunk files after successful stitching
         if use_checkpoints:
             logger.info("Cleaning up checkpoint files after successful stitching...")
             try:
                 # Only delete if we successfully created all augmentations
-                if all(len(frames) > 0 for frames in augmented_videos):
+                if all(path for path in augmented_paths):
                     shutil.rmtree(temp_dir)
                     logger.debug(f"Deleted checkpoint directory: {temp_dir}")
                 else:
@@ -363,8 +367,8 @@ def augment_video(
             except Exception as e:
                 logger.warning(f"Failed to delete temporary directory {temp_dir}: {e}")
         
-        logger.info(f"Completed augmentation: {[len(frames) for frames in augmented_videos]} frames per augmentation")
-        return augmented_videos
+        logger.info(f"Completed augmentation. Generated files: {augmented_paths}")
+        return augmented_paths
         
     except Exception as e:
         logger.error(f"Error during chunked processing: {e}", exc_info=True)
@@ -781,19 +785,21 @@ def stage1_augment_videos(
                 total_videos_processed += 1
             
             # Generate augmentations with chunked processing
-            # Process in chunks of 1000 frames to handle long videos without losing data
-            chunk_size = 1000
+            # Process in smaller chunks (default 250 frames) to reduce memory usage
+            chunk_size = 250
             
             # Create checkpoint directory for this video (persistent, can resume)
             checkpoint_dir = output_dir / ".checkpoints" / video_id
             checkpoint_dir.mkdir(parents=True, exist_ok=True)
             
-            augmented_videos = augment_video(
+            augmented_paths = augment_video(
                 video_path, 
                 num_augmentations=num_augmentations,
                 chunk_size=chunk_size,
                 checkpoint_dir=checkpoint_dir,
-                resume=not delete_existing  # Resume if not deleting existing
+                resume=not delete_existing,  # Resume if not deleting existing
+                output_dir=output_dir,
+                video_id=video_id,
             )
             
             # Get FPS from original video
@@ -806,66 +812,35 @@ def stage1_augment_videos(
                 logger.warning(f"Failed to get FPS from {video_path}: {e}, using default 30.0")
                 fps = 30.0
             
-            if not augmented_videos:
+            if not augmented_paths:
                 logger.warning(f"No augmentations generated for {video_path}")
                 continue
             
-            # Save augmented videos
-            logger.info(f"Generated {len(augmented_videos)} augmentations, saving...")
-            for aug_idx, aug_frames in enumerate(augmented_videos):
+            # Save augmented video metadata
+            logger.info(f"Generated {len(augmented_paths)} augmentations, saving metadata...")
+            for aug_idx in range(num_augmentations):
                 aug_filename = f"{video_id}_aug{aug_idx}.mp4"
                 aug_path = output_dir / aug_filename
                 
-                # Skip if augmentation already exists and we're not deleting
-                if aug_path.exists() and not delete_existing:
-                    logger.info(f"Augmentation {aug_idx + 1}/{len(augmented_videos)} already exists: {aug_path}, skipping...")
-                    # Check if metadata entry already exists
-                    aug_path_rel = str(aug_path.relative_to(project_root))
-                    metadata_entry_exists = False
-                    if existing_metadata is not None:
-                        for row in existing_metadata.iter_rows(named=True):
-                            if (row.get("video_path") == aug_path_rel and 
-                                row.get("original_video") == video_rel and 
-                                row.get("augmentation_idx") == aug_idx):
-                                metadata_entry_exists = True
-                                break
-                    
-                    # Only write metadata if it doesn't already exist
-                    if not metadata_entry_exists:
-                        with open(metadata_path, 'a', newline='') as f:
-                            writer = csv.writer(f)
-                            writer.writerow([
-                                aug_path_rel,
-                                label,
-                                video_rel,
-                                aug_idx,
-                                False
-                            ])
+                # At this point augment_video has already written the final files to disk.
+                # We just need to verify existence and write metadata.
+                if not aug_path.exists():
+                    logger.error(f"✗ Augmentation {aug_idx + 1} missing at expected path {aug_path}")
                     continue
                 
-                logger.info(f"Saving augmentation {aug_idx + 1}/{len(augmented_videos)} to {aug_path}")
+                aug_path_rel = str(aug_path.relative_to(project_root))
                 
-                # Validate frames
-                if not aug_frames or len(aug_frames) == 0:
-                    logger.error(f"✗ Augmentation {aug_idx + 1} has no frames, skipping")
-                    continue
+                # If augmentation already exists and we're not deleting, ensure metadata is present
+                metadata_entry_exists = False
+                if existing_metadata is not None:
+                    for row in existing_metadata.iter_rows(named=True):
+                        if (row.get("video_path") == aug_path_rel and 
+                            row.get("original_video") == video_rel and 
+                            row.get("augmentation_idx") == aug_idx):
+                            metadata_entry_exists = True
+                            break
                 
-                success = save_frames(aug_frames, str(aug_path), fps=fps)
-                
-                # Clean up checkpoint directory after successful save of all augmentations
-                if success and aug_idx == len(augmented_videos) - 1:
-                    # Last augmentation saved successfully, clean up checkpoints
-                    checkpoint_dir = output_dir / ".checkpoints" / video_id
-                    if checkpoint_dir.exists():
-                        try:
-                            shutil.rmtree(checkpoint_dir)
-                            logger.debug(f"Cleaned up checkpoint directory for {video_id}")
-                        except Exception as e:
-                            logger.debug(f"Could not clean up checkpoint directory: {e}")
-                
-                if success:
-                    aug_path_rel = str(aug_path.relative_to(project_root))
-                    # Write augmented video metadata immediately to CSV
+                if not metadata_entry_exists:
                     with open(metadata_path, 'a', newline='') as f:
                         writer = csv.writer(f)
                         writer.writerow([
@@ -875,18 +850,8 @@ def stage1_augment_videos(
                             aug_idx,
                             False
                         ])
-                    total_videos_processed += 1
-                    logger.info(f"✓ Saved: {aug_path}")
-                else:
-                    logger.error(f"✗ Failed to save: {aug_path} - save_frames returned False")
-                
-                # Clear frames immediately
-                del aug_frames
-                aggressive_gc(clear_cuda=False)
-            
-            # Clear all augmented videos
-            del augmented_videos
-            aggressive_gc(clear_cuda=False)
+                total_videos_processed += 1
+                logger.info(f"✓ Augmentation {aug_idx + 1}/{num_augmentations} available at {aug_path}")
             
         except Exception as e:
             logger.error(f"Error processing video {video_rel}: {e}", exc_info=True)

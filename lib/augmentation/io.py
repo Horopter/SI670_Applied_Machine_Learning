@@ -95,8 +95,6 @@ def load_frames(
         if end_frame > total_frames:
             end_frame = total_frames
         
-        frame_count = 0
-        frames_to_skip = start_frame if start_frame > 0 else 0
         frames_to_load = end_frame - start_frame
         
         # Safety check
@@ -104,37 +102,39 @@ def load_frames(
             logger.debug(f"frames_to_load ({frames_to_load}) <= 0, returning empty")
             return [], fps
         
-        # Try to seek to approximate position if start_frame > 0
-        if start_frame > 0:
-            try:
-                # Calculate approximate timestamp
-                timestamp = start_frame / fps
-                # Seek to timestamp (in seconds)
-                container.seek(int(timestamp * 1000000))  # av.seek expects microseconds
-            except Exception as e:
-                logger.debug(f"Could not seek to frame {start_frame}: {e}, will skip frames manually")
+        # Decode frames from the start and skip until we reach start_frame
+        # Note: We don't use seeking here because it's unreliable for frame-accurate positioning
+        # Decoding from start and skipping is slower but guarantees correctness
+        frame_count = 0
+        current_frame_idx = 0
         
         for packet in container.demux(stream):
             if frame_count >= frames_to_load:
                 break
             for frame in packet.decode():
                 # Skip frames until we reach start_frame
-                if frames_to_skip > 0:
-                    frames_to_skip -= 1
+                if current_frame_idx < start_frame:
+                    current_frame_idx += 1
                     continue
                 
+                # We've reached start_frame, now load frames
                 if frame_count >= frames_to_load:
                     break
                 frame_array = frame.to_ndarray(format='rgb24')
                 frames.append(frame_array)
                 frame_count += 1
+                current_frame_idx += 1
             if frame_count >= frames_to_load:
                 break
         
         if len(frames) > 0:
             logger.debug(f"Loaded {len(frames)} frames from {Path(video_path).name} (frames {start_frame}-{start_frame+len(frames)-1})")
         else:
-            logger.debug(f"Loaded 0 frames from {Path(video_path).name} (start_frame={start_frame}, total_frames={total_frames})")
+            logger.warning(
+                f"Loaded 0 frames from {Path(video_path).name} "
+                f"(start_frame={start_frame}, total_frames={total_frames}, "
+                f"frames_to_load={frames_to_load}, current_frame_idx={current_frame_idx})"
+            )
         return frames, fps
     except Exception as e:
         logger.error(f"Failed to load video {video_path}: {e}")
@@ -200,6 +200,8 @@ def save_frames(
                 container.close()
             except Exception:
                 pass
+        # Aggressively free CPU/GPU memory after writing a video
+        aggressive_gc(clear_cuda=False)
 
 
 def concatenate_videos(
@@ -243,6 +245,8 @@ def concatenate_videos(
         output_stream.pix_fmt = 'yuv420p'
         
         # Process each input video
+        # Decode and re-encode frames one video at a time to maintain proper timestamps
+        # This ensures monotonically increasing DTS/PTS across all chunks
         for video_path in video_paths:
             if not Path(video_path).exists():
                 logger.warning(f"Intermediate video not found: {video_path}, skipping")
@@ -251,11 +255,15 @@ def concatenate_videos(
             input_container = av.open(video_path)
             input_stream = input_container.streams.video[0]
             
-            # Copy frames from input to output
+            # Decode frames to numpy arrays and immediately re-encode
+            # This ensures proper timestamp continuity across chunks
             for frame in input_container.decode(video=0):
-                # Convert frame to output stream format
-                frame.pts = None  # Let encoder set PTS
-                for packet in output_stream.encode(frame):
+                # Convert to numpy array
+                frame_array = frame.to_ndarray(format='rgb24')
+                # Create new frame from array (this resets timestamps)
+                new_frame = av.VideoFrame.from_ndarray(frame_array, format='rgb24')
+                # Let encoder assign sequential timestamps automatically
+                for packet in output_stream.encode(new_frame):
                     output_container.mux(packet)
             
             input_container.close()
@@ -274,4 +282,6 @@ def concatenate_videos(
                 output_container.close()
             except Exception:
                 pass
+        # Aggressively free CPU/GPU memory after concatenation
+        aggressive_gc(clear_cuda=False)
 
