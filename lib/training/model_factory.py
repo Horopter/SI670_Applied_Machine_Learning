@@ -151,28 +151,28 @@ def create_model(model_type: str, config: RunConfig) -> Any:
         return default
     
     if model_type == "logistic_regression":
-        from .logistic_regression import LogisticRegressionBaseline
+        from ._linear import LogisticRegressionBaseline
         return LogisticRegressionBaseline(
             cache_dir=get_param("feature_cache_dir", None),
             num_frames=get_param("num_frames", num_frames)
         )
     
     elif model_type == "svm":
-        from .svm import SVMBaseline
+        from ._svm import SVMBaseline
         return SVMBaseline(
             cache_dir=get_param("feature_cache_dir", None),
             num_frames=get_param("num_frames", num_frames)
         )
     
     elif model_type == "naive_cnn":
-        from .naive_cnn import NaiveCNNBaseline
+        from ._cnn import NaiveCNNBaseline
         return NaiveCNNBaseline(
             num_frames=get_param("num_frames", num_frames),
             num_classes=2
         )
     
     elif model_type == "vit_gru":
-        from .vit_gru import ViTGRUModel
+        from ._transformer_gru import ViTGRUModel
         return ViTGRUModel(
             num_frames=get_param("num_frames", num_frames),
             hidden_dim=get_param("hidden_dim", 256),
@@ -182,7 +182,7 @@ def create_model(model_type: str, config: RunConfig) -> Any:
         )
     
     elif model_type == "vit_transformer":
-        from .vit_transformer import ViTTransformerModel
+        from ._transformer import ViTTransformerModel
         return ViTTransformerModel(
             num_frames=get_param("num_frames", num_frames),
             d_model=get_param("d_model", 768),

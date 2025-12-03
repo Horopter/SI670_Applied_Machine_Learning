@@ -22,11 +22,11 @@ from .trainer import (
 )
 
 # Models
-from .logistic_regression import LogisticRegressionBaseline
-from .svm import SVMBaseline
-from .naive_cnn import NaiveCNNBaseline
-from .vit_gru import ViTGRUModel
-from .vit_transformer import ViTTransformerModel
+from ._linear import LogisticRegressionBaseline
+from ._svm import SVMBaseline
+from ._cnn import NaiveCNNBaseline
+from ._transformer_gru import ViTGRUModel
+from ._transformer import ViTTransformerModel
 from .slowfast import SlowFastModel
 from .x3d import X3DModel
 from .i3d import I3DModel

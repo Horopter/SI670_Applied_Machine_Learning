@@ -19,8 +19,8 @@ from lib.data import stratified_kfold
 from lib.models import VideoConfig, VideoDataset
 from lib.training.model_factory import create_model, is_pytorch_model, get_model_config, list_available_models
 from lib.training.trainer import OptimConfig, TrainConfig, fit, evaluate
-from lib.training.logistic_regression import LogisticRegressionBaseline
-from lib.training.svm import SVMBaseline
+from lib.training._linear import LogisticRegressionBaseline
+from lib.training._svm import SVMBaseline
 from lib.utils.memory import aggressive_gc
 
 logger = logging.getLogger(__name__)

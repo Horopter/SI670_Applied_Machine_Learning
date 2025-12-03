@@ -34,17 +34,17 @@ This document describes the implementation of 7 model architectures as specified
 
 ### Baseline Models
 
-**LogisticRegressionBaseline** (`lib/training/logistic_regression.py`):
+**LogisticRegressionBaseline** (`lib/training/_linear.py`):
 - Extracts handcrafted features per video
 - Trains sklearn LogisticRegression
 - Saves feature extractor + model + scaler
 
-**SVMBaseline** (`lib/training/svm.py`):
+**SVMBaseline** (`lib/training/_svm.py`):
 - Same feature extraction
 - Trains sklearn LinearSVC
 - Converts decision function to probabilities via sigmoid
 
-**NaiveCNNBaseline** (`lib/training/naive_cnn.py`):
+**NaiveCNNBaseline** (`lib/training/_cnn.py`):
 - Simple 2D CNN: Conv2D blocks → GlobalAvgPool → FC
 - Processes frames independently, averages predictions
 - PyTorch nn.Module (can be trained with standard training loop)

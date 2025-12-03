@@ -12,11 +12,11 @@ This document lists what we can borrow/reuse from the previous pipeline for the 
 - ✅ `mlops_utils.py` - Memory management (`aggressive_gc`, `log_memory_stats`)
 
 ### Stage 5 (Training)
-- ✅ `logistic_regression.py` - LogisticRegressionBaseline
-- ✅ `svm.py` - SVMBaseline
-- ✅ `naive_cnn.py` - NaiveCNNBaseline
-- ✅ `vit_gru.py` - ViTGRUModel
-- ✅ `vit_transformer.py` - ViTTransformerModel
+- ✅ `_linear.py` - LogisticRegressionBaseline
+- ✅ `_svm.py` - SVMBaseline
+- ✅ `_cnn.py` - NaiveCNNBaseline
+- ✅ `_transformer_gru.py` - ViTGRUModel
+- ✅ `_transformer.py` - ViTTransformerModel
 - ✅ `slowfast.py` - SlowFastModel
 - ✅ `x3d.py` - X3DModel
 - ✅ `model_factory.py` - Model creation and configuration
