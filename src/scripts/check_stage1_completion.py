@@ -27,7 +27,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from lib.data import load_metadata, filter_existing_videos
-from lib.utils.paths import load_metadata_flexible, resolve_video_path
+from lib.utils.paths import load_metadata_flexible
 
 # Setup logging
 logging.basicConfig(
@@ -351,6 +351,203 @@ def main():
         return 1
 
 
+def calculate_processing_time_estimate(
+    project_root: str,
+    input_metadata_path: str = "data/video_index_input.csv",
+    num_augmentations: int = 10,
+    processing_rate_seconds_per_100_frames: float = 3.5
+) -> dict:
+    """
+    Calculate processing time estimate for Stage 3 scaling.
+    
+    Loads original video metadata, counts frames for each original video,
+    multiplies by (1 + num_augmentations) since augmented videos have same frame count,
+    and calculates the estimated processing time based on a rate of seconds per 100 frames.
+    
+    Args:
+        project_root: Project root directory
+        input_metadata_path: Path to original video metadata (default: data/video_index_input.csv)
+        num_augmentations: Number of augmentations per original video (default: 10)
+        processing_rate_seconds_per_100_frames: Processing rate in seconds per 100 frames (default: 3.5)
+    
+    Returns:
+        Dictionary with frame counts and time estimates
+    """
+    project_root = Path(project_root)
+    
+    logger.info("=" * 80)
+    logger.info("STAGE 3 PROCESSING TIME ESTIMATE")
+    logger.info("=" * 80)
+    logger.info(f"Loading original video metadata: {input_metadata_path}")
+    
+    # Load original video metadata
+    df = load_metadata(str(project_root / input_metadata_path))
+    if df is None or df.is_empty():
+        logger.error(f"Original video metadata not found or empty: {input_metadata_path}")
+        return {
+            "status": "error",
+            "total_videos": 0,
+            "total_frames": 0,
+            "estimated_time_seconds": 0,
+            "estimated_time_minutes": 0,
+            "estimated_time_hours": 0
+        }
+    
+    # Filter to existing videos (same as Stage 1 does)
+    df = filter_existing_videos(df, str(project_root))
+    
+    num_original_videos = df.height
+    logger.info(f"Found {num_original_videos} original videos")
+    logger.info(f"Number of augmentations per video: {num_augmentations}")
+    logger.info(f"Total videos to process: {num_original_videos} originals × {num_augmentations + 1} = {num_original_videos * (num_augmentations + 1)}")
+    logger.info(f"Note: Augmented videos have same frame count as their originals")
+    
+    # Get frame counts directly from CSV (much faster!)
+    logger.info("\nReading frame counts from CSV...")
+    
+    if "frame_count" not in df.columns:
+        logger.error("CSV does not have 'frame_count' column")
+        return {
+            "status": "error",
+            "total_videos": 0,
+            "total_frames": 0,
+            "estimated_time_seconds": 0,
+            "estimated_time_minutes": 0,
+            "estimated_time_hours": 0
+        }
+    
+    # Sum frame counts from CSV
+    total_original_frames = df["frame_count"].sum()
+    processed_count = df.height
+    
+    # Calculate total frames: sum(original_frames * (1 + num_augmentations))
+    # Each original video produces (1 original + num_augmentations) videos, all with same frame count
+    total_frames = total_original_frames * (1 + num_augmentations)
+    
+    logger.info(f"\nFrame counting complete:")
+    logger.info(f"  - Original videos: {processed_count}")
+    logger.info(f"  - Total frames in original videos: {total_original_frames:,}")
+    logger.info(f"  - Total frames to process (originals + {num_augmentations} augmentations each): {total_frames:,}")
+    
+    # Calculate time estimates
+    # Rate: processing_rate_seconds_per_100_frames seconds per 100 frames
+    # So: time = (total_frames / 100) * processing_rate_seconds_per_100_frames
+    estimated_time_seconds = (total_frames / 100.0) * processing_rate_seconds_per_100_frames
+    estimated_time_minutes = estimated_time_seconds / 60.0
+    estimated_time_hours = estimated_time_minutes / 60.0
+    
+    logger.info("\n" + "=" * 80)
+    logger.info("TIME ESTIMATES")
+    logger.info("=" * 80)
+    logger.info(f"Processing rate: {processing_rate_seconds_per_100_frames} seconds per 100 frames")
+    logger.info(f"Total frames to process: {total_frames:,}")
+    logger.info(f"\nEstimated processing time:")
+    logger.info(f"  - {estimated_time_seconds:,.2f} seconds")
+    logger.info(f"  - {estimated_time_minutes:,.2f} minutes")
+    logger.info(f"  - {estimated_time_hours:,.2f} hours")
+    
+    # Calculate per-video average
+    if processed_count > 0:
+        avg_frames_per_original = total_original_frames / processed_count
+        total_videos_to_process = processed_count * (1 + num_augmentations)
+        avg_frames_per_video = total_frames / total_videos_to_process if total_videos_to_process > 0 else 0
+        avg_time_per_video = (avg_frames_per_video / 100.0) * processing_rate_seconds_per_100_frames
+        logger.info(f"\nAverage statistics:")
+        logger.info(f"  - Frames per original video: {avg_frames_per_original:,.1f}")
+        logger.info(f"  - Frames per video (same for original and augmentations): {avg_frames_per_original:,.1f}")
+        logger.info(f"  - Time per video: {avg_time_per_video:.2f} seconds")
+    
+    logger.info("=" * 80)
+    
+    return {
+        "status": "success",
+        "original_videos": num_original_videos,
+        "processed_originals": processed_count,
+        "num_augmentations": num_augmentations,
+        "total_videos_to_process": processed_count * (1 + num_augmentations),
+        "total_original_frames": total_original_frames,
+        "total_frames": total_frames,
+        "estimated_time_seconds": estimated_time_seconds,
+        "estimated_time_minutes": estimated_time_minutes,
+        "estimated_time_hours": estimated_time_hours,
+        "processing_rate_seconds_per_100_frames": processing_rate_seconds_per_100_frames
+    }
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    # Check if --estimate-time flag is provided
+    if "--estimate-time" in sys.argv or "-e" in sys.argv:
+        # Run time estimation
+        parser = argparse.ArgumentParser(
+            description="Calculate Stage 3 processing time estimate",
+            formatter_class=argparse.RawDescriptionHelpFormatter
+        )
+        parser.add_argument(
+            "--estimate-time",
+            "-e",
+            action="store_true",
+            help="Calculate processing time estimate for Stage 3"
+        )
+        parser.add_argument(
+            "--project-root",
+            type=str,
+            default=str(Path.cwd()),
+            help="Project root directory (default: current working directory)"
+        )
+        parser.add_argument(
+            "--input-metadata",
+            type=str,
+            default=None,
+            help="Path to original video metadata (default: auto-detect data/video_index_input.csv or FVC_dup.csv)"
+        )
+        parser.add_argument(
+            "--num-augmentations",
+            type=int,
+            default=10,
+            help="Number of augmentations per original video (default: 10)"
+        )
+        parser.add_argument(
+            "--processing-rate",
+            type=float,
+            default=3.5,
+            help="Processing rate in seconds per 100 frames (default: 3.5)"
+        )
+        
+        args = parser.parse_args()
+        
+        project_root = Path(args.project_root).resolve()
+        
+        # Auto-detect input metadata if not provided
+        if args.input_metadata:
+            input_metadata_path = args.input_metadata
+        else:
+            # Try FVC_dup.csv first, then video_index_input.csv
+            for csv_name in ["FVC_dup.csv", "video_index_input.csv"]:
+                candidate = project_root / "data" / csv_name
+                if candidate.exists():
+                    input_metadata_path = f"data/{csv_name}"
+                    logger.info(f"Auto-detected input metadata: {input_metadata_path}")
+                    break
+            else:
+                logger.error("Could not find input metadata. Please specify --input-metadata")
+                sys.exit(1)
+        
+        try:
+            results = calculate_processing_time_estimate(
+                project_root=str(project_root),
+                input_metadata_path=input_metadata_path,
+                num_augmentations=args.num_augmentations,
+                processing_rate_seconds_per_100_frames=args.processing_rate
+            )
+            
+            if results["status"] == "success":
+                sys.exit(0)
+            else:
+                sys.exit(1)
+        except Exception as e:
+            logger.error(f"Error during time estimation: {e}", exc_info=True)
+            sys.exit(1)
+    else:
+        # Run normal completion check
+        sys.exit(main())
 

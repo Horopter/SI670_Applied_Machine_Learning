@@ -119,6 +119,9 @@ def save_frames(
     """
     Save frames as a video file, preserving original resolution.
     
+    H.264 codec (libx264) requires both width and height to be divisible by 2.
+    This function automatically ensures even dimensions by rounding down to nearest even number.
+    
     Args:
         frames: List of frame arrays (H, W, 3)
         output_path: Output video path
@@ -134,6 +137,19 @@ def save_frames(
     container = None
     try:
         height, width = frames[0].shape[:2]
+        
+        # H.264 codec requires both width and height to be divisible by 2
+        # Round down to nearest even number
+        width_even = width - (width % 2)
+        height_even = height - (height % 2)
+        
+        # Log warning if dimensions were adjusted
+        if width_even != width or height_even != height:
+            logger.debug(
+                f"Adjusting dimensions for H.264 compatibility: "
+                f"{width}x{height} -> {width_even}x{height_even}"
+            )
+        
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         
@@ -141,11 +157,15 @@ def save_frames(
         # Convert float FPS to fraction (PyAV requires fraction)
         fps_fraction = Fraction(int(fps * 1000), 1000)
         stream = container.add_stream('libx264', rate=fps_fraction)
-        stream.width = width
-        stream.height = height
+        stream.width = width_even
+        stream.height = height_even
         stream.pix_fmt = 'yuv420p'
         
         for frame_array in frames:
+            # Crop frame to even dimensions if necessary
+            if frame_array.shape[0] != height_even or frame_array.shape[1] != width_even:
+                frame_array = frame_array[:height_even, :width_even, :]
+            
             frame = av.VideoFrame.from_ndarray(frame_array, format='rgb24')
             for packet in stream.encode(frame):
                 container.mux(packet)

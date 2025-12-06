@@ -32,8 +32,8 @@ def scale_video(
     video_path: str,
     output_path: str,
     target_size: int = 256,
-    max_frames: Optional[int] = 100,
-    chunk_size: int = 100,
+    max_frames: Optional[int] = 500,
+    chunk_size: int = 400,
     method: str = "autoencoder",
     autoencoder: Optional[object] = None
 ) -> bool:
@@ -47,8 +47,8 @@ def scale_video(
         video_path: Input video path
         output_path: Output video path
         target_size: Target max dimension (max(width, height) will be target_size)
-        max_frames: Maximum frames to process per chunk (default: 100 for 64GB RAM)
-        chunk_size: Number of frames to process per chunk (default: 100 for 64GB RAM)
+        max_frames: Maximum frames to process per chunk (default: 500)
+        chunk_size: Number of frames to process per chunk (default: 500)
         method: Scaling method ("letterbox" or "autoencoder")
         autoencoder: Optional autoencoder model for autoencoder method
     
@@ -59,9 +59,9 @@ def scale_video(
     import shutil
     
     if max_frames is None:
-        max_frames = 100
+        max_frames = 500
     if chunk_size is None:
-        chunk_size = 100
+        chunk_size = 400
     
     container = None
     temp_dir = None
@@ -257,8 +257,8 @@ def stage3_scale_videos(
     augmented_metadata_path: str,
     output_dir: str = "data/scaled_videos",
     target_size: int = 256,
-    max_frames: Optional[int] = 100,
-    chunk_size: int = 100,
+    max_frames: Optional[int] = 500,
+    chunk_size: int = 400,
     method: str = "autoencoder",
     autoencoder_model: Optional[str] = None,
     start_idx: Optional[int] = None,
@@ -343,7 +343,7 @@ def stage3_scale_videos(
         method = "letterbox"
     
     logger.info(f"Stage 3: Method: {method}")
-    logger.info(f"Stage 3: Chunk size: {chunk_size} frames (optimized for 64GB RAM)")
+    logger.info(f"Stage 3: Chunk size: {chunk_size} frames")
     
     # Load autoencoder if needed
     autoencoder = None
