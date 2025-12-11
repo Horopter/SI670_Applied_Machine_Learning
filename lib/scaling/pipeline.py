@@ -16,8 +16,8 @@ import polars as pl
 import av
 
 from lib.data import load_metadata
-from lib.utils.paths import resolve_video_path
-from lib.utils.memory import aggressive_gc, log_memory_stats, check_oom_error, handle_oom_error, get_memory_stats
+from lib.utils.paths import resolve_video_path, write_metadata_atomic, get_video_metadata_cache_path
+from lib.utils.memory import aggressive_gc, log_memory_stats, check_oom_error, handle_oom_error, get_memory_stats, safe_execute
 from lib.scaling.methods import (
     scale_video_frames,
     letterbox_resize,
@@ -71,7 +71,9 @@ def scale_video(
         
         # Get video metadata - handle any format from Stage 1
         try:
-            metadata = get_video_metadata(video_path, use_cache=True)
+            # Use persistent cache file for cross-stage caching
+            cache_file = get_video_metadata_cache_path(project_root)
+            metadata = get_video_metadata(video_path, use_cache=True, cache_file=cache_file)
             total_frames = metadata.get('total_frames', 0)
             fps = metadata.get('fps', 30.0)  # Default FPS if not available
             
@@ -264,7 +266,8 @@ def stage3_scale_videos(
     start_idx: Optional[int] = None,
     end_idx: Optional[int] = None,
     delete_existing: bool = False,
-    resume: bool = True
+    resume: bool = True,
+    execution_order: str = "forward"
 ) -> pl.DataFrame:
     """
     Stage 3: Scale all videos to target max dimension.
@@ -365,11 +368,21 @@ def stage3_scale_videos(
     
     if resume and not delete_existing:
         # Try to load existing metadata (check all formats)
+        # Use retry logic to handle race conditions and corrupted files
         existing_metadata_path = output_dir / "scaled_metadata"
-        existing_metadata = load_metadata_flexible(str(existing_metadata_path))
-        if existing_metadata is not None:
-            existing_video_paths = set(existing_metadata["video_path"].to_list())
-            logger.info(f"Stage 3: Found {len(existing_video_paths)} existing scaled videos (resume mode)")
+        try:
+            existing_metadata = load_metadata_flexible(str(existing_metadata_path), max_retries=5, retry_delay=1.0)
+            if existing_metadata is not None and existing_metadata.height > 0:
+                existing_video_paths = set(existing_metadata["video_path"].to_list())
+                logger.info(f"Stage 3: Found {len(existing_video_paths)} existing scaled videos (resume mode)")
+            else:
+                logger.info("Stage 3: No existing metadata found or metadata is empty, starting fresh")
+                existing_metadata = None
+                existing_video_paths = set()
+        except Exception as e:
+            logger.warning(f"Stage 3: Could not load existing metadata (will start fresh): {e}")
+            existing_metadata = None
+            existing_video_paths = set()
     
     # Delete existing scaled video files if clean mode
     if delete_existing:
@@ -392,8 +405,18 @@ def stage3_scale_videos(
     total_videos_processed = 0
     skipped_count = 0
     
+    # Determine iteration order
+    if execution_order == "reverse":
+        indices = range(df.height - 1, -1, -1)  # Reverse: from end to start
+        logger.info("Stage 3: Processing videos in REVERSE order (from end to start)")
+    else:
+        indices = range(df.height)  # Forward: from start to end (default)
+        logger.info("Stage 3: Processing videos in FORWARD order (from start to end)")
+    
     # Process each video
-    for idx in range(df.height):
+    iteration_count = 0
+    for idx in indices:
+        iteration_count += 1
         row = df.row(idx, named=True)
         video_rel = row["video_path"]
         label = row["label"]
@@ -426,8 +449,8 @@ def stage3_scale_videos(
                 logger.warning(f"Video path is not a file: {video_path}, skipping")
                 continue
             
-            if idx % 10 == 0:
-                log_memory_stats(f"Stage 3: processing video {idx + 1}/{df.height}")
+            if iteration_count % 10 == 0:
+                log_memory_stats(f"Stage 3: processing video {iteration_count}/{df.height} (index {idx})")
             
             # Create output path - handle edge cases in video_id and aug_idx
             video_id = Path(video_path).stem
@@ -485,16 +508,15 @@ def stage3_scale_videos(
             # Get original video dimensions - handle any video format/codec from Stage 1
             original_width = None
             original_height = None
+            container = None
             try:
                 container = av.open(video_path)
                 if len(container.streams.video) == 0:
                     logger.warning(f"No video stream found in {video_path}, skipping")
-                    container.close()
                     continue
                 stream = container.streams.video[0]
                 original_width = stream.width
                 original_height = stream.height
-                container.close()
                 
                 # Validate dimensions
                 if original_width is None or original_height is None or original_width <= 0 or original_height <= 0:
@@ -503,47 +525,25 @@ def stage3_scale_videos(
             except Exception as e:
                 logger.warning(f"Could not get dimensions for {video_path}: {e}, will continue without dimensions")
                 # Don't skip the video, just proceed without dimension info
+            finally:
+                if container is not None:
+                    try:
+                        container.close()
+                    except Exception:
+                        pass
             
-            # Scale video (downscale or upscale to target_size) with OOM handling
+            # Scale video (downscale or upscale to target_size)
+            # Note: scale_video already has OOM handling internally
             logger.info(f"Scaling {Path(video_path).name} to {output_path.name}")
-            try:
-                success = scale_video(
-                    video_path,
-                    str(output_path),
-                    target_size=target_size,
-                    max_frames=max_frames,
-                    chunk_size=chunk_size,
-                    method=method,
-                    autoencoder=autoencoder
-                )
-            except Exception as e:
-                if check_oom_error(e):
-                    handle_oom_error(e, f"scaling video {video_path}")
-                    logger.error(f"OOM error while scaling video {video_path}")
-                    # Try fallback to letterbox if autoencoder was being used
-                    if method == "autoencoder" and autoencoder is not None:
-                        logger.warning(f"Retrying video {video_path} with letterbox method due to OOM")
-                        try:
-                            success = scale_video(
-                                video_path,
-                                str(output_path),
-                                target_size=target_size,
-                                max_frames=max_frames,
-                                chunk_size=chunk_size,
-                                method="letterbox",
-                                autoencoder=None
-                            )
-                        except Exception as e2:
-                            if check_oom_error(e2):
-                                handle_oom_error(e2, f"letterbox fallback for {video_path}")
-                                logger.error(f"OOM even with letterbox method for {video_path}, skipping video")
-                                success = False
-                            else:
-                                raise
-                    else:
-                        success = False
-                else:
-                    raise
+            success = scale_video(
+                video_path,
+                str(output_path),
+                target_size=target_size,
+                max_frames=max_frames,
+                chunk_size=chunk_size,
+                method=method,
+                autoencoder=autoencoder
+            )
             
             if success:
                 metadata_row = {
@@ -576,40 +576,62 @@ def stage3_scale_videos(
     
     logger.info(f"Stage 3: Processed {total_videos_processed} videos, skipped {skipped_count} videos")
     
-    # Save final metadata as Arrow IPC
+    # Save metadata incrementally (append mode) to avoid overwriting concurrent writes
     if metadata_rows or total_videos_processed > 0 or skipped_count > 0:
         try:
             # Create DataFrame from new metadata
             new_metadata_df = pl.DataFrame(metadata_rows) if metadata_rows else pl.DataFrame()
             
-            # Merge with existing metadata if available
-            if existing_metadata is not None and not delete_existing:
-                # Combine existing and new metadata, removing duplicates
-                metadata_df = pl.concat([existing_metadata, new_metadata_df]).unique(subset=["video_path"], keep="last")
-                logger.info(f"Stage 3: Merged with existing metadata. Total: {metadata_df.height} videos")
-            else:
-                metadata_df = new_metadata_df
-            
-            if metadata_df.height > 0:
-                # Try Arrow IPC first, fallback to Parquet
-                try:
-                    metadata_df.write_ipc(str(metadata_path))
-                    logger.debug(f"Saved metadata as Arrow IPC: {metadata_path}")
-                except Exception as e:
-                    logger.warning(f"Arrow IPC write failed, using Parquet: {e}")
-                    metadata_path = output_dir / "scaled_metadata.parquet"
-                    metadata_df.write_parquet(str(metadata_path))
+            if new_metadata_df.height > 0:
+                # Use atomic append write: reads latest metadata, merges, writes back
+                # This ensures concurrent processes see each other's updates
+                metadata_path = output_dir / "scaled_metadata.arrow"
+                success = write_metadata_atomic(new_metadata_df, metadata_path, append=True)
                 
-                logger.info(f"\n✓ Stage 3 complete: Saved metadata to {metadata_path}")
-                logger.info(f"✓ Stage 3: Scaled {total_videos_processed} videos, skipped {skipped_count} videos")
-                return metadata_df
+                if success:
+                    logger.info(f"\n✓ Stage 3 complete: Appended metadata to {metadata_path}")
+                    logger.info(f"✓ Stage 3: Scaled {total_videos_processed} videos, skipped {skipped_count} videos")
+                else:
+                    logger.warning(f"Failed to append metadata atomically, but processing completed")
+                    # Try fallback to Parquet
+                    metadata_path_parquet = output_dir / "scaled_metadata.parquet"
+                    if write_metadata_atomic(new_metadata_df, metadata_path_parquet, append=True):
+                        logger.info(f"Appended metadata to Parquet: {metadata_path_parquet}")
+                
+                # Return merged metadata (read latest from disk)
+                try:
+                    final_metadata = load_metadata_flexible(str(metadata_path), max_retries=3, retry_delay=0.5)
+                    if final_metadata is not None:
+                        return final_metadata
+                    else:
+                        return new_metadata_df
+                except Exception:
+                    return new_metadata_df
             else:
-                logger.warning("Stage 3: No metadata to save (all videos may have been skipped)")
-                return existing_metadata if existing_metadata is not None else pl.DataFrame()
+                logger.warning("Stage 3: No new metadata to save (all videos may have been skipped)")
+                # Return existing metadata if available
+                try:
+                    metadata_path = output_dir / "scaled_metadata.arrow"
+                    final_metadata = load_metadata_flexible(str(metadata_path), max_retries=3, retry_delay=0.5)
+                    return final_metadata if final_metadata is not None else pl.DataFrame()
+                except Exception:
+                    return existing_metadata if existing_metadata is not None else pl.DataFrame()
         except Exception as e:
             logger.error(f"Failed to save metadata: {e}")
-            return existing_metadata if existing_metadata is not None else pl.DataFrame()
+            # Try to return existing metadata
+            try:
+                metadata_path = output_dir / "scaled_metadata.arrow"
+                final_metadata = load_metadata_flexible(str(metadata_path), max_retries=3, retry_delay=0.5)
+                return final_metadata if final_metadata is not None else pl.DataFrame()
+            except Exception:
+                return existing_metadata if existing_metadata is not None else pl.DataFrame()
     else:
         logger.warning("Stage 3: No videos processed!")
-        return existing_metadata if existing_metadata is not None else pl.DataFrame()
+        # Return existing metadata if available
+        try:
+            metadata_path = output_dir / "scaled_metadata.arrow"
+            final_metadata = load_metadata_flexible(str(metadata_path), max_retries=3, retry_delay=0.5)
+            return final_metadata if final_metadata is not None else pl.DataFrame()
+        except Exception:
+            return existing_metadata if existing_metadata is not None else pl.DataFrame()
 

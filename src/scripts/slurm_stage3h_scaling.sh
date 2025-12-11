@@ -3,18 +3,18 @@
 # SLURM Batch Script for Stage 3h: Video Scaling (Frame-based distribution)
 #
 # Processes videos based on frame count capacity: 2160000 frames (1 day @ 4s/100frames)
-# Account: si670f25_class
+# Account: stats_dept2
 #
 # Usage:
 #   sbatch src/scripts/slurm_stage3h_scaling.sh
 
 #SBATCH --job-name=fvc_stage3h_scaling
-#SBATCH --account=si670f25_class
+#SBATCH --account=eecs442f25_class
 #SBATCH --partition=gpu
 #SBATCH --gpus=1
 #SBATCH --mem=64G
-#SBATCH --cpus-per-task=1
-#SBATCH --time=1-00:00:00
+#SBATCH --cpus-per-task=4
+#SBATCH --time=8:00:00
 #SBATCH --output=logs/stage3h_scaling-%j.out
 #SBATCH --error=logs/stage3h_scaling-%j.err
 #SBATCH --mail-user=santoshd@umich.edu,urvim@umich.edu,suzanef@umich.edu
@@ -294,7 +294,7 @@ log "=========================================="
 log "This job will process videos in range: [$START_IDX, $END_IDX)"
 log "Total videos in this range: $((END_IDX - START_IDX))"
 log "Substage: 3h (8th of 8 substages)"
-log "Account: si670f25_class (suzanef)"
+log "Account: stats_dept2"
 log "Resources: 64GB RAM, 1 CPU, 1 GPU, 1 day"
 log "=========================================="
 log ""
@@ -346,6 +346,16 @@ if [ "$RESUME" != "0" ] && [ "$RESUME" != "false" ] && [ "$RESUME" != "no" ]; th
     RESUME_FLAG="--resume"
 fi
 
+# Execution order: forward (0) or reverse (1), default to reverse
+EXECUTION_ORDER="${FVC_EXECUTION_ORDER:-reverse}"
+if [ "$EXECUTION_ORDER" = "0" ] || [ "$EXECUTION_ORDER" = "forward" ]; then
+    EXECUTION_ORDER="forward"
+elif [ "$EXECUTION_ORDER" = "1" ] || [ "$EXECUTION_ORDER" = "reverse" ]; then
+    EXECUTION_ORDER="reverse"
+else
+    EXECUTION_ORDER="reverse"  # Default
+fi
+
 log "Running Stage 3h scaling script..."
 log "Log file: $LOG_FILE"
 
@@ -358,6 +368,7 @@ if "$PYTHON_CMD" "$PYTHON_SCRIPT" \
     --output-dir "$OUTPUT_DIR" \
     --start-idx "$START_IDX" \
     --end-idx "$END_IDX" \
+    --execution-order "$EXECUTION_ORDER" \
     $DELETE_FLAG \
     $RESUME_FLAG \
     2>&1 | tee "$LOG_FILE"; then
@@ -365,6 +376,29 @@ if "$PYTHON_CMD" "$PYTHON_SCRIPT" \
     STAGE3_END=$(date +%s)
     STAGE3_DURATION=$((STAGE3_END - STAGE3_START))
     log "✓ Stage 3h completed successfully in ${STAGE3_DURATION}s ($((${STAGE3_DURATION} / 60)) minutes)"
+
+    # Run sanity check to verify all scaled videos are in metadata
+    log ""
+    log "=========================================="
+    log "STAGE 3H: SANITY CHECK"
+    log "=========================================="
+    SANITY_CHECK_SCRIPT="$ORIG_DIR/src/scripts/check_stage3_completion.py"
+    if [ -f "$SANITY_CHECK_SCRIPT" ]; then
+        log "Running sanity check: verifying all scaled videos are in metadata..."
+        if "$PYTHON_CMD" "$SANITY_CHECK_SCRIPT" \
+            --project-root "$ORIG_DIR" \
+            --scaled-videos-dir "$OUTPUT_DIR" \
+            2>&1 | tee -a "$LOG_FILE"; then
+            log "✓ Sanity check passed"
+        else
+            log "⚠ WARNING: Sanity check found discrepancies (see log above)"
+            log "  This may indicate missing metadata entries for some videos"
+            log "  Consider running with --reconstruct flag to fix metadata"
+        fi
+    else
+        log "⚠ WARNING: Sanity check script not found: $SANITY_CHECK_SCRIPT"
+    fi
+
     log "Results saved to: $ORIG_DIR/$OUTPUT_DIR"
     log "Next step: Run remaining substages if not all complete"
 else

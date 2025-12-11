@@ -33,7 +33,8 @@ from lib.data import (
     stratified_kfold,
     maybe_limit_to_small_test_subset,
 )
-from lib.models import VideoConfig, VideoDataset, variable_ar_collate, PretrainedInceptionVideoModel
+# Lazy import to avoid circular dependency issues
+# VideoConfig, VideoDataset, variable_ar_collate, PretrainedInceptionVideoModel will be imported when needed
 from lib.augmentation.pregenerate import pregenerate_augmented_dataset
 from lib.training.trainer import OptimConfig, TrainConfig
 from torch.utils.data import DataLoader
@@ -256,6 +257,8 @@ def build_mlops_pipeline(config: RunConfig, tracker: ExperimentTracker,
     def generate_augmentations():
         train_df = pipeline.artifacts["create_splits"]["train"]
         
+        # Lazy import to avoid circular dependency
+        from lib.models import VideoConfig
         video_cfg = VideoConfig(
             num_frames=config.num_frames,
             fixed_size=config.fixed_size,
@@ -306,6 +309,8 @@ def build_mlops_pipeline(config: RunConfig, tracker: ExperimentTracker,
         aug_train_df = pipeline.artifacts["generate_augmentations"]["augmented_train"]
         val_df = pipeline.artifacts["create_splits"]["val"]
         
+        # Lazy import to avoid circular dependency
+        from lib.models import VideoConfig, VideoDataset
         video_cfg = VideoConfig(
             num_frames=config.num_frames,
             fixed_size=config.fixed_size,
@@ -333,6 +338,9 @@ def build_mlops_pipeline(config: RunConfig, tracker: ExperimentTracker,
         # With more RAM available, multiprocessing workers are safe
         effective_num_workers = 2
         logger.info("Using num_workers=2 (optimized for 256GB RAM)")
+        
+        # Lazy import to avoid circular dependency
+        from lib.models import variable_ar_collate
         
         # Try balanced sampling
         try:
@@ -379,6 +387,8 @@ def build_mlops_pipeline(config: RunConfig, tracker: ExperimentTracker,
     
     # Stage 6: Initialize model
     def initialize_model():
+        # Lazy import to avoid circular dependency
+        from lib.models import PretrainedInceptionVideoModel
         model = PretrainedInceptionVideoModel(freeze_backbone=False)
         model.to(config.device)
         

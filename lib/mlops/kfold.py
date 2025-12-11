@@ -30,7 +30,8 @@ from lib.data import (
     stratified_kfold,
     maybe_limit_to_small_test_subset,
 )
-from lib.models import VideoConfig, VideoDataset, variable_ar_collate, PretrainedInceptionVideoModel
+# Lazy import to avoid circular dependency issues
+# VideoConfig, VideoDataset, variable_ar_collate, PretrainedInceptionVideoModel will be imported when needed
 from lib.augmentation.pregenerate import pregenerate_augmented_dataset
 from lib.training.trainer import OptimConfig, TrainConfig
 from lib.utils.metrics import collect_logits_and_labels, basic_classification_metrics
@@ -226,11 +227,15 @@ def build_kfold_pipeline(config: RunConfig, tracker: ExperimentTracker,
                 aggressive_gc(clear_cuda=True)
                 
                 # Create datasets
+                # Lazy import to avoid circular dependency
+                from lib.models import VideoDataset
                 train_ds = VideoDataset(aug_df, config.project_root, config=video_cfg, train=False)
                 val_ds = VideoDataset(val_df, config.project_root, config=video_cfg, train=False)
                 
                 # Create loaders
                 from lib.data import make_balanced_batch_sampler
+                # Lazy import to avoid circular dependency
+                from lib.models import variable_ar_collate
                 
                 # For 256GB RAM, can use num_workers=2 for better throughput
                 # With more RAM available, multiprocessing workers are safe
@@ -277,6 +282,8 @@ def build_kfold_pipeline(config: RunConfig, tracker: ExperimentTracker,
                 aggressive_gc(clear_cuda=True)
                 
                 # Initialize model
+                # Lazy import to avoid circular dependency
+                from lib.models import PretrainedInceptionVideoModel
                 model = PretrainedInceptionVideoModel(freeze_backbone=False)
                 model.to(config.device)
                 

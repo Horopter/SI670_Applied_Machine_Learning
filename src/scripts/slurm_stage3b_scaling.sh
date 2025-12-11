@@ -3,7 +3,7 @@
 # SLURM Batch Script for Stage 3b: Video Scaling (Frame-based distribution)
 #
 # Processes videos based on frame count capacity: 720,000 frames (8 hours @ 4s/100frames)
-# Account: eecs442f25_class
+# Account: stats_dept1
 #
 # Usage:
 #   sbatch src/scripts/slurm_stage3b_scaling.sh
@@ -296,7 +296,7 @@ log "=========================================="
 log "This job will process videos in range: [$START_IDX, $END_IDX)"
 log "Total videos in this range: $((END_IDX - START_IDX))"
 log "Substage: 3b (2nd of 8 substages)"
-log "Account: eecs442f25_class"
+log "Account: stats_dept1"
 log "Resources: 80GB RAM, 4 CPUs, 1 GPU, 8 hours"
 log "=========================================="
 log ""
@@ -348,6 +348,16 @@ if [ "$RESUME" != "0" ] && [ "$RESUME" != "false" ] && [ "$RESUME" != "no" ]; th
     RESUME_FLAG="--resume"
 fi
 
+# Execution order: forward (0) or reverse (1), default to reverse
+EXECUTION_ORDER="${FVC_EXECUTION_ORDER:-reverse}"
+if [ "$EXECUTION_ORDER" = "0" ] || [ "$EXECUTION_ORDER" = "forward" ]; then
+    EXECUTION_ORDER="forward"
+elif [ "$EXECUTION_ORDER" = "1" ] || [ "$EXECUTION_ORDER" = "reverse" ]; then
+    EXECUTION_ORDER="reverse"
+else
+    EXECUTION_ORDER="reverse"  # Default
+fi
+
 log "Running Stage 3b scaling script..."
 log "Log file: $LOG_FILE"
 
@@ -360,6 +370,7 @@ if "$PYTHON_CMD" "$PYTHON_SCRIPT" \
     --output-dir "$OUTPUT_DIR" \
     --start-idx "$START_IDX" \
     --end-idx "$END_IDX" \
+    --execution-order "$EXECUTION_ORDER" \
     $DELETE_FLAG \
     $RESUME_FLAG \
     2>&1 | tee "$LOG_FILE"; then
@@ -367,6 +378,29 @@ if "$PYTHON_CMD" "$PYTHON_SCRIPT" \
     STAGE3_END=$(date +%s)
     STAGE3_DURATION=$((STAGE3_END - STAGE3_START))
     log "✓ Stage 3b completed successfully in ${STAGE3_DURATION}s ($(($STAGE3_DURATION / 60)) minutes)"
+
+    # Run sanity check to verify all scaled videos are in metadata
+    log ""
+    log "=========================================="
+    log "STAGE 3B: SANITY CHECK"
+    log "=========================================="
+    SANITY_CHECK_SCRIPT="$ORIG_DIR/src/scripts/check_stage3_completion.py"
+    if [ -f "$SANITY_CHECK_SCRIPT" ]; then
+        log "Running sanity check: verifying all scaled videos are in metadata..."
+        if "$PYTHON_CMD" "$SANITY_CHECK_SCRIPT" \
+            --project-root "$ORIG_DIR" \
+            --scaled-videos-dir "$OUTPUT_DIR" \
+            2>&1 | tee -a "$LOG_FILE"; then
+            log "✓ Sanity check passed"
+        else
+            log "⚠ WARNING: Sanity check found discrepancies (see log above)"
+            log "  This may indicate missing metadata entries for some videos"
+            log "  Consider running with --reconstruct flag to fix metadata"
+        fi
+    else
+        log "⚠ WARNING: Sanity check script not found: $SANITY_CHECK_SCRIPT"
+    fi
+
     log "Results saved to: $ORIG_DIR/$OUTPUT_DIR"
     log "Next step: Run remaining substages (3c-3h)"
 else

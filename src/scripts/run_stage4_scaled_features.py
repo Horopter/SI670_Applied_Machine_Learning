@@ -127,12 +127,32 @@ Examples:
         default=True,
         help="Resume from existing feature files (skip already processed videos, default: True)"
     )
+    parser.add_argument(
+        "--execution-order",
+        type=str,
+        default="forward",
+        choices=["forward", "reverse", "0", "1"],
+        help="Execution order: 'forward' or '0' (default) processes from start_idx to end_idx, "
+             "'reverse' or '1' processes from end_idx-1 down to start_idx"
+    )
     
     args = parser.parse_args()
     
+    # Normalize execution_order: "0" or "forward" -> "forward", "1" or "reverse" -> "reverse"
+    if args.execution_order in ("0", "forward"):
+        execution_order = "forward"
+    elif args.execution_order in ("1", "reverse"):
+        execution_order = "reverse"
+    else:
+        execution_order = "forward"  # Default
+    
     # Convert to Path objects
     project_root = Path(args.project_root).resolve()
-    scaled_metadata_path = project_root / args.scaled_metadata
+    # Handle relative paths - if args.scaled_metadata is relative, make it relative to project_root
+    if Path(args.scaled_metadata).is_absolute():
+        scaled_metadata_path = Path(args.scaled_metadata)
+    else:
+        scaled_metadata_path = project_root / args.scaled_metadata
     output_dir = project_root / args.output_dir
     
     # Logging setup - also log to file
@@ -165,6 +185,7 @@ Examples:
                    args.end_idx if args.end_idx is not None else "all")
     logger.info("Delete existing: %s", args.delete_existing)
     logger.info("Resume mode: %s", args.resume)
+    logger.info("Execution order: %s", execution_order)
     logger.info("Log file: %s", log_file)
     logger.debug("Python version: %s", sys.version)
     logger.debug("Python executable: %s", sys.executable)
@@ -176,11 +197,63 @@ Examples:
     logger.info("Checking prerequisites...")
     logger.info("=" * 80)
     
+    # Try to find metadata file (check for alternative formats)
+    from lib.utils.paths import find_metadata_file
+    
     if not scaled_metadata_path.exists():
-        logger.error("Scaled metadata file not found: %s", scaled_metadata_path)
-        logger.error("Please run Stage 3 first: python src/scripts/run_stage3_scaling.py")
-        return 1
+        logger.warning("Specified metadata file not found: %s", scaled_metadata_path)
+        logger.info("Checking for alternative metadata file formats...")
+        
+        # Try to find metadata file with flexible search
+        metadata_dir = scaled_metadata_path.parent
+        metadata_name = scaled_metadata_path.stem  # e.g., "scaled_metadata"
+        
+        found_metadata = find_metadata_file(metadata_dir, metadata_name)
+        
+        if found_metadata and found_metadata.exists():
+            logger.info("✓ Found alternative metadata file: %s", found_metadata)
+            logger.info("  Using this file instead of: %s", scaled_metadata_path)
+            scaled_metadata_path = found_metadata
+        else:
+            logger.error("Scaled metadata file not found: %s", scaled_metadata_path)
+            
+            # Check for alternative formats
+            logger.info("Checking for alternative metadata files in: %s", metadata_dir)
+            
+            if metadata_dir.exists():
+                # Look for common metadata file patterns
+                alt_files = []
+                for pattern in ["scaled_metadata.*", "*metadata*.parquet", "*metadata*.arrow", "*metadata*.csv"]:
+                    alt_files.extend(list(metadata_dir.glob(pattern)))
+                
+                if alt_files:
+                    logger.info("Found potential metadata files:")
+                    for f in sorted(alt_files):
+                        logger.info("  - %s (size: %s bytes)", f.name, f.stat().st_size if f.exists() else "N/A")
+                    logger.info("")
+                    logger.info("Try using one of these files with --scaled-metadata")
+                else:
+                    logger.warning("No metadata files found in: %s", metadata_dir)
+                    logger.info("")
+                    logger.info("Available files in directory:")
+                    try:
+                        dir_files = sorted(metadata_dir.iterdir())
+                        for f in dir_files[:20]:  # Show first 20 files
+                            logger.info("  - %s", f.name)
+                        if len(dir_files) > 20:
+                            logger.info("  ... and %d more files", len(dir_files) - 20)
+                    except Exception as e:
+                        logger.debug("Could not list directory contents: %s", e)
+            else:
+                logger.error("Metadata directory does not exist: %s", metadata_dir)
+            
+            logger.error("")
+            logger.error("Please run Stage 3 first: python src/scripts/run_stage3_scaling.py")
+            logger.error("Or specify the correct metadata file path with --scaled-metadata")
+            return 1
+    
     logger.info("✓ Scaled metadata file found: %s", scaled_metadata_path)
+    logger.info("  File size: %s bytes", scaled_metadata_path.stat().st_size)
     
     # Log system information
     try:
@@ -220,7 +293,8 @@ Examples:
             resume=args.resume,
             frame_percentage=args.frame_percentage,
             min_frames=args.min_frames,
-            max_frames=args.max_frames
+            max_frames=args.max_frames,
+            execution_order=execution_order
         )
         
         stage_duration = time.time() - stage_start

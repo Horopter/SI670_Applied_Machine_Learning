@@ -31,11 +31,35 @@ MODEL_MEMORY_CONFIGS = {
         "num_frames": 8,  # Increased from 6
         "gradient_accumulation_steps": 1,  # No accumulation needed with larger batch
     },
+    "logistic_regression_stage2": {
+        "batch_size": 8,
+        "num_workers": 2,
+        "num_frames": 8,
+        "gradient_accumulation_steps": 1,
+    },
+    "logistic_regression_stage2_stage4": {
+        "batch_size": 8,
+        "num_workers": 2,
+        "num_frames": 8,
+        "gradient_accumulation_steps": 1,
+    },
     "svm": {
         "batch_size": 8,  # Increased from 4 for 256GB RAM
         "num_workers": 2,  # Can use workers with more RAM
         "num_frames": 8,  # Increased from 6
         "gradient_accumulation_steps": 1,  # No accumulation needed with larger batch
+    },
+    "svm_stage2": {
+        "batch_size": 8,
+        "num_workers": 2,
+        "num_frames": 8,
+        "gradient_accumulation_steps": 1,
+    },
+    "svm_stage2_stage4": {
+        "batch_size": 8,
+        "num_workers": 2,
+        "num_frames": 8,
+        "gradient_accumulation_steps": 1,
     },
     "naive_cnn": {
         "batch_size": 4,  # Increased from 1 for 256GB RAM
@@ -123,6 +147,37 @@ MODEL_MEMORY_CONFIGS = {
         "num_frames": 8,  # Increased from 6
         "gradient_accumulation_steps": 1,
     },
+    # Future models
+    "timesformer": {
+        "batch_size": 1,  # Conservative for video transformers
+        "num_workers": 2,
+        "num_frames": 8,
+        "gradient_accumulation_steps": 16,
+    },
+    "vivit": {
+        "batch_size": 1,  # Conservative for video transformers
+        "num_workers": 2,
+        "num_frames": 8,
+        "gradient_accumulation_steps": 16,
+    },
+    "two_stream": {
+        "batch_size": 1,  # Conservative (dual streams = higher memory)
+        "num_workers": 2,
+        "num_frames": 8,
+        "gradient_accumulation_steps": 16,
+    },
+    "slowfast_attention": {
+        "batch_size": 1,  # Conservative (attention adds memory overhead)
+        "num_workers": 2,
+        "num_frames": 8,
+        "gradient_accumulation_steps": 20,
+    },
+    "slowfast_multiscale": {
+        "batch_size": 1,  # Conservative (multiple pathways)
+        "num_workers": 2,
+        "num_frames": 8,
+        "gradient_accumulation_steps": 20,
+    },
 }
 
 
@@ -188,9 +243,49 @@ def create_model(model_type: str, config: RunConfig) -> Any:
             num_frames=get_param("num_frames", num_frames)
         )
     
+    elif model_type == "logistic_regression_stage2":
+        from ._linear import LogisticRegressionBaseline
+        return LogisticRegressionBaseline(
+            features_stage2_path=get_param("features_stage2_path", None),
+            features_stage4_path=None,
+            use_stage2_only=True,
+            cache_dir=get_param("feature_cache_dir", None),
+            num_frames=get_param("num_frames", num_frames)
+        )
+    
+    elif model_type == "logistic_regression_stage2_stage4":
+        from ._linear import LogisticRegressionBaseline
+        return LogisticRegressionBaseline(
+            features_stage2_path=get_param("features_stage2_path", None),
+            features_stage4_path=get_param("features_stage4_path", None),
+            use_stage2_only=False,
+            cache_dir=get_param("feature_cache_dir", None),
+            num_frames=get_param("num_frames", num_frames)
+        )
+    
     elif model_type == "svm":
         from ._svm import SVMBaseline
         return SVMBaseline(
+            cache_dir=get_param("feature_cache_dir", None),
+            num_frames=get_param("num_frames", num_frames)
+        )
+    
+    elif model_type == "svm_stage2":
+        from ._svm import SVMBaseline
+        return SVMBaseline(
+            features_stage2_path=get_param("features_stage2_path", None),
+            features_stage4_path=None,
+            use_stage2_only=True,
+            cache_dir=get_param("feature_cache_dir", None),
+            num_frames=get_param("num_frames", num_frames)
+        )
+    
+    elif model_type == "svm_stage2_stage4":
+        from ._svm import SVMBaseline
+        return SVMBaseline(
+            features_stage2_path=get_param("features_stage2_path", None),
+            features_stage4_path=get_param("features_stage4_path", None),
+            use_stage2_only=False,
             cache_dir=get_param("feature_cache_dir", None),
             num_frames=get_param("num_frames", num_frames)
         )
@@ -286,6 +381,67 @@ def create_model(model_type: str, config: RunConfig) -> Any:
             xgb_params=get_param("xgb_params", None)
         )
     
+    elif model_type == "timesformer":
+        from .timesformer import TimeSformerModel
+        return TimeSformerModel(
+            num_frames=get_param("num_frames", num_frames),
+            img_size=get_param("img_size", 224),
+            patch_size=get_param("patch_size", 16),
+            embed_dim=get_param("embed_dim", 768),
+            depth=get_param("depth", 12),
+            num_heads=get_param("num_heads", 12),
+            mlp_ratio=get_param("mlp_ratio", 4.0),
+            qkv_bias=get_param("qkv_bias", True),
+            dropout=get_param("dropout", 0.1),
+            attn_drop=get_param("attn_drop", 0.0),
+            pretrained=get_param("pretrained", True)
+        )
+    
+    elif model_type == "vivit":
+        from .vivit import ViViTModel
+        return ViViTModel(
+            num_frames=get_param("num_frames", num_frames),
+            img_size=get_param("img_size", 224),
+            tubelet_size=get_param("tubelet_size", (2, 16, 16)),
+            embed_dim=get_param("embed_dim", 768),
+            depth=get_param("depth", 12),
+            num_heads=get_param("num_heads", 12),
+            mlp_ratio=get_param("mlp_ratio", 4.0),
+            qkv_bias=get_param("qkv_bias", True),
+            dropout=get_param("dropout", 0.1),
+            attn_drop=get_param("attn_drop", 0.0),
+            pretrained=get_param("pretrained", True)
+        )
+    
+    elif model_type == "two_stream":
+        from .two_stream import TwoStreamModel
+        return TwoStreamModel(
+            num_frames=get_param("num_frames", num_frames),
+            rgb_backbone=get_param("rgb_backbone", "resnet18"),
+            flow_backbone=get_param("flow_backbone", "resnet18"),
+            fusion_method=get_param("fusion_method", "concat"),
+            pretrained=get_param("pretrained", True)
+        )
+    
+    elif model_type == "slowfast_attention":
+        from .slowfast_advanced import SlowFastAttentionModel
+        return SlowFastAttentionModel(
+            slow_frames=get_param("slow_frames", 16),
+            fast_frames=get_param("fast_frames", 64),
+            alpha=get_param("alpha", 8),
+            beta=get_param("beta", 1.0 / 8),
+            pretrained=get_param("pretrained", True),
+            attention_type=get_param("attention_type", "cross")
+        )
+    
+    elif model_type == "slowfast_multiscale":
+        from .slowfast_advanced import MultiScaleSlowFastModel
+        return MultiScaleSlowFastModel(
+            num_frames=get_param("num_frames", num_frames),
+            scales=get_param("scales", [1, 2, 4, 8]),
+            pretrained=get_param("pretrained", True)
+        )
+    
     else:
         raise ValueError(f"Unknown model type: {model_type}. Available: {list_available_models()}")
 
@@ -305,7 +461,11 @@ def is_pytorch_model(model_type: str) -> bool:
     Returns:
         True if PyTorch model, False if sklearn/XGBoost baseline
     """
-    sklearn_models = {"logistic_regression", "svm"}
+    sklearn_models = {
+        "logistic_regression", "svm",
+        "logistic_regression_stage2", "logistic_regression_stage2_stage4",
+        "svm_stage2", "svm_stage2_stage4"
+    }
     # XGBoost models are not PyTorch models (they use PyTorch for feature extraction only)
     if is_xgboost_model(model_type):
         return False
@@ -326,8 +486,12 @@ def get_model_input_shape(model_type: str, config: RunConfig) -> tuple:
     num_frames = config.num_frames
     fixed_size = config.fixed_size or 256
     
-    if model_type in ["logistic_regression", "svm"]:
-        return "features"  # Handcrafted features, not video
+    if model_type in [
+        "logistic_regression", "svm",
+        "logistic_regression_stage2", "logistic_regression_stage2_stage4",
+        "svm_stage2", "svm_stage2_stage4"
+    ]:
+        return "features"  # Stage 2/4 features, not video
     
     elif model_type in ["naive_cnn", "vit_gru", "vit_transformer"]:
         return (3, num_frames, fixed_size, fixed_size)

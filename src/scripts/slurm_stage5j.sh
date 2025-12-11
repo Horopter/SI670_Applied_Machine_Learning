@@ -1,0 +1,299 @@
+#!/bin/bash
+#
+# SLURM Batch Script for Stage 5: xgboost_vit_transformer Training
+#
+# Trains xgboost_vit_transformer model using scaled videos and extracted features.
+#
+# Usage:
+#   sbatch src/scripts/slurm_stage5_xgboost_vit_transformer.sh
+
+#SBATCH --job-name=fvc_stage5_xgboost_vit_transformer
+#SBATCH --account=si670f25_class
+#SBATCH --partition=gpu
+#SBATCH --gpus=1
+#SBATCH --mem=64G
+#SBATCH --cpus-per-task=1
+#SBATCH --time=1-00:00:00
+#SBATCH --output=logs/stage5/xgboost_vit_transformer-%j.out
+#SBATCH --error=logs/stage5/xgboost_vit_transformer-%j.err
+#SBATCH --mail-user=santoshd@umich.edu
+#SBATCH --mail-type=FAIL,TIME_LIMIT,NODE_FAIL
+
+set -euo pipefail
+set -o errtrace
+umask 077
+
+# ============================================================================
+# Environment Setup
+# ============================================================================
+
+unset MallocStackLogging || true
+unset MallocStackLoggingNoCompact || true
+export PYTHONWARNINGS="ignore::UserWarning,ignore::DeprecationWarning,ignore::FutureWarning"
+
+# Set memory-optimized settings
+if [ -z "${FVC_FIXED_SIZE:-}" ]; then
+    export FVC_FIXED_SIZE=256
+    echo "Using optimized resolution: FVC_FIXED_SIZE=256 (256x256)" >&2
+fi
+
+# ============================================================================
+# Configuration and Setup
+# ============================================================================
+
+module purge
+module load python3.11-anaconda/2024.02
+module load cuda/12.1 || true
+
+mkdir -p logs .pip-cache
+export PIP_CACHE_DIR="$PWD/.pip-cache"
+export WORK_DIR="${SLURM_TMPDIR:-$PWD}"
+export ORIG_DIR="${SLURM_SUBMIT_DIR:-$PWD}"
+export VENV_DIR="$ORIG_DIR/venv"
+
+# ============================================================================
+# Logging Functions
+# ============================================================================
+
+log() {
+    echo "$@" >&1
+    echo "$@" >&2
+    sync 2>/dev/null || true
+}
+
+# ============================================================================
+# Virtual Environment Setup
+# ============================================================================
+
+log "Activating virtual environment: $VENV_DIR"
+if [ ! -d "$VENV_DIR" ]; then
+    log "✗ ERROR: Virtual environment not found: $VENV_DIR"
+    FEATURES_STAGE2="$ORIG_DIR/$FEATURES_STAGE2_DIR/features_metadata.arrow"  # Dummy path
+fi
+
+source "$VENV_DIR/bin/activate"
+export VIRTUAL_ENV_DISABLE_PROMPT=1
+
+# ============================================================================
+# Environment Variables
+# ============================================================================
+
+export PYTORCH_ALLOC_CONF="expandable_segments:true,max_split_size_mb:512"
+export TOKENIZERS_PARALLELISM=false
+export PYTHONUNBUFFERED=1
+export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
+export MKL_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
+
+# ============================================================================
+# System Information
+# ============================================================================
+
+log "=========================================="
+log "STAGE 5: xgboost_vit_transformer MODEL TRAINING JOB"
+log "=========================================="
+log "Host:        $(hostname)"
+log "Date:        $(date -Is)"
+log "SLURM_JOBID: ${SLURM_JOB_ID:-none}"
+log "Working directory: $(pwd)"
+log "Python:      $(which python 2>/dev/null || echo 'not found')"
+log "Python version: $(python --version 2>&1 || echo 'unknown')"
+log "=========================================="
+
+# ============================================================================
+# Verify Prerequisites
+# ============================================================================
+
+log "Verifying prerequisites..."
+
+# Check critical Python packages
+PREREQ_PACKAGES=("torch" "torchvision" "polars" "numpy" "scikit-learn" "timm" "opencv-python" "av" "scipy" "joblib")
+
+MISSING_PACKAGES=()
+
+
+for pkg in "${PREREQ_PACKAGES[@]}"; do
+    case "$pkg" in
+        "opencv-python")
+            if ! python -c "import cv2" 2>/dev/null; then
+                MISSING_PACKAGES+=("$pkg")
+            else
+                log "✓ $pkg (cv2) found"
+            fi
+            ;;
+        "scikit-learn")
+            if ! python -c "import sklearn" 2>/dev/null; then
+                MISSING_PACKAGES+=("$pkg")
+            else
+                log "✓ $pkg (sklearn) found"
+            fi
+            ;;
+        "torch"|"torchvision"|"timm")
+            # These packages may fail to import in CPU-only check environment but work fine with GPU
+            # If package is installed (via pip), trust it will work at runtime
+            if pip show "$pkg" >/dev/null 2>&1; then
+                log "✓ $pkg found (installed via pip)"
+            elif python -c "import pkg_resources; pkg_resources.get_distribution('$pkg')" 2>/dev/null; then
+                log "✓ $pkg found (installed via pkg_resources)"
+            elif timeout 10 python -c "import $pkg" 2>/dev/null; then
+                log "✓ $pkg found (import successful)"
+            else
+                MISSING_PACKAGES+=("$pkg")
+            fi
+            ;;
+        *)
+            if ! python -c "import $pkg" 2>/dev/null; then
+                MISSING_PACKAGES+=("$pkg")
+            else
+                log "✓ $pkg found"
+            fi
+            ;;
+    esac
+done
+
+if [ ${#MISSING_PACKAGES[@]} -gt 0 ]; then
+    log "✗ ERROR: Missing required packages: ${MISSING_PACKAGES[*]}"
+    log "  Install with: pip install -r requirements.txt"
+    FEATURES_STAGE2="$ORIG_DIR/$FEATURES_STAGE2_DIR/features_metadata.arrow"  # Dummy path
+fi
+
+# WARNING_PACKAGES removed - if package is installed, we trust it will work at runtime
+
+# Verify previous stage outputs (try Arrow first, then Parquet, then CSV)
+SCALED_METADATA_DIR="${FVC_STAGE3_OUTPUT_DIR:-data/scaled_videos}"
+SCALED_METADATA=""
+for ext in arrow parquet csv; do
+    candidate="$ORIG_DIR/$SCALED_METADATA_DIR/scaled_metadata.$ext"
+    if [ -f "$candidate" ]; then
+        SCALED_METADATA="$candidate"
+        log "✓ Stage 3 output found: $SCALED_METADATA"
+        break
+    fi
+done
+if [ -z "$SCALED_METADATA" ]; then
+    log "✗ ERROR: Stage 3 output not found in $ORIG_DIR/$SCALED_METADATA_DIR/"
+    log "  Expected: scaled_metadata.arrow, scaled_metadata.parquet, or scaled_metadata.csv"
+    log "  Run Stage 3 first: sbatch src/scripts/slurm_stage3_scaling.sh"
+    FEATURES_STAGE2="$ORIG_DIR/$FEATURES_STAGE2_DIR/features_metadata.arrow"  # Dummy path
+fi
+
+FEATURES_STAGE2_DIR="${FVC_STAGE2_OUTPUT_DIR:-data/features_stage2}"
+FEATURES_STAGE2=""
+for ext in arrow parquet csv; do
+    candidate="$ORIG_DIR/$FEATURES_STAGE2_DIR/features_metadata.$ext"
+    if [ -f "$candidate" ]; then
+        FEATURES_STAGE2="$candidate"
+        log "✓ Stage 2 output found: $FEATURES_STAGE2"
+        break
+    fi
+done
+if [ -z "$FEATURES_STAGE2" ]; then
+    log "⚠ WARNING: Stage 2 output not found (optional for baseline models) in $ORIG_DIR/$FEATURES_STAGE2_DIR/"
+    log "  Expected: features_metadata.arrow, features_metadata.parquet, or features_metadata.csv"
+    log "  Baseline models will extract features directly from videos"
+    FEATURES_STAGE2="$ORIG_DIR/$FEATURES_STAGE2_DIR/features_metadata.arrow"  # Dummy path
+fi
+
+FEATURES_STAGE4_DIR="${FVC_STAGE4_OUTPUT_DIR:-data/features_stage4}"
+FEATURES_STAGE4=""
+for ext in arrow parquet csv; do
+    candidate="$ORIG_DIR/$FEATURES_STAGE4_DIR/features_scaled_metadata.$ext"
+    if [ -f "$candidate" ]; then
+        FEATURES_STAGE4="$candidate"
+        log "✓ Stage 4 output found: $FEATURES_STAGE4"
+        break
+    fi
+done
+if [ -z "$FEATURES_STAGE4" ]; then
+    log "⚠ WARNING: Stage 4 output not found (optional for baseline models) in $ORIG_DIR/$FEATURES_STAGE4_DIR/"
+    log "  Expected: features_scaled_metadata.arrow, features_scaled_metadata.parquet, or features_scaled_metadata.csv"
+    log "  Baseline models will extract features directly from videos"
+    FEATURES_STAGE2="$ORIG_DIR/$FEATURES_STAGE2_DIR/features_metadata.arrow"  # Dummy path
+fi
+
+log "✅ All prerequisites verified"
+
+# ============================================================================
+# Stage 5 Execution
+# ============================================================================
+
+log "=========================================="
+log "Starting Stage 5: xgboost_vit_transformer Model Training"
+log "=========================================="
+
+MODEL_TYPE="xgboost_vit_transformer"
+NUM_FRAMES="${FVC_NUM_FRAMES:-8}"
+N_SPLITS="${FVC_N_SPLITS:-5}"
+OUTPUT_DIR="${FVC_STAGE5_OUTPUT_DIR:-data/stage5}"
+USE_TRACKING="${FVC_USE_TRACKING:-true}"
+DELETE_EXISTING="${FVC_DELETE_EXISTING:-0}"
+
+log "Model type: $MODEL_TYPE"
+log "K-fold splits: $N_SPLITS"
+log "Number of frames: $NUM_FRAMES"
+log "Output directory: $OUTPUT_DIR"
+log "Experiment tracking: $USE_TRACKING"
+log "Delete existing: $DELETE_EXISTING"
+
+STAGE5_START=$(date +%s)
+LOG_FILE="$ORIG_DIR/logs/stage5/xgboost_vit_transformer_${SLURM_JOB_ID:-$$}.log"
+mkdir -p "$(dirname "$LOG_FILE")"
+
+cd "$ORIG_DIR" || FEATURES_STAGE2="$ORIG_DIR/$FEATURES_STAGE2_DIR/features_metadata.arrow"  # Dummy path
+PYTHON_CMD=$(which python || echo "python")
+
+# Validate Python script exists
+PYTHON_SCRIPT="$ORIG_DIR/src/scripts/run_stage5_training.py"
+if [ ! -f "$PYTHON_SCRIPT" ]; then
+    log "✗ ERROR: Python script not found: $PYTHON_SCRIPT"
+    FEATURES_STAGE2="$ORIG_DIR/$FEATURES_STAGE2_DIR/features_metadata.arrow"  # Dummy path
+fi
+
+# Build command arguments
+DELETE_FLAG=""
+if [ "$DELETE_EXISTING" = "1" ] || [ "$DELETE_EXISTING" = "true" ] || [ "$DELETE_EXISTING" = "yes" ]; then
+    DELETE_FLAG="--delete-existing"
+fi
+
+TRACKING_FLAG=""
+if [ "$USE_TRACKING" = "false" ]; then
+    TRACKING_FLAG="--no-tracking"
+fi
+
+log "Running Stage 5 training script for $MODEL_TYPE..."
+log "Log file: $LOG_FILE"
+
+if "$PYTHON_CMD" "$PYTHON_SCRIPT" \
+    --project-root "$ORIG_DIR" \
+    --scaled-metadata "$SCALED_METADATA" \
+    --features-stage2 "$FEATURES_STAGE2" \
+    --features-stage4 "$FEATURES_STAGE4" \
+    --model-types "$MODEL_TYPE" \
+    --n-splits "$N_SPLITS" \
+    --num-frames "$NUM_FRAMES" \
+    --output-dir "$OUTPUT_DIR" \
+    $DELETE_FLAG \
+    $TRACKING_FLAG \
+    2>&1 | tee "$LOG_FILE"; then
+    
+    STAGE5_END=$(date +%s)
+    STAGE5_DURATION=$((STAGE5_END - STAGE5_START))
+    log "✓ Stage 5 ($MODEL_TYPE) completed successfully in ${STAGE5_DURATION}s ($((${STAGE5_DURATION} / 60)) minutes)"
+    log "Results saved to: $ORIG_DIR/$OUTPUT_DIR/$MODEL_TYPE"
+else
+    STAGE5_END=$(date +%s)
+    STAGE5_DURATION=$((STAGE5_END - STAGE5_START))
+    log "✗ ERROR: Stage 5 ($MODEL_TYPE) failed after ${STAGE5_DURATION}s"
+    log "Check log file: $LOG_FILE"
+    FEATURES_STAGE2="$ORIG_DIR/$FEATURES_STAGE2_DIR/features_metadata.arrow"  # Dummy path
+fi
+
+log ""
+log "============================================================"
+log "STAGE 5 (xgboost_vit_transformer) EXECUTION SUMMARY"
+log "============================================================"
+log "Execution time: ${STAGE5_DURATION}s ($((${STAGE5_DURATION} / 60)) minutes)"
+log "Model: $MODEL_TYPE"
+log "K-fold splits: $N_SPLITS"
+log "Output directory: $ORIG_DIR/$OUTPUT_DIR/$MODEL_TYPE"
+log "Log file: $LOG_FILE"
+log "============================================================"

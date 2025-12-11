@@ -25,7 +25,8 @@ try:
 except ImportError:
     XGBOOST_AVAILABLE = False
 
-from lib.models import VideoConfig, VideoDataset
+# Lazy import to avoid circular dependency issues
+# VideoConfig and VideoDataset will be imported when needed
 from lib.training.feature_preprocessing import remove_collinear_features
 from lib.training.model_factory import create_model, get_model_config
 from lib.utils.memory import aggressive_gc
@@ -36,7 +37,7 @@ logger = logging.getLogger(__name__)
 def extract_features_from_pretrained_model(
     model: nn.Module,
     model_type: str,
-    dataset: VideoDataset,
+    dataset,  # VideoDataset - imported lazily to avoid circular dependency
     device: str,
     batch_size: int = 1,
     project_root: str = ""
@@ -279,7 +280,9 @@ class XGBoostPretrainedBaseline:
                 param.requires_grad = False
             self.base_model.eval()
         
-        # Create dataset
+        # Create dataset - lazy import to avoid circular dependency
+        from lib.models import VideoConfig, VideoDataset
+        
         df = pl.DataFrame({
             "video_path": video_paths,
             "label": labels

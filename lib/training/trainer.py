@@ -14,7 +14,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, Tuple, Iterable, Dict, List
+from typing import Optional, Tuple, Iterable, Dict, List, Any
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.optim import Optimizer, AdamW
@@ -311,8 +312,13 @@ def train_one_epoch(
             if device.startswith("cuda"):
                 torch.cuda.empty_cache()
         
-        clips = clips.to(device)
-        labels = labels.to(device)
+        # GPU-optimized data transfer with non_blocking
+        if device.startswith("cuda"):
+            clips = clips.to(device, non_blocking=True)
+            labels = labels.to(device, non_blocking=True)
+        else:
+            clips = clips.to(device)
+            labels = labels.to(device)
         
         # Zero gradients at start of accumulation cycle
         if batch_idx % gradient_accumulation_steps == 0:
@@ -409,19 +415,35 @@ def evaluate(
     model: nn.Module,
     loader: DataLoader,
     device: str,
-) -> Tuple[float, float]:
+) -> Dict[str, Any]:
     """
     Evaluate model on validation/test set.
     
     Returns:
-        (average_loss, accuracy)
+        Dictionary with metrics:
+        {
+            "loss": average_loss,
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall": recall,
+            "f1": f1_score,
+            "per_class": {
+                "0": {"precision": ..., "recall": ..., "f1": ...},
+                "1": {"precision": ..., "recall": ..., "f1": ...}
+            }
+        }
     """
     from lib.utils.memory import aggressive_gc
+    from sklearn.metrics import precision_score, recall_score, f1_score, precision_recall_fscore_support
     
     model.eval()
     total_loss = 0.0
     total_correct = 0
     total_samples = 0
+    
+    # Collect all predictions and labels for metric computation
+    all_preds = []
+    all_labels = []
     
     criterion: Optional[nn.Module] = None
     first_batch = True
@@ -469,6 +491,10 @@ def evaluate(
             loss = criterion(logits, labels)
             preds = logits.argmax(dim=1)
         
+        # Collect predictions and labels
+        all_preds.append(preds.cpu().numpy())
+        all_labels.append(labels.cpu().numpy())
+        
         total_correct += int((preds == labels).sum().item())
         total_samples += int(labels.numel())
         total_loss += float(loss.item())
@@ -480,10 +506,40 @@ def evaluate(
     avg_loss = total_loss / max(1, len(loader))
     acc = total_correct / max(1, total_samples)
     
+    # Compute comprehensive metrics
+    all_preds = np.concatenate(all_preds)
+    all_labels = np.concatenate(all_labels)
+    
+    # Overall metrics (binary classification)
+    precision = float(precision_score(all_labels, all_preds, average='binary', zero_division=0))
+    recall = float(recall_score(all_labels, all_preds, average='binary', zero_division=0))
+    f1 = float(f1_score(all_labels, all_preds, average='binary', zero_division=0))
+    
+    # Per-class metrics
+    precision_per_class, recall_per_class, f1_per_class, support = precision_recall_fscore_support(
+        all_labels, all_preds, average=None, zero_division=0
+    )
+    
+    per_class_metrics = {}
+    for class_idx in range(len(precision_per_class)):
+        per_class_metrics[str(class_idx)] = {
+            "precision": float(precision_per_class[class_idx]),
+            "recall": float(recall_per_class[class_idx]),
+            "f1": float(f1_per_class[class_idx]),
+            "support": int(support[class_idx])
+        }
+    
     # Final aggressive GC
     aggressive_gc(clear_cuda=device.startswith("cuda"))
     
-    return avg_loss, acc
+    return {
+        "loss": avg_loss,
+        "accuracy": acc,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+        "per_class": per_class_metrics
+    }
 
 
 def fit(
@@ -570,8 +626,16 @@ def fit(
         if val_loader is not None:
             # Ensure model is in eval mode (BatchNorm uses running stats, Dropout disabled)
             model.eval()
-            val_loss, val_acc = evaluate(model, val_loader, device=device)
-            logger.info(f"Epoch {epoch}, Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}")
+            val_metrics = evaluate(model, val_loader, device=device)
+            val_loss = val_metrics["loss"]
+            val_acc = val_metrics["accuracy"]
+            val_f1 = val_metrics["f1"]
+            val_precision = val_metrics["precision"]
+            val_recall = val_metrics["recall"]
+            logger.info(
+                f"Epoch {epoch}, Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, "
+                f"Val F1: {val_f1:.4f}, Val Precision: {val_precision:.4f}, Val Recall: {val_recall:.4f}"
+            )
             
             # Early stopping check
             if early_stopping is not None:

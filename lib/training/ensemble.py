@@ -16,7 +16,8 @@ from torch.utils.data import DataLoader, Dataset
 import joblib
 
 from lib.data import stratified_kfold
-from lib.models import VideoConfig, VideoDataset
+# Lazy import to avoid circular dependency issues
+# VideoConfig and VideoDataset will be imported when needed
 from lib.training.model_factory import create_model, is_pytorch_model, get_model_config, list_available_models
 from lib.training.trainer import OptimConfig, TrainConfig, fit, evaluate
 from lib.training._linear import LogisticRegressionBaseline
@@ -147,7 +148,7 @@ def load_trained_model(
 def get_predictions_from_model(
     model: object,
     model_type: str,
-    dataset: VideoDataset,
+    dataset,  # VideoDataset - imported lazily to avoid circular dependency
     device: str,
     project_root: str
 ) -> np.ndarray:
@@ -256,6 +257,8 @@ def train_ensemble_model(
     logger.info(f"Found {scaled_df.height} videos")
     
     # Create video config
+    # Lazy import to avoid circular dependency
+    from lib.models import VideoConfig
     video_config = VideoConfig(num_frames=num_frames, fixed_size=256)
     
     # Get all folds
@@ -272,6 +275,8 @@ def train_ensemble_model(
         train_df, val_df = all_folds[fold_idx]
         
         # Create datasets
+        # Lazy import to avoid circular dependency
+        from lib.models import VideoDataset
         train_dataset = VideoDataset(train_df, project_root=str(project_root), config=video_config)
         val_dataset = VideoDataset(val_df, project_root=str(project_root), config=video_config)
         

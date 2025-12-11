@@ -126,8 +126,24 @@ Examples:
         default=True,
         help="Resume from existing feature files (skip already processed videos, default: True)"
     )
+    parser.add_argument(
+        "--execution-order",
+        type=str,
+        default="forward",
+        choices=["forward", "reverse", "0", "1"],
+        help="Execution order: 'forward' or '0' (default) processes from start_idx to end_idx, "
+             "'reverse' or '1' processes from end_idx-1 down to start_idx"
+    )
     
     args = parser.parse_args()
+    
+    # Normalize execution_order: "0" or "forward" -> "forward", "1" or "reverse" -> "reverse"
+    if args.execution_order in ("0", "forward"):
+        execution_order = "forward"
+    elif args.execution_order in ("1", "reverse"):
+        execution_order = "reverse"
+    else:
+        execution_order = "forward"  # Default
     
     # Convert to Path objects
     project_root = Path(args.project_root).resolve()
@@ -164,6 +180,7 @@ Examples:
                    args.end_idx if args.end_idx is not None else "all")
     logger.info("Delete existing: %s", args.delete_existing)
     logger.info("Resume mode: %s", args.resume)
+    logger.info("Execution order: %s", execution_order)
     logger.info("Log file: %s", log_file)
     logger.debug("Python version: %s", sys.version)
     logger.debug("Python executable: %s", sys.executable)
@@ -216,7 +233,8 @@ Examples:
             start_idx=args.start_idx,
             end_idx=args.end_idx,
             delete_existing=args.delete_existing,
-            resume=args.resume
+            resume=args.resume,
+            execution_order=execution_order
         )
         
         stage_duration = time.time() - stage_start

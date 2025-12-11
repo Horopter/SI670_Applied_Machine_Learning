@@ -13,12 +13,25 @@ from __future__ import annotations
 
 import logging
 import subprocess
+import shutil
 from pathlib import Path
 from typing import Dict, List, Optional
 import numpy as np
 import cv2
 
 logger = logging.getLogger(__name__)
+
+# Check if ffprobe is available (check once at module load)
+_FFPROBE_AVAILABLE = None
+
+def _check_ffprobe_available() -> bool:
+    """Check if ffprobe is available in PATH."""
+    global _FFPROBE_AVAILABLE
+    if _FFPROBE_AVAILABLE is None:
+        _FFPROBE_AVAILABLE = shutil.which('ffprobe') is not None
+        if not _FFPROBE_AVAILABLE:
+            logger.debug("ffprobe not found in PATH - codec cue extraction will be disabled")
+    return _FFPROBE_AVAILABLE
 
 
 def extract_noise_residual(frame: np.ndarray) -> Dict[str, float]:
@@ -188,12 +201,22 @@ def extract_codec_cues(video_path: str) -> Dict[str, float]:
     """
     Extract codec-related cues using ffprobe.
     
+    If ffprobe is not available, returns default values without logging warnings.
+    
     Args:
         video_path: Path to video file
     
     Returns:
         Dictionary of codec features
     """
+    # Check if ffprobe is available - if not, return defaults silently
+    if not _check_ffprobe_available():
+        return {
+            "codec_bitrate": 0.0,
+            "codec_fps": 30.0,
+            "codec_resolution": 0.0,
+        }
+    
     try:
         result = subprocess.run(
             ['ffprobe', '-v', 'error', '-select_streams', 'v:0',
@@ -205,7 +228,8 @@ def extract_codec_cues(video_path: str) -> Dict[str, float]:
         )
         
         if result.returncode != 0:
-            logger.warning(f"ffprobe failed for {video_path}")
+            # Only log at debug level - ffprobe might fail for some videos
+            logger.debug(f"ffprobe failed for {video_path} (returncode: {result.returncode})")
             return {
                 "codec_bitrate": 0.0,
                 "codec_fps": 30.0,
@@ -241,8 +265,18 @@ def extract_codec_cues(video_path: str) -> Dict[str, float]:
             "codec_fps": fps,
             "codec_resolution": float(resolution),
         }
+    except FileNotFoundError:
+        # ffprobe not found - this should not happen if check passed, but handle gracefully
+        # Only log once at debug level
+        logger.debug("ffprobe command not found (should have been caught by availability check)")
+        return {
+            "codec_bitrate": 0.0,
+            "codec_fps": 30.0,
+            "codec_resolution": 0.0,
+        }
     except Exception as e:
-        logger.warning(f"Failed to extract codec cues from {video_path}: {e}")
+        # Other errors (timeout, permission, etc.) - log at debug level only
+        logger.debug(f"Failed to extract codec cues from {video_path}: {e}")
         return {
             "codec_bitrate": 0.0,
             "codec_fps": 30.0,
@@ -250,16 +284,31 @@ def extract_codec_cues(video_path: str) -> Dict[str, float]:
         }
 
 
+# Define fixed feature order to ensure consistent array shapes
+_FEATURE_ORDER = [
+    # Noise residual (3 features)
+    "noise_energy", "noise_mean", "noise_std",
+    # DCT statistics (varies by implementation, but we'll ensure consistency)
+    # Blur/sharpness (varies)
+    # Boundary inconsistency (1 feature)
+    "boundary_inconsistency",
+    # Codec cues (3 features)
+    "codec_bitrate", "codec_fps", "codec_resolution",
+]
+
 def extract_all_features(frame: np.ndarray, video_path: Optional[str] = None) -> Dict[str, float]:
     """
     Extract all handcrafted features from a frame.
+    
+    Always returns the same set of features in a consistent order,
+    even if codec cues cannot be extracted (returns defaults).
     
     Args:
         frame: Input frame (H, W, 3) or (H, W)
         video_path: Optional video path for codec cues
     
     Returns:
-        Dictionary of all features
+        Dictionary of all features (always includes all feature types)
     """
     features = {}
     
@@ -275,9 +324,17 @@ def extract_all_features(frame: np.ndarray, video_path: Optional[str] = None) ->
     # Boundary inconsistency
     features["boundary_inconsistency"] = extract_boundary_inconsistency(frame)
     
-    # Codec cues (if video path provided)
+    # Codec cues - always include (with defaults if video_path is None or extraction fails)
     if video_path:
-        features.update(extract_codec_cues(video_path))
+        codec_features = extract_codec_cues(video_path)
+    else:
+        # Return defaults if no video path provided
+        codec_features = {
+            "codec_bitrate": 0.0,
+            "codec_fps": 30.0,
+            "codec_resolution": 0.0,
+        }
+    features.update(codec_features)
     
     return features
 
@@ -329,57 +386,142 @@ class HandcraftedFeatureExtractor:
         
         for video_rel in video_paths:
             try:
-                video_path = resolve_video_path(video_rel, project_root)
+                video_path_resolved = resolve_video_path(video_rel, project_root)
+                # Ensure we have a Path object (resolve_video_path returns str)
+                if isinstance(video_path_resolved, Path):
+                    video_path = video_path_resolved
+                else:
+                    video_path = Path(video_path_resolved)
                 
-                # Load a few frames from video
-                container = av.open(video_path)
-                stream = container.streams.video[0]
-                frames = []
-                frame_count = 0
-                max_frames = min(self.num_frames, 8)  # Sample up to 8 frames
-                
-                for packet in container.demux(stream):
-                    if frame_count >= max_frames:
-                        break
-                    for frame in packet.decode():
-                        if frame_count >= max_frames:
-                            break
-                        frame_array = frame.to_ndarray(format='rgb24')
-                        frames.append(frame_array)
-                        frame_count += 1
-                    if frame_count >= max_frames:
-                        break
-                
-                container.close()
-                
-                if not frames:
-                    # Return zero features if no frames
+                # Check if video file exists and is readable
+                if not video_path.exists():
+                    logger.debug(f"Video file not found: {video_path}, using zero features")
                     feature_dict = extract_all_features(
                         np.zeros((224, 224, 3), dtype=np.uint8),
-                        video_path if self.include_codec else None
+                        None
                     )
-                else:
-                    # Extract features from first frame (or average across frames)
-                    feature_dict = extract_all_features(
-                        frames[0],
-                        video_path if self.include_codec else None
-                    )
+                    feature_values = list(feature_dict.values())
+                    feature_array = np.array(feature_values, dtype=np.float32)
+                    all_features.append(feature_array)
+                    continue
                 
-                # Convert to array
-                feature_array = np.array(list(feature_dict.values()))
-                all_features.append(feature_array)
+                # Load a few frames from video with robust error handling
+                container = None
+                try:
+                    container = av.open(str(video_path))
+                    if not container.streams.video:
+                        raise ValueError(f"No video stream found in {video_path}")
+                    
+                    stream = container.streams.video[0]
+                    frames = []
+                    frame_count = 0
+                    max_frames = min(self.num_frames, 8)  # Sample up to 8 frames
+                    
+                    for packet in container.demux(stream):
+                        if frame_count >= max_frames:
+                            break
+                        try:
+                            for frame in packet.decode():
+                                if frame_count >= max_frames:
+                                    break
+                                frame_array = frame.to_ndarray(format='rgb24')
+                                frames.append(frame_array)
+                                frame_count += 1
+                        except Exception as decode_error:
+                            # Skip corrupted packets
+                            logger.debug(f"Skipping corrupted packet in {video_rel}: {decode_error}")
+                            continue
+                        if frame_count >= max_frames:
+                            break
+                    
+                    if container:
+                        container.close()
+                        container = None
+                    
+                    if not frames:
+                        # Return zero features if no frames decoded
+                        logger.debug(f"No frames decoded from {video_rel}, using zero features")
+                        feature_dict = extract_all_features(
+                            np.zeros((224, 224, 3), dtype=np.uint8),
+                            str(video_path) if self.include_codec else None
+                        )
+                    else:
+                        # Extract features from first frame (or average across frames)
+                        feature_dict = extract_all_features(
+                            frames[0],
+                            str(video_path) if self.include_codec else None
+                        )
+                    
+                    # Convert to array - ensure consistent ordering
+                    # Get all feature values in a consistent order
+                    feature_values = list(feature_dict.values())
+                    feature_array = np.array(feature_values, dtype=np.float32)
+                    all_features.append(feature_array)
+                    
+                except (av.AVError, ValueError, OSError, IOError) as video_error:
+                    # Handle video corruption, missing moov atom, etc.
+                    error_msg = str(video_error).lower()
+                    if 'moov atom' in error_msg or 'invalid data' in error_msg or 'corrupt' in error_msg:
+                        logger.debug(f"Corrupted video file {video_rel}: {video_error}, using zero features")
+                    else:
+                        logger.debug(f"Failed to decode video {video_rel}: {video_error}, using zero features")
+                    
+                    if container:
+                        try:
+                            container.close()
+                        except Exception:
+                            pass
+                    
+                    # Return zero features on error
+                    feature_dict = extract_all_features(
+                        np.zeros((224, 224, 3), dtype=np.uint8),
+                        None
+                    )
+                    feature_values = list(feature_dict.values())
+                    feature_array = np.array(feature_values, dtype=np.float32)
+                    all_features.append(feature_array)
                 
             except Exception as e:
-                logger.warning(f"Failed to extract features from {video_rel}: {e}")
+                # Catch-all for any other errors
+                logger.debug(f"Unexpected error processing {video_rel}: {e}, using zero features")
                 # Return zero features on error
                 feature_dict = extract_all_features(
                     np.zeros((224, 224, 3), dtype=np.uint8),
                     None
                 )
-                feature_array = np.array(list(feature_dict.values()))
+                feature_values = list(feature_dict.values())
+                feature_array = np.array(feature_values, dtype=np.float32)
                 all_features.append(feature_array)
         
-        return np.array(all_features)
+        # Convert to numpy array - ensure all arrays have the same shape
+        if not all_features:
+            # Return empty array with correct shape
+            return np.array([]).reshape(0, 0)
+        
+        # Check if all feature arrays have the same length
+        feature_lengths = [len(f) for f in all_features]
+        if len(set(feature_lengths)) > 1:
+            # Inconsistent feature lengths - pad or truncate to match the most common length
+            from collections import Counter
+            most_common_length = Counter(feature_lengths).most_common(1)[0][0]
+            logger.warning(
+                f"Inconsistent feature lengths detected: {set(feature_lengths)}. "
+                f"Padding/truncating to {most_common_length} features."
+            )
+            normalized_features = []
+            for feat in all_features:
+                if len(feat) < most_common_length:
+                    # Pad with zeros
+                    padded = np.pad(feat, (0, most_common_length - len(feat)), mode='constant', constant_values=0.0)
+                    normalized_features.append(padded)
+                elif len(feat) > most_common_length:
+                    # Truncate
+                    normalized_features.append(feat[:most_common_length])
+                else:
+                    normalized_features.append(feat)
+            all_features = normalized_features
+        
+        return np.array(all_features, dtype=np.float32)
     
     def extract_from_video(
         self,
@@ -404,8 +546,23 @@ class HandcraftedFeatureExtractor:
         if project_root:
             video_path = resolve_video_path(video_path, project_root)
         
+        # Check if video file exists
+        video_path_obj = Path(video_path)
+        if not video_path_obj.exists():
+            logger.debug(f"Video file not found: {video_path}, using zero features")
+            feature_dict = extract_all_features(
+                np.zeros((224, 224, 3), dtype=np.uint8),
+                None
+            )
+            feature_values = list(feature_dict.values())
+            return np.array(feature_values, dtype=np.float32)
+        
+        container = None
         try:
-            container = av.open(video_path)
+            container = av.open(str(video_path))
+            if not container.streams.video:
+                raise ValueError(f"No video stream found in {video_path}")
+            
             stream = container.streams.video[0]
             frames = []
             frame_count = 0
@@ -413,35 +570,72 @@ class HandcraftedFeatureExtractor:
             for packet in container.demux(stream):
                 if frame_count >= num_frames:
                     break
-                for frame in packet.decode():
-                    if frame_count >= num_frames:
-                        break
-                    frame_array = frame.to_ndarray(format='rgb24')
-                    frames.append(frame_array)
-                    frame_count += 1
+                try:
+                    for frame in packet.decode():
+                        if frame_count >= num_frames:
+                            break
+                        frame_array = frame.to_ndarray(format='rgb24')
+                        frames.append(frame_array)
+                        frame_count += 1
+                except Exception as decode_error:
+                    # Skip corrupted packets
+                    logger.debug(f"Skipping corrupted packet in {video_path}: {decode_error}")
+                    continue
                 if frame_count >= num_frames:
                     break
             
-            container.close()
+            if container:
+                container.close()
+                container = None
             
             if not frames:
+                logger.debug(f"No frames decoded from {video_path}, using zero features")
                 feature_dict = extract_all_features(
                     np.zeros((224, 224, 3), dtype=np.uint8),
-                    video_path if self.include_codec else None
+                    str(video_path) if self.include_codec else None
                 )
             else:
                 feature_dict = extract_all_features(
                     frames[0],
-                    video_path if self.include_codec else None
+                    str(video_path) if self.include_codec else None
                 )
             
-            return np.array(list(feature_dict.values()))
+            feature_values = list(feature_dict.values())
+            return np.array(feature_values, dtype=np.float32)
             
-        except Exception as e:
-            logger.warning(f"Failed to extract features from {video_path}: {e}")
+        except (av.AVError, ValueError, OSError, IOError) as video_error:
+            # Handle video corruption, missing moov atom, etc.
+            error_msg = str(video_error).lower()
+            if 'moov atom' in error_msg or 'invalid data' in error_msg or 'corrupt' in error_msg:
+                logger.debug(f"Corrupted video file {video_path}: {video_error}, using zero features")
+            else:
+                logger.debug(f"Failed to decode video {video_path}: {video_error}, using zero features")
+            
+            if container:
+                try:
+                    container.close()
+                except Exception:
+                    pass
+            
             feature_dict = extract_all_features(
                 np.zeros((224, 224, 3), dtype=np.uint8),
                 None
             )
-            return np.array(list(feature_dict.values()))
+            feature_values = list(feature_dict.values())
+            return np.array(feature_values, dtype=np.float32)
+            
+        except Exception as e:
+            # Catch-all for any other errors
+            logger.debug(f"Unexpected error processing {video_path}: {e}, using zero features")
+            if container:
+                try:
+                    container.close()
+                except Exception:
+                    pass
+            feature_dict = extract_all_features(
+                np.zeros((224, 224, 3), dtype=np.uint8),
+                None
+            )
+            feature_values = list(feature_dict.values())
+            return np.array(feature_values, dtype=np.float32)
 

@@ -69,20 +69,37 @@ def remove_collinear_features(
     
     # Remove features with zero variance
     if SKLEARN_AVAILABLE:
-        variance_selector = VarianceThreshold(threshold=0.0)
-        features_var_filtered = variance_selector.fit_transform(features)
-        kept_indices = variance_selector.get_support(indices=True).tolist()
-        logger.info(f"Removed {n_features - len(kept_indices)} features with zero variance")
+        try:
+            variance_selector = VarianceThreshold(threshold=0.0)
+            features_var_filtered = variance_selector.fit_transform(features)
+            kept_indices = variance_selector.get_support(indices=True).tolist()
+            logger.info(f"Removed {n_features - len(kept_indices)} features with zero variance")
+        except ValueError as e:
+            # All features have zero variance - use manual filtering instead
+            logger.warning(f"VarianceThreshold failed (all features may have zero variance): {e}")
+            logger.warning("Falling back to manual variance filtering")
+            variances = np.var(features, axis=0)
+            kept_indices = np.where(variances > 1e-8)[0].tolist()
+            if len(kept_indices) == 0:
+                # All features have zero variance - keep all features as fallback
+                logger.warning("All features have zero variance! Keeping all features as fallback.")
+                kept_indices = list(range(n_features))
+            features_var_filtered = features[:, kept_indices]
+            logger.info(f"Removed {n_features - len(kept_indices)} features with zero variance (manual)")
     else:
         # Manual variance filtering
         variances = np.var(features, axis=0)
         kept_indices = np.where(variances > 1e-8)[0].tolist()
+        if len(kept_indices) == 0:
+            # All features have zero variance - keep all features as fallback
+            logger.warning("All features have zero variance! Keeping all features as fallback.")
+            kept_indices = list(range(n_features))
         features_var_filtered = features[:, kept_indices]
         logger.info(f"Removed {n_features - len(kept_indices)} features with zero variance")
     
     if len(kept_indices) == 0:
-        logger.warning("All features removed due to zero variance!")
-        return features_var_filtered, kept_indices, [feature_names[i] for i in kept_indices]
+        logger.warning("All features removed due to zero variance! Using original features as fallback.")
+        return features, list(range(n_features)), feature_names
     
     # Update feature names
     kept_feature_names = [feature_names[i] for i in kept_indices]

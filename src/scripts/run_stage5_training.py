@@ -112,7 +112,7 @@ Examples:
     parser.add_argument(
         "--output-dir",
         type=str,
-        default="data/training_results",
+        default="data/stage5",
         help="Output directory for training results (default: data/training_results)"
     )
     parser.add_argument(

@@ -20,7 +20,7 @@ import polars as pl
 import av
 
 from lib.data import load_metadata, filter_existing_videos
-from lib.utils.paths import resolve_video_path
+from lib.utils.paths import resolve_video_path, write_metadata_atomic, get_video_metadata_cache_path
 from lib.utils.memory import aggressive_gc, log_memory_stats
 from .io import load_frames, save_frames, concatenate_videos
 from .transforms import apply_simple_augmentation
@@ -67,7 +67,9 @@ def augment_video(
     # Use cached metadata to avoid duplicate frame counting
     from lib.utils.video_cache import get_video_metadata
     
-    metadata = get_video_metadata(video_path, use_cache=True)
+    # Use persistent cache file for cross-stage caching
+    cache_file = get_video_metadata_cache_path(output_dir.parent if output_dir else None)
+    metadata = get_video_metadata(video_path, use_cache=True, cache_file=cache_file)
     total_frames = metadata['total_frames']
     fps = metadata['fps']
     
@@ -438,21 +440,24 @@ def _reconstruct_metadata_from_files(
         else:
             combined_df = new_df
         
-        # Save as Arrow IPC (preferred), fallback to Parquet
+        # Save atomically with file locking to prevent race conditions
         metadata_path_arrow = metadata_path.with_suffix('.arrow')
-        try:
-            combined_df.write_ipc(str(metadata_path_arrow))
+        success = write_metadata_atomic(combined_df, metadata_path_arrow)
+        
+        if not success:
+            # Fallback to Parquet
+            metadata_path_parquet = metadata_path.with_suffix('.parquet')
+            success = write_metadata_atomic(combined_df, metadata_path_parquet)
+            if success:
+                logger.debug(f"Saved metadata as Parquet: {metadata_path_parquet}")
+        else:
+            logger.debug(f"Saved metadata as Arrow IPC: {metadata_path_arrow}")
             # Remove old CSV/Parquet if it exists
             if metadata_path.exists() and metadata_path.suffix != '.arrow':
-                metadata_path.unlink()
-            logger.debug(f"Saved metadata as Arrow IPC: {metadata_path_arrow}")
-        except Exception as e:
-            logger.warning(f"Arrow IPC write failed, using Parquet: {e}")
-            metadata_path_parquet = metadata_path.with_suffix('.parquet')
-            combined_df.write_parquet(str(metadata_path_parquet))
-            # Remove old CSV/Arrow if it exists
-            if metadata_path.exists() and metadata_path.suffix != '.parquet':
-                metadata_path.unlink()
+                try:
+                    metadata_path.unlink()
+                except Exception:
+                    pass
                 existing_entries.add(entry_key)
     
     if new_entries:
@@ -540,10 +545,12 @@ def stage1_augment_videos(
         logger.info("Stage 1: Found existing CSV metadata, migrating to Arrow format...")
         try:
             csv_df = pl.read_csv(str(metadata_path_csv))
-            csv_df.write_ipc(str(metadata_path_arrow))
-            logger.info(f"✓ Migrated {csv_df.height} entries from CSV to Arrow format")
-            # Keep CSV as backup for now (can delete later if needed)
-            logger.debug(f"CSV file kept as backup: {metadata_path_csv}")
+            if write_metadata_atomic(csv_df, metadata_path_arrow):
+                logger.info(f"✓ Migrated {csv_df.height} entries from CSV to Arrow format")
+                # Keep CSV as backup for now (can delete later if needed)
+                logger.debug(f"CSV file kept as backup: {metadata_path_csv}")
+            else:
+                logger.warning("Failed to migrate CSV to Arrow atomically")
         except Exception as e:
             logger.warning(f"Failed to migrate CSV to Arrow: {e}, will use CSV format")
     
@@ -692,21 +699,25 @@ def stage1_augment_videos(
                     # Create new DataFrame from kept rows
                     if rows_to_keep:
                         new_metadata = pl.DataFrame(rows_to_keep)
-                        # Save as Arrow IPC (preferred)
+                        # Save atomically with file locking
                         new_metadata_path = output_dir / "augmented_metadata.arrow"
-                        try:
-                            new_metadata.write_ipc(str(new_metadata_path))
+                        success = write_metadata_atomic(new_metadata, new_metadata_path)
+                        
+                        if not success:
+                            # Fallback to Parquet
+                            new_metadata_path = output_dir / "augmented_metadata.parquet"
+                            success = write_metadata_atomic(new_metadata, new_metadata_path)
+                        
+                        if success:
                             # Remove old file if different format
                             if metadata_path_to_use != new_metadata_path and metadata_path_to_use.exists():
-                                metadata_path_to_use.unlink()
+                                try:
+                                    metadata_path_to_use.unlink()
+                                except Exception:
+                                    pass
                             logger.info(f"Stage 1: Updated metadata file, kept {len(rows_to_keep)} entries")
-                        except Exception as e:
-                            logger.warning(f"Arrow IPC write failed, using Parquet: {e}")
-                            new_metadata_path = output_dir / "augmented_metadata.parquet"
-                            new_metadata.write_parquet(str(new_metadata_path))
-                            if metadata_path_to_use != new_metadata_path and metadata_path_to_use.exists():
-                                metadata_path_to_use.unlink()
-                            logger.info(f"Stage 1: Updated metadata file, kept {len(rows_to_keep)} entries")
+                        else:
+                            logger.warning(f"Stage 1: Failed to update metadata file atomically")
                     else:
                         # No entries left, delete metadata file
                         metadata_path.unlink()

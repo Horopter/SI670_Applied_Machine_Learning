@@ -18,11 +18,11 @@
 #   FVC_MAX_FRAMES: Max frames per video (default: 500)
 
 #SBATCH --job-name=fvc_stage3_coord
-#SBATCH --account=eecs442f25_class
+#SBATCH --account=stats_dept1
 #SBATCH --partition=standard
-#SBATCH --time=00:10:00
+#SBATCH --time=8:00:00
 #SBATCH --mem=1G
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=4
 #SBATCH --output=logs/stage3_coord-%j.out
 #SBATCH --error=logs/stage3_coord-%j.err
 #SBATCH --mail-user=santoshd@umich.edu,urvim@umich.edu,suzanef@umich.edu

@@ -32,6 +32,11 @@ from .x3d import X3DModel
 from .i3d import I3DModel
 from .r2plus1d import R2Plus1DModel
 from ._xgboost_pretrained import XGBoostPretrainedBaseline
+# Future models
+from .timesformer import TimeSformerModel
+from .vivit import ViViTModel
+from .two_stream import TwoStreamModel
+from .slowfast_advanced import SlowFastAttentionModel, MultiScaleSlowFastModel
 
 # Model factory
 from .model_factory import (
@@ -81,6 +86,12 @@ __all__ = [
     "I3DModel",
     "R2Plus1DModel",
     "XGBoostPretrainedBaseline",
+    # Future models
+    "TimeSformerModel",
+    "ViViTModel",
+    "TwoStreamModel",
+    "SlowFastAttentionModel",
+    "MultiScaleSlowFastModel",
     # Factory
     "create_model",
     "get_model_config",

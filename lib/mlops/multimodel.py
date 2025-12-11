@@ -38,7 +38,8 @@ from lib.data import (
     make_balanced_batch_sampler,
     maybe_limit_to_small_test_subset,
 )
-from lib.models import VideoConfig, VideoDataset, variable_ar_collate
+# Lazy import to avoid circular dependency issues
+# VideoConfig, VideoDataset, variable_ar_collate will be imported when needed
 from lib.augmentation.pregenerate import pregenerate_augmented_dataset
 from lib.training.trainer import OptimConfig, TrainConfig
 from lib.utils.metrics import collect_logits_and_labels, basic_classification_metrics
@@ -516,6 +517,8 @@ def build_multimodel_pipeline(
                     log_memory_stats(f"after filtering augmentations for fold {fold_idx + 1}")
                     
                     # Create datasets
+                    # Lazy import to avoid circular dependency
+                    from lib.models import VideoDataset
                     log_memory_stats(f"before creating datasets for fold {fold_idx + 1}")
                     train_ds = VideoDataset(aug_df, config.project_root, config=video_cfg, train=False)
                     val_ds = VideoDataset(val_df, config.project_root, config=video_cfg, train=False)

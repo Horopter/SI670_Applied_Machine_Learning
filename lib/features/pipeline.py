@@ -19,8 +19,8 @@ import polars as pl
 import av
 
 from lib.data import load_metadata
-from lib.utils.paths import resolve_video_path
-from lib.utils.memory import aggressive_gc, log_memory_stats
+from lib.utils.paths import resolve_video_path, get_video_metadata_cache_path
+from lib.utils.memory import aggressive_gc, log_memory_stats, safe_execute
 from lib.utils.schemas import validate_stage_output, PANDERA_AVAILABLE
 from lib.features.handcrafted import extract_all_features, HandcraftedFeatureExtractor
 
@@ -56,7 +56,9 @@ def extract_features_from_video(
     from lib.utils.video_cache import get_video_metadata
     from lib.utils.paths import calculate_adaptive_num_frames
     
-    metadata = get_video_metadata(video_path, use_cache=True)
+    # Use persistent cache file for cross-stage caching
+    cache_file = get_video_metadata_cache_path(project_root)
+    metadata = get_video_metadata(video_path, use_cache=True, cache_file=cache_file)
     total_frames = metadata['total_frames']
     
     if total_frames == 0:
@@ -139,7 +141,8 @@ def stage2_extract_features(
     resume: bool = True,
     frame_percentage: Optional[float] = None,
     min_frames: int = 5,
-    max_frames: int = 50
+    max_frames: int = 50,
+    execution_order: str = "forward"
 ) -> pl.DataFrame:
     """
     Stage 2: Extract handcrafted features from all augmented videos.
@@ -166,7 +169,7 @@ def stage2_extract_features(
     
     # Load augmented metadata (support CSV, Arrow, and Parquet)
     logger.info("Stage 2: Loading augmented metadata...")
-    from lib.utils.paths import load_metadata_flexible, validate_metadata_columns
+    from lib.utils.paths import load_metadata_flexible, validate_metadata_columns, write_metadata_atomic
     
     df = load_metadata_flexible(augmented_metadata_path)
     if df is None:
@@ -246,11 +249,21 @@ def stage2_extract_features(
     
     if resume and not delete_existing:
         # Try to load existing metadata (check all formats)
+        # Use retry logic to handle race conditions and corrupted files
         existing_metadata_path = output_dir / "features_metadata"
-        existing_metadata = load_metadata_flexible(str(existing_metadata_path))
-        if existing_metadata is not None:
-            existing_feature_paths = set(existing_metadata["feature_path"].to_list())
-            logger.info(f"Stage 2: Found {len(existing_feature_paths)} existing feature files (resume mode)")
+        try:
+            existing_metadata = load_metadata_flexible(str(existing_metadata_path), max_retries=5, retry_delay=1.0)
+            if existing_metadata is not None and existing_metadata.height > 0:
+                existing_feature_paths = set(existing_metadata["feature_path"].to_list())
+                logger.info(f"Stage 2: Found {len(existing_feature_paths)} existing feature files (resume mode)")
+            else:
+                logger.info("Stage 2: No existing metadata found or metadata is empty, starting fresh")
+                existing_metadata = None
+                existing_feature_paths = set()
+        except Exception as e:
+            logger.warning(f"Stage 2: Could not load existing metadata (will start fresh): {e}")
+            existing_metadata = None
+            existing_feature_paths = set()
     
     # Delete existing feature files if clean mode
     if delete_existing:
@@ -271,7 +284,17 @@ def stage2_extract_features(
     skipped_count = 0
     processed_count = 0
     
-    for idx in range(df.height):
+    # Determine iteration order
+    if execution_order == "reverse":
+        indices = range(df.height - 1, -1, -1)  # Reverse: from end to start
+        logger.info("Stage 2: Processing videos in REVERSE order (from end to start)")
+    else:
+        indices = range(df.height)  # Forward: from start to end (default)
+        logger.info("Stage 2: Processing videos in FORWARD order (from start to end)")
+    
+    iteration_count = 0
+    for idx in indices:
+        iteration_count += 1
         row = df.row(idx, named=True)
         video_rel = row["video_path"]
         label = row["label"]
@@ -283,8 +306,8 @@ def stage2_extract_features(
                 logger.warning(f"Video not found: {video_path}")
                 continue
             
-            if idx % 10 == 0:
-                log_memory_stats(f"Stage 2: processing video {idx + 1}/{df.height}")
+            if iteration_count % 10 == 0:
+                log_memory_stats(f"Stage 2: processing video {iteration_count}/{df.height} (index {idx})")
             
             # Check if feature file already exists (resume mode)
             video_id = Path(video_path).stem
@@ -320,14 +343,19 @@ def stage2_extract_features(
                                 logger.warning(f"Could not load existing features from {feature_path_parquet}: {e}")
                         continue
             
-            # Extract features
-            features = extract_features_from_video(
+            # Extract features with OOM handling
+            features = safe_execute(
+                extract_features_from_video,
                 video_path, 
                 num_frames=num_frames,
                 extractor=extractor,
                 frame_percentage=frame_percentage,
                 min_frames=min_frames,
-                max_frames=max_frames
+                max_frames=max_frames,
+                project_root=project_root,
+                oom_retry=True,
+                max_retries=1,
+                context=f"Stage 2: extracting features from {Path(video_path).name}"
             )
             
             if not features:
@@ -389,17 +417,25 @@ def stage2_extract_features(
     else:
         features_df = new_features_df
     
-    # Save metadata as Arrow IPC (faster and type-safe)
+    # Save metadata incrementally (append mode) to avoid overwriting concurrent writes
     metadata_path = output_dir / "features_metadata.arrow"
-    try:
-        features_df.write_ipc(str(metadata_path))
-        logger.debug(f"Saved metadata as Arrow IPC: {metadata_path}")
-    except Exception as e:
-        # Fallback to Parquet if IPC fails
-        logger.warning(f"Arrow IPC write failed, using Parquet: {e}")
-        metadata_path = output_dir / "features_metadata.parquet"
-        features_df.write_parquet(str(metadata_path))
-    logger.info(f"✓ Stage 2 complete: Saved features to {output_dir}")
+    new_features_df = pl.DataFrame(feature_rows) if feature_rows else pl.DataFrame()
+    
+    if new_features_df.height > 0:
+        success = write_metadata_atomic(new_features_df, metadata_path, append=True)
+        
+        if not success:
+            # Fallback to Parquet
+            metadata_path = output_dir / "features_metadata.parquet"
+            success = write_metadata_atomic(new_features_df, metadata_path, append=True)
+        
+        if success:
+            logger.info(f"✓ Stage 2 complete: Appended features to {metadata_path}")
+        else:
+            logger.warning(f"✓ Stage 2 complete: Features extracted but metadata write failed")
+    else:
+        logger.info(f"✓ Stage 2 complete: No new features to save (all may have been skipped)")
+    
     logger.info(f"✓ Stage 2: Extracted features from {len(feature_rows)} videos")
     
     return features_df

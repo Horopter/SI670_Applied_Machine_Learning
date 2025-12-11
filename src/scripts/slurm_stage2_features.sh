@@ -295,15 +295,25 @@ for NODE_ID in $(seq 0 $((NUM_NODES - 1))); do
     mkdir -p "$(dirname "$NODE_LOG_FILE")"
     
     # Build command arguments
-    DELETE_FLAG=""
-    if [ "$DELETE_EXISTING" = "1" ] || [ "$DELETE_EXISTING" = "true" ] || [ "$DELETE_EXISTING" = "yes" ]; then
-        DELETE_FLAG="--delete-existing"
-    fi
-    
-    RESUME_FLAG=""
-    if [ "$RESUME" != "0" ] && [ "$RESUME" != "false" ] && [ "$RESUME" != "no" ]; then
-        RESUME_FLAG="--resume"
-    fi
+DELETE_FLAG=""
+if [ "$DELETE_EXISTING" = "1" ] || [ "$DELETE_EXISTING" = "true" ] || [ "$DELETE_EXISTING" = "yes" ]; then
+    DELETE_FLAG="--delete-existing"
+fi
+
+RESUME_FLAG=""
+if [ "$RESUME" != "0" ] && [ "$RESUME" != "false" ] && [ "$RESUME" != "no" ]; then
+    RESUME_FLAG="--resume"
+fi
+
+# Execution order: forward (0) or reverse (1), default to forward
+EXECUTION_ORDER="${FVC_EXECUTION_ORDER:-forward}"
+if [ "$EXECUTION_ORDER" = "0" ] || [ "$EXECUTION_ORDER" = "forward" ]; then
+    EXECUTION_ORDER="forward"
+elif [ "$EXECUTION_ORDER" = "1" ] || [ "$EXECUTION_ORDER" = "reverse" ]; then
+    EXECUTION_ORDER="reverse"
+else
+    EXECUTION_ORDER="forward"  # Default
+fi
     
     # Frame sampling arguments
     if [ -n "${FVC_NUM_FRAMES:-}" ]; then
@@ -327,6 +337,7 @@ for NODE_ID in $(seq 0 $((NUM_NODES - 1))); do
             --output-dir "$OUTPUT_DIR" \
             --start-idx "$START_IDX" \
             --end-idx "$END_IDX" \
+            --execution-order "$EXECUTION_ORDER" \
             $DELETE_FLAG \
             $RESUME_FLAG \
             2>&1 | tee "$NODE_LOG_FILE"; then
@@ -346,6 +357,7 @@ for NODE_ID in $(seq 0 $((NUM_NODES - 1))); do
             --output-dir "$OUTPUT_DIR" \
             --start-idx "$START_IDX" \
             --end-idx "$END_IDX" \
+            --execution-order "$EXECUTION_ORDER" \
             $DELETE_FLAG \
             $RESUME_FLAG \
             2>&1 | tee "$NODE_LOG_FILE"; then
