@@ -1115,6 +1115,15 @@ def stage5_train_models(
                                 "fold": fold_idx + 1,
                                 "val_loss": float('nan'),
                                 "val_acc": float('nan'),
+                                "val_f1": float('nan'),
+                                "val_precision": float('nan'),
+                                "val_recall": float('nan'),
+                                "val_f1_class0": float('nan'),
+                                "val_precision_class0": float('nan'),
+                                "val_recall_class0": float('nan'),
+                                "val_f1_class1": float('nan'),
+                                "val_precision_class1": float('nan'),
+                                "val_recall_class1": float('nan'),
                             }
                             result.update(params)
                             param_fold_results.append(result)
@@ -1270,6 +1279,15 @@ def stage5_train_models(
                                 "fold": fold_idx + 1,
                                 "val_loss": float('nan'),
                                 "val_acc": float('nan'),
+                                "val_f1": float('nan'),
+                                "val_precision": float('nan'),
+                                "val_recall": float('nan'),
+                                "val_f1_class0": float('nan'),
+                                "val_precision_class0": float('nan'),
+                                "val_recall_class0": float('nan'),
+                                "val_f1_class1": float('nan'),
+                                "val_precision_class1": float('nan'),
+                                "val_recall_class1": float('nan'),
                             }
                             result.update(params)
                             param_fold_results.append(result)
@@ -1295,6 +1313,15 @@ def stage5_train_models(
                         "fold": fold_idx + 1,
                         "val_loss": float('nan'),
                         "val_acc": float('nan'),
+                        "val_f1": float('nan'),
+                        "val_precision": float('nan'),
+                        "val_recall": float('nan'),
+                        "val_f1_class0": float('nan'),
+                        "val_precision_class0": float('nan'),
+                        "val_recall_class0": float('nan'),
+                        "val_f1_class1": float('nan'),
+                        "val_precision_class1": float('nan'),
+                        "val_recall_class1": float('nan'),
                     })
                 finally:
                     # Always cleanup resources, even on error
@@ -1377,22 +1404,22 @@ def stage5_train_models(
         # Aggregate results (filter out NaN values) - use best fold results if available
         if best_fold_results:
             valid_losses = [
-                r["val_loss"] for r in best_fold_results
-                if isinstance(r["val_loss"], (int, float))
-                and not (isinstance(r["val_loss"], float)
-                         and r["val_loss"] != r["val_loss"])
+                r.get("val_loss") for r in best_fold_results
+                if "val_loss" in r and isinstance(r.get("val_loss"), (int, float))
+                and not (isinstance(r.get("val_loss"), float)
+                         and r.get("val_loss") != r.get("val_loss"))
             ]
             valid_accs = [
-                r["val_acc"] for r in best_fold_results
-                if isinstance(r["val_acc"], (int, float))
-                and not (isinstance(r["val_acc"], float)
-                         and r["val_acc"] != r["val_acc"])
+                r.get("val_acc") for r in best_fold_results
+                if "val_acc" in r and isinstance(r.get("val_acc"), (int, float))
+                and not (isinstance(r.get("val_acc"), float)
+                         and r.get("val_acc") != r.get("val_acc"))
             ]
             valid_f1s = [
-                r["val_f1"] for r in best_fold_results
-                if isinstance(r["val_f1"], (int, float))
-                and not (isinstance(r["val_f1"], float)
-                         and r["val_f1"] != r["val_f1"])
+                r.get("val_f1") for r in best_fold_results
+                if "val_f1" in r and isinstance(r.get("val_f1"), (int, float))
+                and not (isinstance(r.get("val_f1"), float)
+                         and r.get("val_f1") != r.get("val_f1"))
             ]
             
             avg_val_loss = (
