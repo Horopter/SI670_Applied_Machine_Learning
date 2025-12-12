@@ -265,7 +265,9 @@ def main():
             output_dir="data/training_results",
             use_tracking=True,
             train_ensemble=args.train_ensemble,
-            ensemble_method=args.ensemble_method
+            ensemble_method=args.ensemble_method,
+            delete_existing=getattr(args, 'delete_existing', False),
+            resume=getattr(args, 'resume', True)
         )
         stage5_duration = time.time() - stage5_start
         logger.info("Stage 5 completed in %.2f seconds", stage5_duration)

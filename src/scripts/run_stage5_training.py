@@ -202,6 +202,18 @@ Examples:
         action="store_true",
         help="Delete existing model checkpoints/results before regenerating (clean mode, default: False, preserves existing)"
     )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        default=True,
+        help="Resume training by skipping folds that already have saved models (default: True). Use --no-resume to disable."
+    )
+    parser.add_argument(
+        "--no-resume",
+        dest="resume",
+        action="store_false",
+        help="Disable resume mode - train all folds even if they already exist"
+    )
     
     args = parser.parse_args()
     
@@ -310,6 +322,7 @@ Examples:
     if args.model_idx is not None:
         logger.info("Model index: %d (multi-node mode)", args.model_idx)
     logger.info("Delete existing: %s", args.delete_existing)
+    logger.info("Resume mode: %s", args.resume)
     logger.info("Log file: %s", log_file)
     logger.debug("Python version: %s", sys.version)
     logger.debug("Python executable: %s", sys.executable)
@@ -379,7 +392,8 @@ Examples:
             use_mlflow=not args.no_tracking,
             train_ensemble=args.train_ensemble,
             ensemble_method=args.ensemble_method,
-            delete_existing=args.delete_existing
+            delete_existing=args.delete_existing,
+            resume=args.resume
         )
         
         stage_duration = time.time() - stage_start
@@ -436,30 +450,46 @@ Examples:
 
 if __name__ == "__main__":
     try:
-        exit_code = main()
-        # Ensure all output is flushed before exit
-        sys.stdout.flush()
-        sys.stderr.flush()
-        sys.exit(exit_code)
+        exit_code = 0
+        try:
+            exit_code = main()
+            # Ensure all output is flushed before exit
+            sys.stdout.flush()
+            sys.stderr.flush()
+        except SystemExit as e:
+            # Capture exit code from SystemExit (from sys.exit() calls)
+            exit_code = e.code if e.code is not None else 0
+            sys.stdout.flush()
+            sys.stderr.flush()
+        except KeyboardInterrupt:
+            logger.critical("Process interrupted by user")
+            sys.stdout.flush()
+            sys.stderr.flush()
+            exit_code = 130
+        except Exception as e:
+            # Catch any unhandled exceptions that might lead to crashes
+            logger.critical("=" * 80)
+            logger.critical("UNHANDLED EXCEPTION - This may cause a crash")
+            logger.critical("=" * 80)
+            logger.critical(f"Exception type: {type(e).__name__}")
+            logger.critical(f"Exception message: {str(e)}")
+            logger.critical("Full traceback:", exc_info=True)
+            logger.critical("=" * 80)
+            sys.stdout.flush()
+            sys.stderr.flush()
+            exit_code = 1
+        
+        # Explicit cleanup before exit
+        import gc
+        gc.collect()
+        
+        # Use os._exit to bypass Python cleanup that might cause crashes
+        os._exit(exit_code)
     except SystemExit:
         # Re-raise system exits (normal termination)
         raise
-    except KeyboardInterrupt:
-        logger.critical("Process interrupted by user")
-        sys.stdout.flush()
-        sys.stderr.flush()
-        sys.exit(130)
-    except Exception as e:
-        # Catch any unhandled exceptions that might lead to crashes
-        logger.critical("=" * 80)
-        logger.critical("UNHANDLED EXCEPTION - This may cause a crash")
-        logger.critical("=" * 80)
-        logger.critical(f"Exception type: {type(e).__name__}")
-        logger.critical(f"Exception message: {str(e)}")
-        logger.critical("Full traceback:", exc_info=True)
-        logger.critical("=" * 80)
-        sys.stdout.flush()
-        sys.stderr.flush()
-        # Re-raise to get proper exit code
-        raise
+    except Exception:
+        # Last resort: force exit
+        import os
+        os._exit(1)
 

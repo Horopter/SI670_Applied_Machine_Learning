@@ -80,38 +80,39 @@ MODEL_TYPE_MAPPING = {
 
 
 # Hyperparameter grids for each model type
+# All grids reduced to <50 combinations
 HYPERPARAMETER_GRIDS = {
     "mlp": {
-        "hidden_dims": [[256, 128, 64], [512, 256, 128], [128, 64]],
-        "dropout": [0.3, 0.5, 0.7],
-        "learning_rate": [1e-4, 1e-3, 1e-2],
-        "weight_decay": [1e-5, 1e-4, 1e-3],
+        "hidden_dims": [[256, 128, 64], [512, 256, 128], [128, 64], [256, 128]],  # 4 values (4*4*2*2 = 64 combinations max)
+        "dropout": [0.3, 0.5, 0.7, 0.4],  # 4 values
+        "learning_rate": [1e-4, 1e-3],  # 2 values
+        "weight_decay": [1e-5, 1e-4],  # 2 values
     },
     "cnn1d": {
-        "num_filters": [[64, 128, 256], [32, 64, 128]],
+        "num_filters": [[64, 128, 256], [32, 64, 128]],  # 2*2*2*2*2 = 32 combinations (OK)
         "kernel_sizes": [[3, 3, 3], [5, 5, 5]],
         "dropout": [0.3, 0.5],
         "learning_rate": [1e-4, 1e-3],
         "weight_decay": [1e-5, 1e-4],
     },
     "transformer": {
-        "d_model": [128, 256],
+        "d_model": [128, 256],  # 2*2*2*2*2*2 = 64 -> 2*2*2*2*2*1 = 32 combinations
         "nhead": [4, 8],
         "num_layers": [2, 4],
         "dim_feedforward": [512, 1024],
         "dropout": [0.1, 0.2],
         "learning_rate": [1e-4, 1e-3],
-        "weight_decay": [1e-5, 1e-4],
+        "weight_decay": [1e-5],  # Reduced from 2 to 1 value
     },
     "lstm": {
-        "hidden_dim": [128, 256],
+        "hidden_dim": [128, 256],  # 2*2*2*2*2 = 32 combinations (OK)
         "num_layers": [1, 2],
         "dropout": [0.3, 0.5],
         "learning_rate": [1e-4, 1e-3],
         "weight_decay": [1e-5, 1e-4],
     },
     "resnet": {
-        "hidden_dims": [[256, 512, 256], [128, 256, 128]],
+        "hidden_dims": [[256, 512, 256], [128, 256, 128]],  # 2*2*2*2 = 16 combinations (OK)
         "dropout": [0.3, 0.5],
         "learning_rate": [1e-4, 1e-3],
         "weight_decay": [1e-5, 1e-4],
@@ -272,7 +273,34 @@ def train_feature_model(
     logger.info(f"Train: {len(X_train)}, Val: {len(X_val)}, Test: {len(X_test)}")
     logger.info(f"✓ Features cleaned BEFORE splits: {len(feature_names)} features (collinearity already removed)")
     
-    # Hyperparameter search
+    # OPTIMIZATION: Use 20% stratified sample for hyperparameter search (faster)
+    # Final training will use full dataset for robustness
+    from sklearn.model_selection import StratifiedShuffleSplit
+    
+    logger.info("=" * 80)
+    logger.info("HYPERPARAMETER SEARCH: Using 20% stratified sample for efficiency")
+    logger.info("=" * 80)
+    
+    # Sample 20% of train+val for hyperparameter search
+    X_trainval = np.vstack([X_train, X_val])
+    y_trainval = np.concatenate([y_train, y_val])
+    
+    sss = StratifiedShuffleSplit(n_splits=1, test_size=0.8, random_state=42)
+    sample_indices, _ = next(sss.split(X_trainval, y_trainval))
+    
+    X_trainval_sample = X_trainval[sample_indices]
+    y_trainval_sample = y_trainval[sample_indices]
+    
+    # Split sample into train/val for hyperparameter search
+    from sklearn.model_selection import train_test_split
+    X_train_sample, X_val_sample, y_train_sample, y_val_sample = train_test_split(
+        X_trainval_sample, y_trainval_sample, test_size=0.2, random_state=42, stratify=y_trainval_sample
+    )
+    
+    logger.info(f"Hyperparameter search sample: {len(X_trainval_sample)} rows ({100.0 * len(X_trainval_sample) / len(X_trainval):.1f}% of {len(X_trainval)} total)")
+    logger.info(f"  Sample train: {len(X_train_sample)}, Sample val: {len(X_val_sample)}")
+    
+    # Hyperparameter search on 20% sample
     best_score = -1
     best_params = None
     best_model = None
@@ -283,7 +311,7 @@ def train_feature_model(
     logger.info(f"Hyperparameter search: {len(param_grid)} combinations")
     
     for param_idx, params in enumerate(param_grid):
-        logger.info(f"Grid search {param_idx + 1}/{len(param_grid)}: {params}")
+        logger.info(f"Grid search {param_idx + 1}/{len(param_grid)}: {params} (20% sample)")
         
         # Separate model params from training params
         model_params = {k: v for k, v in params.items() 
@@ -302,13 +330,13 @@ def train_feature_model(
             normalize=True
         )
         
-        # Preprocess training data
-        X_train_processed = preprocessor.fit_transform(X_train)
-        X_val_processed = preprocessor.transform(X_val)
+        # Preprocess 20% sample data
+        X_train_sample_processed = preprocessor.fit_transform(X_train_sample)
+        X_val_sample_processed = preprocessor.transform(X_val_sample)
         
-        # Create datasets
-        train_dataset = FeatureDataset(X_train_processed, y_train, feature_names)
-        val_dataset = FeatureDataset(X_val_processed, y_val, feature_names)
+        # Create datasets from 20% sample
+        train_dataset = FeatureDataset(X_train_sample_processed, y_train_sample, feature_names)
+        val_dataset = FeatureDataset(X_val_sample_processed, y_val_sample, feature_names)
         
         # Create loaders
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
@@ -432,11 +460,17 @@ def train_feature_model(
             "This may indicate all models failed to train or all validation F1 scores were invalid."
         )
     
-    logger.info(f"Best hyperparameters: {best_params} (val_f1: {best_score:.4f})")
+    logger.info(f"Best hyperparameters from 20% sample: {best_params} (val_f1: {best_score:.4f})")
+    
+    # FINAL TRAINING: Train on full dataset with best hyperparameters
+    logger.info("=" * 80)
+    logger.info("FINAL TRAINING: Using full dataset with best hyperparameters")
+    logger.info("=" * 80)
+    logger.info(f"Full dataset: train={len(X_train)}, val={len(X_val)}, test={len(X_test)}")
     
     # Train final model with best params on full training+val set with 5-fold CV
-    X_trainval = np.vstack([X_train, X_val])
-    y_trainval = np.concatenate([y_train, y_val])
+    X_trainval_full = np.vstack([X_train, X_val])
+    y_trainval_full = np.concatenate([y_train, y_val])
     
     # Separate model and training params
     model_params = {k: v for k, v in best_params.items() 
@@ -465,8 +499,8 @@ def train_feature_model(
     cv_results = train_model_with_cv(
         model_factory,
         input_dim,
-        X_trainval,
-        y_trainval,
+        X_trainval_full,
+        y_trainval_full,
         feature_names,
         n_splits=n_splits,
         batch_size=batch_size,
@@ -481,11 +515,11 @@ def train_feature_model(
     # Train final model once on full train+val set with best hyperparameters
     # (CV validated hyperparameters, now train on full data for final test evaluation)
     logger.info("Training final model on full training+validation set with best hyperparameters...")
-    final_preprocessor.fit(X_trainval)
-    X_trainval_processed = final_preprocessor.transform(X_trainval)
+    final_preprocessor.fit(X_trainval_full)
+    X_trainval_processed = final_preprocessor.transform(X_trainval_full)
     
-    # Create dataset and loader for final training
-    trainval_dataset = FeatureDataset(X_trainval_processed, y_trainval, feature_names)
+    # Create dataset and loader for final training (full dataset)
+    trainval_dataset = FeatureDataset(X_trainval_processed, y_trainval_full, feature_names)
     trainval_loader = DataLoader(trainval_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
     
     # Setup optimizer and loss

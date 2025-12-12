@@ -152,6 +152,33 @@ def train_gradient_boosting(
     
     logger.info(f"Train: {len(X_train)}, Val: {len(X_val)}, Test: {len(X_test)}")
     
+    # OPTIMIZATION: Use 20% stratified sample for hyperparameter search (faster)
+    # Final training will use full dataset for robustness
+    from sklearn.model_selection import StratifiedShuffleSplit
+    
+    logger.info("=" * 80)
+    logger.info("HYPERPARAMETER SEARCH: Using 20% stratified sample for efficiency")
+    logger.info("=" * 80)
+    
+    # Sample 20% of train+val for hyperparameter search
+    X_trainval = np.vstack([X_train, X_val])
+    y_trainval = np.concatenate([y_train, y_val])
+    
+    sss = StratifiedShuffleSplit(n_splits=1, test_size=0.8, random_state=42)
+    sample_indices, _ = next(sss.split(X_trainval, y_trainval))
+    
+    X_trainval_sample = X_trainval[sample_indices]
+    y_trainval_sample = y_trainval[sample_indices]
+    
+    # Split sample into train/val for hyperparameter search
+    from sklearn.model_selection import train_test_split
+    X_train_sample, X_val_sample, y_train_sample, y_val_sample = train_test_split(
+        X_trainval_sample, y_trainval_sample, test_size=0.2, random_state=42, stratify=y_trainval_sample
+    )
+    
+    logger.info(f"Hyperparameter search sample: {len(X_trainval_sample)} rows ({100.0 * len(X_trainval_sample) / len(X_trainval):.1f}% of {len(X_trainval)} total)")
+    logger.info(f"  Sample train: {len(X_train_sample)}, Sample val: {len(X_val_sample)}")
+    
     all_results = {}
     
     # Hyperparameter grids
@@ -159,33 +186,33 @@ def train_gradient_boosting(
     
     if "xgboost" in models and XGBOOST_AVAILABLE:
         param_grids["xgboost"] = {
-            "max_depth": [3, 5, 7],
-            "learning_rate": [0.01, 0.1, 0.3],
-            "n_estimators": [100, 200, 300],
-            "subsample": [0.8, 1.0],
-            "colsample_bytree": [0.8, 1.0],
-            "reg_alpha": [0, 0.1, 1.0],
-            "reg_lambda": [1.0, 10.0]
+            "max_depth": [3, 5],  # 2 values (2*2*2*2*2*2*1 = 64 combinations, within 80 limit)
+            "learning_rate": [0.01, 0.1],  # 2 values
+            "n_estimators": [100, 200],  # 2 values
+            "subsample": [0.8, 1.0],  # 2 values
+            "colsample_bytree": [0.8, 1.0],  # 2 values
+            "reg_alpha": [0, 0.1],  # 2 values
+            "reg_lambda": [1.0]  # 1 value (fixed)
         }
     
     if "lightgbm" in models and LIGHTGBM_AVAILABLE:
         param_grids["lightgbm"] = {
-            "max_depth": [3, 5, 7],
-            "learning_rate": [0.01, 0.1, 0.3],
-            "n_estimators": [100, 200, 300],
-            "subsample": [0.8, 1.0],
-            "colsample_bytree": [0.8, 1.0],
-            "reg_alpha": [0, 0.1, 1.0],
-            "reg_lambda": [1.0, 10.0]
+            "max_depth": [3, 5],  # 2 values (2*2*2*2*2*2*1 = 64 combinations, within 80 limit)
+            "learning_rate": [0.01, 0.1],  # 2 values
+            "n_estimators": [100, 200],  # 2 values
+            "subsample": [0.8, 1.0],  # 2 values
+            "colsample_bytree": [0.8, 1.0],  # 2 values
+            "reg_alpha": [0, 0.1],  # 2 values
+            "reg_lambda": [1.0]  # 1 value (fixed)
         }
     
     if "catboost" in models and CATBOOST_AVAILABLE:
         param_grids["catboost"] = {
-            "depth": [3, 5, 7],
-            "learning_rate": [0.01, 0.1, 0.3],
-            "iterations": [100, 200, 300],
-            "l2_leaf_reg": [1, 3, 5],
-            "border_count": [32, 64, 128]
+            "depth": [3, 5, 7],  # 3 values (3*2*2*2*2 = 48 combinations, can expand to 80)
+            "learning_rate": [0.01, 0.1],  # 2 values
+            "iterations": [100, 200],  # 2 values
+            "l2_leaf_reg": [1, 3, 5],  # 3 values (3*2*2*3*2 = 72 combinations)
+            "border_count": [32, 64]  # 2 values
         }
     
     # Train each model
@@ -241,15 +268,16 @@ def train_gradient_boosting(
                 else:
                     continue
                 
-                model.fit(X_train, y_train)
+                # Train on 20% sample for hyperparameter search
+                model.fit(X_train_sample, y_train_sample)
                 
-                # Validate
-                val_probs_full = model.predict_proba(X_val)
+                # Validate on 20% sample
+                val_probs_full = model.predict_proba(X_val_sample)
                 if val_probs_full.shape[1] != 2:
                     raise ValueError(f"Expected binary classification, got {val_probs_full.shape[1]} classes")
                 val_probs = val_probs_full[:, 1]
                 val_preds = (val_probs > 0.5).astype(int)
-                val_f1 = f1_score(y_val, val_preds)
+                val_f1 = f1_score(y_val_sample, val_preds)
                 
                 # Check for NaN or invalid values
                 if np.any(np.isnan(val_probs)) or np.any(np.isinf(val_probs)):
@@ -275,23 +303,28 @@ def train_gradient_boosting(
             all_results[model_name] = {"error": "No valid model found"}
             continue
         
-        logger.info(f"Best hyperparameters: {best_params} (val_f1: {best_score:.4f})")
+        logger.info(f"Best hyperparameters from 20% sample: {best_params} (val_f1: {best_score:.4f})")
         
-        # 5-fold CV on train+val
-        X_trainval = np.vstack([X_train, X_val])
-        y_trainval = np.concatenate([y_train, y_val])
+        # FINAL TRAINING: Train on full dataset with best hyperparameters
+        logger.info("=" * 80)
+        logger.info(f"FINAL TRAINING ({model_name.upper()}): Using full dataset with best hyperparameters")
+        logger.info("=" * 80)
+        
+        # 5-fold CV on full train+val
+        X_trainval_full = np.vstack([X_train, X_val])
+        y_trainval_full = np.concatenate([y_train, y_val])
         
         cv = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
         cv_scores = []
         cv_aucs = []
         
-        for fold_idx, (train_idx_cv, val_idx_cv) in enumerate(cv.split(X_trainval, y_trainval)):
+        for fold_idx, (train_idx_cv, val_idx_cv) in enumerate(cv.split(X_trainval_full, y_trainval_full)):
             logger.info(f"CV fold {fold_idx + 1}/{n_splits}")
             
-            X_train_cv = X_trainval[train_idx_cv]
-            X_val_cv = X_trainval[val_idx_cv]
-            y_train_cv = y_trainval[train_idx_cv]
-            y_val_cv = y_trainval[val_idx_cv]
+            X_train_cv = X_trainval_full[train_idx_cv]
+            X_val_cv = X_trainval_full[val_idx_cv]
+            y_train_cv = y_trainval_full[train_idx_cv]
+            y_val_cv = y_trainval_full[val_idx_cv]
             
             if model_name == "xgboost":
                 model_cv = xgb.XGBClassifier(
@@ -334,7 +367,7 @@ def train_gradient_boosting(
         logger.info(f"CV F1: {cv_mean_f1:.4f} ± {cv_std_f1:.4f}")
         logger.info(f"CV AUC: {cv_mean_auc:.4f}")
         
-        # Train final model on train+val
+        # Train final model on full train+val
         logger.info("Training final model on full training+validation set...")
         
         if model_name == "xgboost":
@@ -357,7 +390,7 @@ def train_gradient_boosting(
                 verbose=False
             )
         
-        final_model.fit(X_trainval, y_trainval)
+        final_model.fit(X_trainval_full, y_trainval_full)
         
         # Evaluate on test set
         test_probs_full = final_model.predict_proba(X_test)

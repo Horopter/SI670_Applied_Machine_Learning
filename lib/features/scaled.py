@@ -189,7 +189,7 @@ def extract_scaled_features(
         if container is not None:
             try:
                 container.close()
-            except Exception:
+            except (OSError, RuntimeError, AttributeError):
                 pass
         aggressive_gc(clear_cuda=False)
 
@@ -423,7 +423,7 @@ def stage4_extract_scaled_features(
                 if container is not None:
                     try:
                         container.close()
-                    except Exception:
+                    except (OSError, RuntimeError, AttributeError):
                         pass
             
             # Calculate scaling direction features
@@ -631,7 +631,7 @@ def stage4_extract_scaled_features(
                 try:
                     old_path.unlink()
                     logger.debug(f"Removed old metadata file: {old_path}")
-                except Exception:
+                except (OSError, PermissionError, FileNotFoundError):
                     pass
         
         if success:

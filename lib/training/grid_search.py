@@ -26,127 +26,128 @@ def get_hyperparameter_grid(model_type: str) -> Dict[str, List[Any]]:
     """
     grids = {
         "logistic_regression": {
-            "C": [0.01, 0.1, 1.0, 10.0, 100.0],
+            "C": [0.01, 0.1, 1.0, 10.0, 100.0],  # 5 values (5*2*2*1 = 20 combinations, can expand to 50)
             "penalty": ["l1", "l2"],
             "solver": ["liblinear", "saga"],
-            "max_iter": [1000, 2000]
+            "max_iter": [1000, 2000]  # 2 values (5*2*2*2 = 40 combinations)
         },
         "logistic_regression_stage2": {
-            "C": [0.01, 0.1, 1.0, 10.0, 100.0],
+            "C": [0.01, 0.1, 1.0, 10.0, 100.0],  # 5 values
             "penalty": ["l1", "l2"],
             "solver": ["liblinear", "saga"],
-            "max_iter": [1000, 2000]
+            "max_iter": [1000, 2000]  # 2 values
         },
         "logistic_regression_stage2_stage4": {
-            "C": [0.01, 0.1, 1.0, 10.0, 100.0],
+            "C": [0.01, 0.1, 1.0, 10.0, 100.0],  # 5 values
             "penalty": ["l1", "l2"],
             "solver": ["liblinear", "saga"],
-            "max_iter": [1000, 2000]
+            "max_iter": [1000, 2000]  # 2 values
         },
         "svm": {
-            "C": [0.1, 1.0, 10.0, 100.0],
+            "C": [0.1, 1.0, 10.0],  # Reduced from 4 to 3 values
             "kernel": ["linear", "rbf", "poly"],
-            "gamma": ["scale", "auto", 0.001, 0.01, 0.1],
-            "degree": [2, 3, 4]  # Only used for poly kernel
+            "gamma": ["scale", 0.01],  # Reduced from 5 to 2 values
+            "degree": [2, 3]  # Reduced from 3 to 2 values (only used for poly kernel)
+            # Total: 3*3*2*2 = 36 combinations (degree only applies to poly, so effectively less)
         },
         "svm_stage2": {
-            "C": [0.1, 1.0, 10.0, 100.0],
-            "max_iter": [1000, 2000]
+            "C": [0.1, 1.0, 10.0],  # Reduced from 4 to 3 values (3*1 = 3 combinations)
+            "max_iter": [1000]  # Reduced from 2 to 1 value
         },
         "svm_stage2_stage4": {
-            "C": [0.1, 1.0, 10.0, 100.0],
-            "max_iter": [1000, 2000]
+            "C": [0.1, 1.0, 10.0],  # Reduced from 4 to 3 values
+            "max_iter": [1000]  # Reduced from 2 to 1 value
         },
         "naive_cnn": {
-            "learning_rate": [1e-5, 1e-4, 5e-4, 1e-3],
+            "learning_rate": [1e-4, 5e-4, 1e-3],  # Reduced from 4 to 3 values (3*3*2*2 = 36 combinations)
             "weight_decay": [1e-5, 1e-4, 1e-3],
-            "batch_size": [4, 8, 16],
-            "num_epochs": [20, 30, 40]
+            "batch_size": [4, 8],  # Reduced from 3 to 2 values
+            "num_epochs": [20, 30]  # Reduced from 3 to 2 values
         },
         "pretrained_inception": {
-            "learning_rate": [1e-5, 5e-5, 1e-4, 5e-4],
-            "backbone_lr": [1e-6, 5e-6, 1e-5],
-            "head_lr": [1e-4, 5e-4, 1e-3],
-            "weight_decay": [1e-5, 1e-4, 1e-3],
+            "learning_rate": [5e-5, 1e-4, 5e-4],  # Reduced from 4 to 3 values (3*2*2*2*2 = 48 combinations)
+            "backbone_lr": [5e-6, 1e-5],  # Reduced from 3 to 2 values
+            "head_lr": [5e-4, 1e-3],  # Reduced from 3 to 2 values
+            "weight_decay": [1e-5, 1e-4],  # Reduced from 3 to 2 values
             "batch_size": [4, 8]
         },
         "variable_ar_cnn": {
-            "learning_rate": [1e-5, 1e-4, 5e-4],
+            "learning_rate": [1e-4, 5e-4],  # Reduced from 3 to 2 values (2*2*2 = 8 combinations)
             "weight_decay": [1e-5, 1e-4],
             "batch_size": [2, 4]
         },
         "i3d": {
-            "learning_rate": [1e-5, 5e-5, 1e-4],
+            "learning_rate": [5e-5, 1e-4],  # Reduced from 3 to 2 values (2*2*2*2*2 = 32 combinations)
             "backbone_lr": [1e-6, 5e-6],
             "head_lr": [1e-4, 5e-4],
             "weight_decay": [1e-4, 1e-3],
             "batch_size": [2, 4]
         },
         "r2plus1d": {
-            "learning_rate": [1e-5, 5e-5, 1e-4],
+            "learning_rate": [5e-5, 1e-4],  # Reduced from 3 to 2 values
             "backbone_lr": [1e-6, 5e-6],
             "head_lr": [1e-4, 5e-4],
             "weight_decay": [1e-4, 1e-3],
             "batch_size": [2, 4]
         },
         "x3d": {
-            "learning_rate": [1e-5, 5e-5, 1e-4],
+            "learning_rate": [5e-5, 1e-4],  # Reduced from 3 to 2 values
             "backbone_lr": [1e-6, 5e-6],
             "head_lr": [1e-4, 5e-4],
             "weight_decay": [1e-4, 1e-3],
             "batch_size": [2, 4]
         },
         "slowfast": {
-            "learning_rate": [1e-5, 5e-5, 1e-4],
+            "learning_rate": [5e-5, 1e-4],  # Reduced from 3 to 2 values
             "backbone_lr": [1e-6, 5e-6],
             "head_lr": [1e-4, 5e-4],
             "weight_decay": [1e-4, 1e-3],
             "batch_size": [2, 4]
         },
         "slowfast_attention": {
-            "learning_rate": [1e-5, 5e-5, 1e-4],
+            "learning_rate": [5e-5, 1e-4],  # Reduced from 3 to 2 values (2*2*2*2*1 = 16 combinations)
             "backbone_lr": [1e-6, 5e-6],
             "head_lr": [1e-4, 5e-4],
             "weight_decay": [1e-4, 1e-3],
             "batch_size": [2]
         },
         "slowfast_multiscale": {
-            "learning_rate": [1e-5, 5e-5, 1e-4],
+            "learning_rate": [5e-5, 1e-4],  # Reduced from 3 to 2 values
             "backbone_lr": [1e-6, 5e-6],
             "head_lr": [1e-4, 5e-4],
             "weight_decay": [1e-4, 1e-3],
             "batch_size": [2]
         },
         "two_stream": {
-            "learning_rate": [1e-5, 5e-5, 1e-4],
+            "learning_rate": [5e-5, 1e-4],  # Reduced from 3 to 2 values
             "backbone_lr": [1e-6, 5e-6],
             "head_lr": [1e-4, 5e-4],
             "weight_decay": [1e-4, 1e-3],
             "batch_size": [2]
         },
         "vit_gru": {
-            "learning_rate": [1e-5, 5e-5, 1e-4],
+            "learning_rate": [5e-5, 1e-4],  # Reduced from 3 to 2 values (2*2*2*2*2 = 32 combinations)
             "backbone_lr": [1e-6, 5e-6],
             "head_lr": [1e-4, 5e-4],
             "weight_decay": [1e-4, 1e-3],
             "batch_size": [2, 4]
         },
         "vit_transformer": {
-            "learning_rate": [1e-5, 5e-5, 1e-4],
+            "learning_rate": [5e-5, 1e-4],  # Reduced from 3 to 2 values
             "backbone_lr": [1e-6, 5e-6],
             "head_lr": [1e-4, 5e-4],
             "weight_decay": [1e-4, 1e-3],
             "batch_size": [2, 4]
         },
         "timesformer": {
-            "learning_rate": [1e-5, 5e-5, 1e-4],
+            "learning_rate": [5e-5, 1e-4],  # Reduced from 3 to 2 values (2*2*2*2*1 = 16 combinations)
             "backbone_lr": [1e-6, 5e-6],
             "head_lr": [1e-4, 5e-4],
             "weight_decay": [1e-4, 1e-3],
             "batch_size": [2]
         },
         "vivit": {
-            "learning_rate": [1e-5, 5e-5, 1e-4],
+            "learning_rate": [5e-5, 1e-4],  # Reduced from 3 to 2 values
             "backbone_lr": [1e-6, 5e-6],
             "head_lr": [1e-4, 5e-4],
             "weight_decay": [1e-4, 1e-3],
@@ -154,37 +155,37 @@ def get_hyperparameter_grid(model_type: str) -> Dict[str, List[Any]]:
         },
         # XGBoost models
         "xgboost_pretrained_inception": {
-            "n_estimators": [50, 100, 200],
+            "n_estimators": [100, 200],  # Reduced from 3 to 2 values (2*3*2*2*2 = 48 combinations)
             "max_depth": [3, 5, 7],
-            "learning_rate": [0.01, 0.1, 0.3],
+            "learning_rate": [0.01, 0.1],  # Reduced from 3 to 2 values
             "subsample": [0.8, 1.0],
             "colsample_bytree": [0.8, 1.0]
         },
         "xgboost_i3d": {
-            "n_estimators": [50, 100, 200],
+            "n_estimators": [100, 200],  # Reduced from 3 to 2 values
             "max_depth": [3, 5, 7],
-            "learning_rate": [0.01, 0.1, 0.3],
+            "learning_rate": [0.01, 0.1],  # Reduced from 3 to 2 values
             "subsample": [0.8, 1.0],
             "colsample_bytree": [0.8, 1.0]
         },
         "xgboost_r2plus1d": {
-            "n_estimators": [50, 100, 200],
+            "n_estimators": [100, 200],  # Reduced from 3 to 2 values
             "max_depth": [3, 5, 7],
-            "learning_rate": [0.01, 0.1, 0.3],
+            "learning_rate": [0.01, 0.1],  # Reduced from 3 to 2 values
             "subsample": [0.8, 1.0],
             "colsample_bytree": [0.8, 1.0]
         },
         "xgboost_vit_gru": {
-            "n_estimators": [50, 100, 200],
+            "n_estimators": [100, 200],  # Reduced from 3 to 2 values
             "max_depth": [3, 5, 7],
-            "learning_rate": [0.01, 0.1, 0.3],
+            "learning_rate": [0.01, 0.1],  # Reduced from 3 to 2 values
             "subsample": [0.8, 1.0],
             "colsample_bytree": [0.8, 1.0]
         },
         "xgboost_vit_transformer": {
-            "n_estimators": [50, 100, 200],
+            "n_estimators": [100, 200],  # Reduced from 3 to 2 values
             "max_depth": [3, 5, 7],
-            "learning_rate": [0.01, 0.1, 0.3],
+            "learning_rate": [0.01, 0.1],  # Reduced from 3 to 2 values
             "subsample": [0.8, 1.0],
             "colsample_bytree": [0.8, 1.0]
         }

@@ -1,19 +1,22 @@
 """CLI entry point for FVC data preparation"""
+import logging
 from .config import FVCConfig
 from .index import build_video_index
+
+logger = logging.getLogger(__name__)
 
 
 def run_default_prep():
     """Run default data preparation pipeline"""
     cfg = FVCConfig()
     
-    print("=" * 60)
-    print("FVC Dataset Preparation")
-    print("=" * 60)
-    print(f"Root directory: {cfg.root_dir}")
-    print(f"Metadata directory: {cfg.metadata_dir}")
-    print(f"Data directory: {cfg.data_dir}")
-    print()
+    logger.info("=" * 60)
+    logger.info("FVC Dataset Preparation")
+    logger.info("=" * 60)
+    logger.info(f"Root directory: {cfg.root_dir}")
+    logger.info(f"Metadata directory: {cfg.metadata_dir}")
+    logger.info(f"Data directory: {cfg.data_dir}")
+    logger.info("")
     
     build_video_index(
         cfg,

@@ -473,7 +473,7 @@ class HandcraftedFeatureExtractor:
                     if container:
                         try:
                             container.close()
-                        except Exception:
+                        except (OSError, RuntimeError, AttributeError):
                             pass
                     
                     # Return zero features on error

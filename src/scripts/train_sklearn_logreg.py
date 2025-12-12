@@ -162,6 +162,11 @@ def train_sklearn_logreg(
     video_paths = scaled_df["video_path"].to_list()
     labels = scaled_df["label"].to_list()
     
+    # Explicitly clear DataFrame to avoid cleanup issues
+    del scaled_df
+    import gc
+    gc.collect()
+    
     # Convert labels to binary
     unique_labels = sorted(set(labels))
     if len(unique_labels) != 2:
@@ -215,14 +220,42 @@ def train_sklearn_logreg(
     
     logger.info(f"Train: {len(X_train)}, Val: {len(X_val)}, Test: {len(X_test)}")
     
+    # OPTIMIZATION: Use 20% stratified sample for hyperparameter search (faster)
+    # Final training will use full dataset for robustness
+    from sklearn.model_selection import StratifiedShuffleSplit
+    
+    logger.info("=" * 80)
+    logger.info("HYPERPARAMETER SEARCH: Using 20% stratified sample for efficiency")
+    logger.info("=" * 80)
+    
+    # Sample 20% of train+val for hyperparameter search
+    X_trainval = np.vstack([X_train, X_val])
+    y_trainval = np.concatenate([y_train, y_val])
+    
+    sss = StratifiedShuffleSplit(n_splits=1, test_size=0.8, random_state=42)
+    sample_indices, _ = next(sss.split(X_trainval, y_trainval))
+    
+    X_trainval_sample = X_trainval[sample_indices]
+    y_trainval_sample = y_trainval[sample_indices]
+    
+    # Split sample into train/val for hyperparameter search
+    from sklearn.model_selection import train_test_split
+    X_train_sample, X_val_sample, y_train_sample, y_val_sample = train_test_split(
+        X_trainval_sample, y_trainval_sample, test_size=0.2, random_state=42, stratify=y_trainval_sample
+    )
+    
+    logger.info(f"Hyperparameter search sample: {len(X_trainval_sample)} rows ({100.0 * len(X_trainval_sample) / len(X_trainval):.1f}% of {len(X_trainval)} total)")
+    logger.info(f"  Sample train: {len(X_train_sample)}, Sample val: {len(X_val_sample)}")
+    
     # Hyperparameter grid for sklearn LogisticRegression
     # Note: elasticnet requires l1_ratio parameter and saga solver
+    # Max 50 combinations: 4*3*2*1*3 = 36 raw, but after filtering ~44 combinations
     param_grid = {
-        "C": [0.01, 0.1, 1.0, 10.0, 100.0],
-        "penalty": ["l1", "l2", "elasticnet"],
-        "solver": ["liblinear", "saga"],  # saga supports elasticnet
-        "max_iter": [1000, 2000],
-        "l1_ratio": [0.1, 0.5, 0.9]  # Only used for elasticnet
+        "C": [0.01, 0.1, 1.0, 10.0],  # 4 values (reduced from 5)
+        "penalty": ["l1", "l2", "elasticnet"],  # 3 values
+        "solver": ["liblinear", "saga"],  # saga supports elasticnet (2 values)
+        "max_iter": [1000],  # 1 value (reduced from 2)
+        "l1_ratio": [0.1, 0.5, 0.9]  # 3 values (only used for elasticnet)
     }
     
     # Filter: elasticnet only works with saga solver and requires l1_ratio
@@ -249,46 +282,37 @@ def train_sklearn_logreg(
             "This may indicate an issue with the parameter grid configuration."
         )
     
-    # Scale features with defensive error handling
-    logger.info("Scaling features...")
-    logger.info(f"Train shape: {X_train.shape}, dtype: {X_train.dtype}")
-    logger.info(f"Feature stats: min={np.nanmin(X_train):.4f}, max={np.nanmax(X_train):.4f}, mean={np.nanmean(X_train):.4f}")
+    # Scale features for hyperparameter search (using 20% sample)
+    logger.info("Scaling features for hyperparameter search (20% sample)...")
+    logger.info(f"Sample train shape: {X_train_sample.shape}, dtype: {X_train_sample.dtype}")
     sys.stdout.flush()
     
     # Check for corrupted features before scaling
-    if np.any(np.isnan(X_train)):
-        nan_count = np.isnan(X_train).sum()
-        logger.warning(f"Found {nan_count} NaN values in training features, replacing with 0")
-        X_train = np.nan_to_num(X_train, nan=0.0)
-    if np.any(np.isinf(X_train)):
-        inf_count = np.isinf(X_train).sum()
-        logger.warning(f"Found {inf_count} Inf values in training features, replacing with 0")
-        X_train = np.nan_to_num(X_train, posinf=0.0, neginf=0.0)
+    if np.any(np.isnan(X_train_sample)):
+        nan_count = np.isnan(X_train_sample).sum()
+        logger.warning(f"Found {nan_count} NaN values in sample training features, replacing with 0")
+        X_train_sample = np.nan_to_num(X_train_sample, nan=0.0)
+    if np.any(np.isinf(X_train_sample)):
+        inf_count = np.isinf(X_train_sample).sum()
+        logger.warning(f"Found {inf_count} Inf values in sample training features, replacing with 0")
+        X_train_sample = np.nan_to_num(X_train_sample, posinf=0.0, neginf=0.0)
     
     try:
-        scaler = StandardScaler()
-        X_train_scaled = scaler.fit_transform(X_train)
-        logger.info(f"Feature scaling completed. Scaled shape: {X_train_scaled.shape}")
+        scaler_sample = StandardScaler()
+        X_train_sample_scaled = scaler_sample.fit_transform(X_train_sample)
+        X_val_sample_scaled = scaler_sample.transform(X_val_sample)
+        logger.info(f"Feature scaling completed for hyperparameter search. Scaled shape: {X_train_sample_scaled.shape}")
     except MemoryError as e:
         logger.critical(f"Memory error during feature scaling: {e}")
-        logger.critical(f"Feature matrix size: {X_train.nbytes / 1024**2:.2f} MB")
         raise
     except Exception as e:
         error_msg = str(e)
         logger.error(f"Failed to scale features: {e}", exc_info=True)
         if "core dump" in error_msg.lower() or "segmentation fault" in error_msg.lower() or "aborted" in error_msg.lower():
             logger.critical("CRITICAL: Possible crash during sklearn StandardScaler.fit_transform()")
-            logger.critical("This may indicate corrupted features, memory issue, or sklearn library incompatibility")
         raise
     
-    try:
-        X_val_scaled = scaler.transform(X_val)
-        X_test_scaled = scaler.transform(X_test)
-    except Exception as e:
-        logger.error(f"Failed to transform validation/test features: {e}", exc_info=True)
-        raise
-    
-    # Grid search
+    # Grid search on 20% sample
     best_score = -1
     best_params = None
     best_model = None
@@ -299,8 +323,8 @@ def train_sklearn_logreg(
         
         try:
             # Params already have l1_ratio removed for non-elasticnet penalties
-            logger.info(f"Training LogisticRegression with params: {params}")
-            logger.info(f"Training data: {X_train_scaled.shape[0]} samples, {X_train_scaled.shape[1]} features")
+            logger.info(f"Training LogisticRegression with params: {params} (20% sample)")
+            logger.info(f"Training data: {X_train_sample_scaled.shape[0]} samples, {X_train_sample_scaled.shape[1]} features")
             sys.stdout.flush()
             
             model = LogisticRegression(
@@ -310,26 +334,24 @@ def train_sklearn_logreg(
             )
             
             try:
-                model.fit(X_train_scaled, y_train)
+                model.fit(X_train_sample_scaled, y_train_sample)
                 logger.info(f"✓ Model.fit() completed successfully")
             except MemoryError as e:
                 logger.critical(f"Memory error during LogisticRegression.fit(): {e}")
-                logger.critical(f"Feature matrix size: {X_train_scaled.nbytes / 1024**2:.2f} MB")
                 raise
             except Exception as e:
                 error_msg = str(e)
                 logger.error(f"Failed to train LogisticRegression: {e}", exc_info=True)
                 if "core dump" in error_msg.lower() or "segmentation fault" in error_msg.lower() or "aborted" in error_msg.lower():
                     logger.critical("CRITICAL: Possible crash during sklearn LogisticRegression.fit()")
-                    logger.critical("This may indicate corrupted features, memory issue, or sklearn library incompatibility")
                 raise
             
             # Validate with defensive error handling
-            logger.info("Running model.predict_proba() on validation set...")
+            logger.info("Running model.predict_proba() on validation set (20% sample)...")
             sys.stdout.flush()
             
             try:
-                val_probs_full = model.predict_proba(X_val_scaled)
+                val_probs_full = model.predict_proba(X_val_sample_scaled)
                 logger.info(f"✓ predict_proba() completed (shape: {val_probs_full.shape})")
             except MemoryError as e:
                 logger.critical(f"Memory error during LogisticRegression.predict_proba(): {e}")
@@ -339,14 +361,13 @@ def train_sklearn_logreg(
                 logger.error(f"Failed to predict probabilities: {e}", exc_info=True)
                 if "core dump" in error_msg.lower() or "segmentation fault" in error_msg.lower() or "aborted" in error_msg.lower():
                     logger.critical("CRITICAL: Possible crash during sklearn LogisticRegression.predict_proba()")
-                    logger.critical("This may indicate corrupted features, memory issue, or sklearn library incompatibility")
                 raise
             
             if val_probs_full.shape[1] != 2:
                 raise ValueError(f"Expected binary classification, got {val_probs_full.shape[1]} classes")
             val_probs = val_probs_full[:, 1]
             val_preds = (val_probs > 0.5).astype(int)
-            val_f1 = f1_score(y_val, val_preds)
+            val_f1 = f1_score(y_val_sample, val_preds)
             
             # Check for NaN or invalid values
             if np.any(np.isnan(val_probs)) or np.any(np.isinf(val_probs)):
@@ -377,10 +398,28 @@ def train_sklearn_logreg(
         logger.error(error_msg)
         raise ValueError(error_msg)
     
-    logger.info(f"Best hyperparameters: {best_params} (val_f1: {best_score:.4f})")
+    logger.info(f"Best hyperparameters from 20% sample: {best_params} (val_f1: {best_score:.4f})")
     
-    # 5-fold CV on train+val
-    X_trainval = np.vstack([X_train, X_val])
+    # FINAL TRAINING: Train on full dataset with best hyperparameters
+    logger.info("=" * 80)
+    logger.info("FINAL TRAINING: Using full dataset with best hyperparameters")
+    logger.info("=" * 80)
+    
+    # Scale full dataset
+    logger.info("Scaling full dataset for final training...")
+    if np.any(np.isnan(X_train)):
+        X_train = np.nan_to_num(X_train, nan=0.0)
+    if np.any(np.isinf(X_train)):
+        X_train = np.nan_to_num(X_train, posinf=0.0, neginf=0.0)
+    
+    scaler_final = StandardScaler()
+    X_train_scaled = scaler_final.fit_transform(X_train)
+    X_val_scaled = scaler_final.transform(X_val)
+    X_test_scaled = scaler_final.transform(X_test)
+    logger.info(f"Full dataset scaled. Train: {X_train_scaled.shape[0]}, Val: {X_val_scaled.shape[0]}, Test: {X_test_scaled.shape[0]}")
+    
+    # 5-fold CV on full train+val
+    X_trainval = np.vstack([X_train_scaled, X_val_scaled])
     y_trainval = np.concatenate([y_train, y_val])
     
     cv = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
@@ -395,9 +434,9 @@ def train_sklearn_logreg(
         y_train_cv = y_trainval[train_idx_cv]
         y_val_cv = y_trainval[val_idx_cv]
         
-        scaler_cv = StandardScaler()
-        X_train_cv_scaled = scaler_cv.fit_transform(X_train_cv)
-        X_val_cv_scaled = scaler_cv.transform(X_val_cv)
+        # Data is already scaled, no need to scale again
+        X_train_cv_scaled = X_train_cv
+        X_val_cv_scaled = X_val_cv
         
         # best_params already has l1_ratio removed for non-elasticnet
         model_cv = LogisticRegression(**best_params, random_state=42, n_jobs=1)
@@ -422,10 +461,9 @@ def train_sklearn_logreg(
     logger.info(f"CV F1: {cv_mean_f1:.4f} ± {cv_std_f1:.4f}")
     logger.info(f"CV AUC: {cv_mean_auc:.4f}")
     
-    # Train final model on train+val
+    # Train final model on train+val (already scaled)
     logger.info("Training final model on full training+validation set...")
-    scaler_final = StandardScaler()
-    X_trainval_scaled = scaler_final.fit_transform(X_trainval)
+    X_trainval_scaled = X_trainval  # Already scaled
     
     # best_params already has l1_ratio removed for non-elasticnet
     final_model = LogisticRegression(**best_params, random_state=42, n_jobs=1)
@@ -452,7 +490,7 @@ def train_sklearn_logreg(
     # Save model and results
     try:
         joblib.dump(final_model, output_dir_path / "model.joblib")
-        joblib.dump(scaler_final, output_dir_path / "scaler.joblib")
+        joblib.dump(scaler_final, output_dir_path / "scaler.joblib")  # Use scaler_final from full dataset
     except Exception as e:
         logger.error(f"Failed to save model/scaler: {e}")
         raise IOError(f"Cannot save model files to {output_dir_path}") from e
@@ -557,28 +595,45 @@ def main():
 
 if __name__ == "__main__":
     try:
-        main()
-        # Ensure all output is flushed before exit
-        sys.stdout.flush()
-        sys.stderr.flush()
+        exit_code = 0
+        try:
+            main()
+            # Ensure all output is flushed before exit
+            sys.stdout.flush()
+            sys.stderr.flush()
+        except SystemExit as e:
+            # Capture exit code from SystemExit
+            exit_code = e.code if e.code is not None else 0
+            sys.stdout.flush()
+            sys.stderr.flush()
+        except KeyboardInterrupt:
+            logger.critical("Process interrupted by user")
+            sys.stdout.flush()
+            sys.stderr.flush()
+            exit_code = 130
+        except Exception as e:
+            # Catch any unhandled exceptions that might lead to crashes
+            logger.critical("=" * 80)
+            logger.critical("UNHANDLED EXCEPTION - This may cause a crash")
+            logger.critical("=" * 80)
+            logger.critical(f"Exception type: {type(e).__name__}")
+            logger.critical(f"Exception message: {str(e)}")
+            logger.critical("Full traceback:", exc_info=True)
+            logger.critical("=" * 80)
+            sys.stdout.flush()
+            sys.stderr.flush()
+            exit_code = 1
+        
+        # Explicit cleanup before exit
+        import gc
+        gc.collect()
+        
+        # Use os._exit to bypass Python cleanup that might cause crashes
+        os._exit(exit_code)
     except SystemExit:
         # Re-raise system exits (normal termination)
         raise
-    except KeyboardInterrupt:
-        logger.critical("Process interrupted by user")
-        sys.stdout.flush()
-        sys.stderr.flush()
-        sys.exit(130)
-    except Exception as e:
-        # Catch any unhandled exceptions that might lead to crashes
-        logger.critical("=" * 80)
-        logger.critical("UNHANDLED EXCEPTION - This may cause a crash")
-        logger.critical("=" * 80)
-        logger.critical(f"Exception type: {type(e).__name__}")
-        logger.critical(f"Exception message: {str(e)}")
-        logger.critical("Full traceback:", exc_info=True)
-        logger.critical("=" * 80)
-        sys.stdout.flush()
-        sys.stderr.flush()
-        # Re-raise to get proper exit code
-        raise
+    except Exception:
+        # Last resort: force exit
+        import os
+        os._exit(1)

@@ -1,10 +1,13 @@
 """Build video index manifest by joining metadata with scanned videos"""
 import os
+import logging
 from typing import Optional
 import pandas as pd
 from .config import FVCConfig
 from .metadata import parse_metadata
 from .scan import scan_videos
+
+logger = logging.getLogger(__name__)
 
 
 def build_video_index(
@@ -23,17 +26,17 @@ def build_video_index(
     Returns:
         DataFrame with video index
     """
-    print("Parsing metadata...")
+    logger.info("Parsing metadata...")
     main_df, dup_df = parse_metadata(cfg)
-    print(f"Found {len(main_df)} videos in metadata")
+    logger.info(f"Found {len(main_df)} videos in metadata")
     
-    print("Scanning video folders...")
+    logger.info("Scanning video folders...")
     records = scan_videos(cfg, compute_stats=compute_stats)
     vids_df = pd.DataFrame.from_records(records)
-    print(f"Found {len(vids_df)} videos in folders")
+    logger.info(f"Found {len(vids_df)} videos in folders")
     
     # Join on video_id - first with main metadata
-    print("Joining metadata with video paths...")
+    logger.info("Joining metadata with video paths...")
     merged = vids_df.merge(
         main_df,
         on="video_id",
@@ -52,7 +55,7 @@ def build_video_index(
     
     # Merge duplicates - this also has labels!
     if not dup_df.empty:
-        print("Merging duplicate information and labels...")
+        logger.info("Merging duplicate information and labels...")
         # Merge on video_id, but handle label conflicts
         merged = merged.merge(
             dup_df[["video_id", "dup_group", "label", "platform"]],
@@ -73,20 +76,20 @@ def build_video_index(
     
     # Decide how to handle duplicates: simplest is to drop all but the first per dup_group
     if drop_duplicates and "dup_group" in merged.columns:
-        print("Dropping duplicates...")
+        logger.info("Dropping duplicates...")
         initial_count = len(merged)
         merged = merged.sort_values(["dup_group", "video_id"])
         merged = merged.drop_duplicates(subset=["dup_group"], keep="first")
         dropped = initial_count - len(merged)
         if dropped > 0:
-            print(f"Dropped {dropped} duplicate videos")
+            logger.info(f"Dropped {dropped} duplicate videos")
     
     # Sanity: drop rows with missing labels
     before_drop = len(merged)
     merged = merged.dropna(subset=["label"])
     after_drop = len(merged)
     if before_drop > after_drop:
-        print(f"Warning: Dropped {before_drop - after_drop} videos with missing labels")
+        logger.warning(f"Dropped {before_drop - after_drop} videos with missing labels")
     
     # Ensure label is int
     merged["label"] = merged["label"].astype(int)
@@ -121,29 +124,29 @@ def build_video_index(
     csv_path = os.path.join(cfg.data_dir, "video_index_input.csv")
     json_path = os.path.join(cfg.data_dir, "video_index_input.json")
     
-    print(f"Writing manifest to {csv_path}...")
+    logger.info(f"Writing manifest to {csv_path}...")
     merged.to_csv(csv_path, index=False)
     
-    print(f"Writing JSON manifest to {json_path}...")
+    logger.info(f"Writing JSON manifest to {json_path}...")
     merged.to_json(json_path, orient="records", lines=False, indent=2)
     
-    print(f"\n✓ Successfully created manifest with {len(merged)} entries")
-    print(f"  CSV: {csv_path}")
-    print(f"  JSON: {json_path}")
+    logger.info(f"\n✓ Successfully created manifest with {len(merged)} entries")
+    logger.info(f"  CSV: {csv_path}")
+    logger.info(f"  JSON: {json_path}")
     
-    # Print summary statistics
-    print("\nDataset Summary:")
-    print(f"  Total videos: {len(merged)}")
+    # Log summary statistics
+    logger.info("\nDataset Summary:")
+    logger.info(f"  Total videos: {len(merged)}")
     if "label" in merged.columns:
         label_counts = merged["label"].value_counts().sort_index()
-        print(f"  Real (0): {label_counts.get(0, 0)}")
-        print(f"  Fake (1): {label_counts.get(1, 0)}")
+        logger.info(f"  Real (0): {label_counts.get(0, 0)}")
+        logger.info(f"  Fake (1): {label_counts.get(1, 0)}")
     if "subset" in merged.columns:
         subset_counts = merged["subset"].value_counts()
-        print(f"  By subset: {dict(subset_counts)}")
+        logger.info(f"  By subset: {dict(subset_counts)}")
     if "platform" in merged.columns:
         platform_counts = merged["platform"].value_counts()
-        print(f"  By platform: {dict(platform_counts)}")
+        logger.info(f"  By platform: {dict(platform_counts)}")
     
     return merged
 

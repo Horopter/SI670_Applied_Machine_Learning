@@ -53,7 +53,7 @@ def main():
                 total_size = sum(f.stat().st_size for f in folder_path.rglob('*') if f.is_file())
                 size_mb = total_size / (1024 * 1024)
                 print(f"  - {folder}/ ({size_mb:.1f} MB)")
-            except:
+            except (OSError, PermissionError, FileNotFoundError):
                 print(f"  - {folder}/")
         else:
             print(f"  - {folder}/ (does not exist)")

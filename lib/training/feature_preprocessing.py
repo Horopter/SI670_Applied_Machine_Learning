@@ -527,14 +527,7 @@ def load_and_combine_features(
         logger.warning("No features loaded from either stage!")
         return np.array([]).reshape(len(video_paths), 0), [], None, None
     
-    # Check if we have at least 3000 videos
-    if len(valid_video_indices) < 3000:
-        logger.warning(
-            f"Only {len(valid_video_indices)} videos have valid features (need >= 3000). "
-            f"This may cause training to fail."
-        )
-    else:
-        logger.info(f"✓ Found {len(valid_video_indices)} videos with valid features (>= 3000 required)")
+    logger.info(f"✓ Found {len(valid_video_indices)} videos with valid features")
     
     # Return None if all videos are valid (for backward compatibility)
     if len(valid_video_indices) == len(video_paths):

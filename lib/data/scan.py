@@ -2,10 +2,13 @@
 import os
 import json
 import subprocess
+import logging
 from typing import List, Dict, Optional
 import cv2
 from tqdm import tqdm
 from .config import FVCConfig
+
+logger = logging.getLogger(__name__)
 
 VIDEO_FILENAME_CANDIDATES = ["video.mp4", "video.mkv", "video.webm"]
 
@@ -202,7 +205,7 @@ def scan_videos(cfg: FVCConfig, compute_stats: bool = True) -> List[Dict]:
         subset_root = os.path.join(cfg.videos_dir, subset)
         if not os.path.isdir(subset_root):
             # maybe not downloaded yet, skip
-            print(f"Warning: {subset_root} not found, skipping...")
+            logger.warning(f"{subset_root} not found, skipping...")
             continue
         
         # Check structure: FVC1 has platform subfolders, FVC2/FVC3 may not

@@ -1,9 +1,12 @@
 """Parse FVC metadata CSVs and map to binary labels"""
 import os
 import re
+import logging
 from typing import Tuple, Optional
 import pandas as pd
 from .config import FVCConfig
+
+logger = logging.getLogger(__name__)
 
 LABEL_COLUMN_CANDIDATES = ["label", "class", "truth_label", "is_fake", "Label", "Class"]
 VIDEO_URL_COLUMN_CANDIDATES = ["video_url", "url", "videoUrl", "Video_URL", "URL"]
@@ -127,7 +130,7 @@ def load_main_metadata(cfg: FVCConfig) -> pd.DataFrame:
     df = df.dropna(subset=["video_id"])
     after_drop = len(df)
     if before_drop > after_drop:
-        print(f"Warning: Dropped {before_drop - after_drop} rows where video_id could not be extracted from URL")
+        logger.warning(f"Dropped {before_drop - after_drop} rows where video_id could not be extracted from URL")
     
     return df[["video_id", "label", "subset", "platform"]]
 

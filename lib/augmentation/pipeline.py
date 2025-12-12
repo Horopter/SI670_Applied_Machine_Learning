@@ -301,7 +301,7 @@ def augment_video(
             try:
                 if temp_dir.exists():
                     shutil.rmtree(temp_dir)
-            except Exception:
+            except (OSError, PermissionError, FileNotFoundError):
                 pass
         else:
             logger.info("Checkpoints preserved for resume. Fix errors and re-run to continue.")
@@ -422,7 +422,7 @@ def _reconstruct_metadata_from_files(
                     row.get('original_video', ''),
                     row.get('augmentation_idx', -999)
                 ))
-        except Exception:
+        except (OSError, PermissionError, FileNotFoundError, ValueError):
             pass
     
     # Collect new entries

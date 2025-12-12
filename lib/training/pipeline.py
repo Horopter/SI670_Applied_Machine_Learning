@@ -18,17 +18,35 @@ import polars as pl
 import torch
 from torch.utils.data import DataLoader
 
-from lib.data import stratified_kfold, load_metadata
+from lib.data import stratified_kfold
 # Lazy import to avoid circular dependency issues
 # VideoConfig and VideoDataset will be imported when needed
 from lib.mlops.config import ExperimentTracker, CheckpointManager
 from lib.mlops.mlflow_tracker import create_mlflow_tracker, MLFLOW_AVAILABLE
 from lib.training.trainer import OptimConfig, TrainConfig, fit
 from lib.training.model_factory import create_model, is_pytorch_model, is_xgboost_model, get_model_config
-from lib.training.feature_preprocessing import remove_collinear_features, load_and_combine_features
+from lib.training.metrics_utils import compute_classification_metrics
+from lib.training.cleanup_utils import cleanup_model_and_memory
 from lib.utils.memory import aggressive_gc
 
 logger = logging.getLogger(__name__)
+
+
+def _flush_logs():
+    """Flush all logging handlers and stdout/stderr to ensure immediate output."""
+    try:
+        sys.stdout.flush()
+        sys.stderr.flush()
+        # Flush all logging handlers
+        for handler in logging.root.handlers:
+            if hasattr(handler, 'stream') and hasattr(handler.stream, 'flush'):
+                handler.stream.flush()
+            elif hasattr(handler, 'flush'):
+                handler.flush()
+    except Exception:
+        # Ignore errors during flush (non-critical)
+        pass
+
 
 # Constants for model type classification
 BASELINE_MODELS = {
@@ -444,7 +462,8 @@ def stage5_train_models(
     use_mlflow: bool = True,
     train_ensemble: bool = False,
     ensemble_method: str = "meta_learner",
-    delete_existing: bool = False
+    delete_existing: bool = False,
+    resume: bool = True
 ) -> Dict[str, Any]:
     """
     Stage 5: Train models using scaled videos and features.
@@ -462,6 +481,7 @@ def stage5_train_models(
         train_ensemble: Whether to train ensemble model after individual models (default: False)
         ensemble_method: Ensemble method - "meta_learner" or "weighted_average" (default: "meta_learner")
         delete_existing: If True, delete existing model checkpoints/results before regenerating (clean mode)
+        resume: If True, skip training folds that already have saved models (resume mode, default: True)
     
     Returns:
         Dictionary of training results
@@ -475,7 +495,7 @@ def stage5_train_models(
     logger.info("Frames per video: %d", num_frames)
     logger.info("Output directory: %s", output_dir)
     logger.info("Initializing pipeline...")
-    sys.stdout.flush()  # Ensure immediate output
+    _flush_logs()  # Ensure immediate output
     
     # Input validation
     if not project_root or not isinstance(project_root, str):
@@ -597,6 +617,7 @@ def stage5_train_models(
         logger.error(error_msg)
         raise ValueError(error_msg)
     logger.info(f"✓ Data validation passed: {num_rows} rows (> 3000 required)")
+    _flush_logs()
     
     # CRITICAL: Resource health check before proceeding
     monitor = ResourceMonitor()
@@ -628,6 +649,7 @@ def stage5_train_models(
         logger.debug("Skipping feature loading - no feature-based models in training list")
     
     logger.info(f"Stage 5: Found {scaled_df.height} scaled videos")
+    _flush_logs()
     
     # Import VideoConfig - fail fast if not available (required for PyTorch models)
     # lib.models should always be available in Stage 5
@@ -658,6 +680,29 @@ def stage5_train_models(
     
     results = {}
     
+    # Helper function to check if a fold is already trained
+    def _is_fold_complete(fold_dir: Path, model_type: str) -> bool:
+        """Check if a fold directory contains a complete trained model."""
+        if not fold_dir.exists():
+            return False
+        
+        # PyTorch models: check for model.pt
+        if is_pytorch_model(model_type):
+            model_file = fold_dir / "model.pt"
+            if model_file.exists() and model_file.stat().st_size > 0:
+                return True
+        
+        # XGBoost/Baseline models: check for model files (varies by model type)
+        # Common patterns: model.pkl, model.json, model.bst, etc.
+        model_files = list(fold_dir.glob("model.*"))
+        if model_files:
+            # Check if any model file is non-empty
+            for model_file in model_files:
+                if model_file.stat().st_size > 0:
+                    return True
+        
+        return False
+    
     # Delete existing model results if clean mode
     if delete_existing:
         logger.info("Stage 5: Deleting existing model results (clean mode)...")
@@ -670,29 +715,20 @@ def stage5_train_models(
                     shutil.rmtree(model_output_dir)
                     deleted_count += 1
                     logger.info(f"Deleted existing results for {model_type}")
-                except Exception as e:
+                except (OSError, PermissionError, FileNotFoundError) as e:
                     logger.warning(f"Could not delete {model_output_dir}: {e}")
         logger.info(f"Stage 5: Deleted {deleted_count} existing model directories")
+        _flush_logs()
     
     # Train each model type
     for model_type in model_types:
         logger.info(f"\n{'='*80}")
         logger.info(f"Stage 5: Training model: {model_type}")
         logger.info(f"{'='*80}")
+        _flush_logs()
         
         model_output_dir = output_dir / model_type
         model_output_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Check if model training is already complete (resume mode)
-        if not delete_existing:
-            checkpoint_dir = model_output_dir / "checkpoints"
-            completion_file = model_output_dir / "training_complete.pt"
-            if completion_file.exists():
-                logger.info(f"Model {model_type} training already complete. Skipping.")
-                logger.info(f"To retrain, use --delete-existing flag")
-                continue
-            elif checkpoint_dir.exists() and any(checkpoint_dir.glob("*.pt")):
-                logger.info(f"Found existing checkpoints for {model_type}. Will resume from latest checkpoint.")
         
         # Get model config
         model_config = get_model_config(model_type)
@@ -705,18 +741,6 @@ def stage5_train_models(
             logger.warning(f"n_splits={n_splits} specified, but enforcing 5-fold CV as required")
             n_splits = 5
         
-        # CRITICAL FIX: Get all folds at once (stratified_kfold returns list of all folds)
-        all_folds = stratified_kfold(
-            scaled_df,
-            n_splits=n_splits,
-            random_state=42
-        )
-        
-        if len(all_folds) != n_splits:
-            raise ValueError(f"Expected {n_splits} folds, got {len(all_folds)}")
-        
-        logger.info(f"Using {n_splits}-fold stratified cross-validation")
-        
         # Get hyperparameter grid for grid search
         from .grid_search import get_hyperparameter_grid, generate_parameter_combinations, select_best_hyperparameters
         from .visualization import generate_all_plots
@@ -725,11 +749,44 @@ def stage5_train_models(
         param_combinations = generate_parameter_combinations(param_grid)
         
         logger.info(f"Grid search: {len(param_combinations)} hyperparameter combinations to try")
+        _flush_logs()
+        
+        # OPTIMIZATION: Use 20% stratified sample for hyperparameter search (faster)
+        # Final training will use full dataset for robustness
+        from sklearn.model_selection import StratifiedShuffleSplit
+        import polars as pl
+        
+        logger.info("=" * 80)
+        logger.info("HYPERPARAMETER SEARCH: Using 20% stratified sample for efficiency")
+        logger.info("=" * 80)
+        
+        # Sample 20% of data for hyperparameter search
+        labels = scaled_df["label"].to_list()
+        sss = StratifiedShuffleSplit(n_splits=1, test_size=0.8, random_state=42)
+        sample_indices, _ = next(sss.split(scaled_df, labels))
+        
+        # Create 20% sample DataFrame
+        sample_df = scaled_df[sample_indices]
+        logger.info(f"Hyperparameter search sample: {sample_df.height} rows ({100.0 * sample_df.height / scaled_df.height:.1f}% of {scaled_df.height} total)")
+        _flush_logs()
+        
+        # Create folds from 20% sample for hyperparameter search
+        grid_search_folds = stratified_kfold(
+            sample_df,
+            n_splits=n_splits,
+            random_state=42
+        )
+        
+        if len(grid_search_folds) != n_splits:
+            raise ValueError(f"Expected {n_splits} folds for grid search, got {len(grid_search_folds)}")
+        
+        logger.info(f"Using {n_splits}-fold stratified cross-validation on 20% sample for hyperparameter search")
+        _flush_logs()
         
         # Store results for all hyperparameter combinations
         all_grid_results = []
         
-        # Grid search: try each hyperparameter combination
+        # Grid search: try each hyperparameter combination on 20% sample
         if not param_combinations:
             # No grid search, use default config
             param_combinations = [{}]
@@ -740,6 +797,7 @@ def stage5_train_models(
             logger.info(f"Grid Search: Hyperparameter combination {param_idx + 1}/{len(param_combinations)}")
             logger.info(f"Parameters: {params}")
             logger.info(f"{'='*80}")
+            _flush_logs()
             
             # Update model_config with current hyperparameters
             current_config = model_config.copy()
@@ -748,12 +806,23 @@ def stage5_train_models(
             # Store fold results for this parameter combination
             param_fold_results = []
             
-            # Train all folds with this hyperparameter combination
+            # Train all folds with this hyperparameter combination (using 20% sample)
             for fold_idx in range(n_splits):
-                logger.info(f"\nTraining {model_type} - Fold {fold_idx + 1}/{n_splits}")
+                logger.info(f"\nHyperparameter Search - {model_type} - Fold {fold_idx + 1}/{n_splits} (20% sample)")
+                _flush_logs()
                 
-                # Get the specific fold
-                train_df, val_df = all_folds[fold_idx]
+                # Check if fold is already complete (resume mode)
+                fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
+                if resume and not delete_existing and _is_fold_complete(fold_output_dir, model_type):
+                    logger.info(f"Fold {fold_idx + 1} already trained (found existing model). Skipping.")
+                    logger.info(f"To retrain this fold, use --delete-existing flag")
+                    # Load existing results if available, otherwise create placeholder
+                    # Note: We can't easily reconstruct metrics from saved models, so we'll skip this fold
+                    # in grid search results but continue with other folds
+                    continue
+                
+                # Get the specific fold from 20% sample
+                train_df, val_df = grid_search_folds[fold_idx]
             
                 # Validate no data leakage (check dup_group if present)
                 if "dup_group" in scaled_df.columns:
@@ -885,8 +954,19 @@ def stage5_train_models(
                         ]
                     
                         # Create tracker and checkpoint manager
+                        # Note: fold_output_dir already checked above for resume mode
                         fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
                         fold_output_dir.mkdir(parents=True, exist_ok=True)
+                        
+                        # Delete existing fold if delete_existing is True
+                        if delete_existing and fold_output_dir.exists():
+                            try:
+                                import shutil
+                                shutil.rmtree(fold_output_dir)
+                                logger.info(f"Deleted existing fold {fold_idx + 1} directory (clean mode)")
+                            except (OSError, PermissionError, FileNotFoundError) as e:
+                                logger.warning(f"Could not delete {fold_output_dir}: {e}")
+                            fold_output_dir.mkdir(parents=True, exist_ok=True)
                     
                         if use_tracking:
                             tracker = ExperimentTracker(str(fold_output_dir))
@@ -915,6 +995,7 @@ def stage5_train_models(
                         mlflow_tracker = None
                     
                         logger.info(f"Training PyTorch model {model_type} on fold {fold_idx + 1}...")
+                        _flush_logs()
                     
                         # Validate datasets before training
                         if len(train_dataset) == 0:
@@ -956,6 +1037,7 @@ def stage5_train_models(
                                 try:
                                     sample_output = model(sample_clips)
                                     logger.info(f"Model forward pass test successful. Output shape: {sample_output.shape}")
+                                    _flush_logs()
                                 except RuntimeError as oom_error:
                                     error_msg = str(oom_error)
                                     if "out of memory" in error_msg.lower():
@@ -1082,6 +1164,7 @@ def stage5_train_models(
                         f"Fold {fold_idx + 1} - Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, "
                         f"Val F1: {val_f1:.4f}, Val Precision: {val_precision:.4f}, Val Recall: {val_recall:.4f}"
                         )
+                        _flush_logs()
                         if per_class:
                             for class_idx, metrics in per_class.items():
                                 logger.info(
@@ -1128,9 +1211,20 @@ def stage5_train_models(
                     elif is_xgboost_model(model_type):
                         # XGBoost model training (uses pretrained models for feature extraction)
                         logger.info(f"Training XGBoost model {model_type} on fold {fold_idx + 1}...")
+                        _flush_logs()
                         
                         fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
                         fold_output_dir.mkdir(parents=True, exist_ok=True)
+                        
+                        # Delete existing fold if delete_existing is True
+                        if delete_existing and fold_output_dir.exists():
+                            try:
+                                import shutil
+                                shutil.rmtree(fold_output_dir)
+                                logger.info(f"Deleted existing fold {fold_idx + 1} directory (clean mode)")
+                            except (OSError, PermissionError, FileNotFoundError) as e:
+                                logger.warning(f"Could not delete {fold_output_dir}: {e}")
+                            fold_output_dir.mkdir(parents=True, exist_ok=True)
                         
                         try:
                             # Create XGBoost model with hyperparameters
@@ -1148,50 +1242,44 @@ def stage5_train_models(
                             label_map = {label: idx for idx, label in enumerate(sorted(set(val_labels)))}
                             val_y = np.array([label_map[label] for label in val_labels])
                             
-                            val_acc = (val_preds == val_y).mean()
-                            val_loss = -np.mean(np.log(val_probs[np.arange(len(val_y)), val_y] + 1e-10))  # Cross-entropy
-                            
-                            # Compute comprehensive metrics
-                            from sklearn.metrics import precision_score, recall_score, f1_score, precision_recall_fscore_support
-                            
-                            val_precision = float(precision_score(val_y, val_preds, average='binary', zero_division=0))
-                            val_recall = float(recall_score(val_y, val_preds, average='binary', zero_division=0))
-                            val_f1 = float(f1_score(val_y, val_preds, average='binary', zero_division=0))
-                            
-                            # Per-class metrics
-                            precision_per_class, recall_per_class, f1_per_class, support = precision_recall_fscore_support(
-                                val_y, val_preds, average=None, zero_division=0
+                            # Compute comprehensive metrics using shared utility
+                            metrics = compute_classification_metrics(
+                                y_true=val_y,
+                                y_pred=val_preds,
+                                y_probs=val_probs
                             )
                             
                             # Store results with hyperparameters
                             result = {
                                 "fold": fold_idx + 1,
-                                "val_loss": val_loss,
-                                "val_acc": val_acc,
-                                "val_f1": val_f1,
-                                "val_precision": val_precision,
-                                "val_recall": val_recall,
-                                "val_f1_class0": float(f1_per_class[0]) if len(f1_per_class) > 0 else 0.0,
-                                "val_precision_class0": float(precision_per_class[0]) if len(precision_per_class) > 0 else 0.0,
-                                "val_recall_class0": float(recall_per_class[0]) if len(recall_per_class) > 0 else 0.0,
-                                "val_f1_class1": float(f1_per_class[1]) if len(f1_per_class) > 1 else 0.0,
-                                "val_precision_class1": float(precision_per_class[1]) if len(precision_per_class) > 1 else 0.0,
-                                "val_recall_class1": float(recall_per_class[1]) if len(recall_per_class) > 1 else 0.0,
+                                "val_loss": metrics["val_loss"],
+                                "val_acc": metrics["val_acc"],
+                                "val_f1": metrics["val_f1"],
+                                "val_precision": metrics["val_precision"],
+                                "val_recall": metrics["val_recall"],
+                                "val_f1_class0": metrics["val_f1_class0"],
+                                "val_precision_class0": metrics["val_precision_class0"],
+                                "val_recall_class0": metrics["val_recall_class0"],
+                                "val_f1_class1": metrics["val_f1_class1"],
+                                "val_precision_class1": metrics["val_precision_class1"],
+                                "val_recall_class1": metrics["val_recall_class1"],
                             }
                             result.update(params)  # Add hyperparameters
                             param_fold_results.append(result)
                             fold_results.append(result)
                             
                             logger.info(
-                                f"Fold {fold_idx + 1} - Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, "
-                                f"Val F1: {val_f1:.4f}, Val Precision: {val_precision:.4f}, Val Recall: {val_recall:.4f}"
+                                f"Fold {fold_idx + 1} - Val Loss: {metrics['val_loss']:.4f}, Val Acc: {metrics['val_acc']:.4f}, "
+                                f"Val F1: {metrics['val_f1']:.4f}, Val Precision: {metrics['val_precision']:.4f}, Val Recall: {metrics['val_recall']:.4f}"
                             )
-                            if len(f1_per_class) > 0:
-                                for class_idx in range(len(f1_per_class)):
-                                    logger.info(
-                                        f"  Class {class_idx} - Precision: {precision_per_class[class_idx]:.4f}, "
-                                        f"Recall: {recall_per_class[class_idx]:.4f}, F1: {f1_per_class[class_idx]:.4f}"
-                                    )
+                            logger.info(
+                                f"  Class 0 - Precision: {metrics['val_precision_class0']:.4f}, "
+                                f"Recall: {metrics['val_recall_class0']:.4f}, F1: {metrics['val_f1_class0']:.4f}"
+                            )
+                            logger.info(
+                                f"  Class 1 - Precision: {metrics['val_precision_class1']:.4f}, "
+                                f"Recall: {metrics['val_recall_class1']:.4f}, F1: {metrics['val_f1_class1']:.4f}"
+                            )
                             
                             # Save model
                             model.save(str(fold_output_dir))
@@ -1219,25 +1307,26 @@ def stage5_train_models(
                         
                         finally:
                             # Always cleanup resources, even on error
-                            if 'model' in locals():
-                                try:
-                                    del model
-                                except Exception:
-                                    pass
-                            # Clear GPU cache if using CUDA
-                            try:
-                                if torch.cuda.is_available():
-                                    torch.cuda.empty_cache()
-                            except Exception:
-                                pass
+                            cleanup_model_and_memory(model=model if 'model' in locals() else None, clear_cuda=True)
                             aggressive_gc(clear_cuda=True)
                     
                     else:
                         # Baseline model training (sklearn)
                         logger.info(f"Training baseline model {model_type} on fold {fold_idx + 1}...")
+                        _flush_logs()
                         
                         fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
                         fold_output_dir.mkdir(parents=True, exist_ok=True)
+                        
+                        # Delete existing fold if delete_existing is True
+                        if delete_existing and fold_output_dir.exists():
+                            try:
+                                import shutil
+                                shutil.rmtree(fold_output_dir)
+                                logger.info(f"Deleted existing fold {fold_idx + 1} directory (clean mode)")
+                            except (OSError, PermissionError, FileNotFoundError) as e:
+                                logger.warning(f"Could not delete {fold_output_dir}: {e}")
+                            fold_output_dir.mkdir(parents=True, exist_ok=True)
                         
                         try:
                             # Create baseline model with hyperparameters
@@ -1303,11 +1392,12 @@ def stage5_train_models(
                             # Wrap in try-except to catch potential crashes
                             logger.info(f"Starting model.fit() for {model_type} fold {fold_idx + 1}...")
                             logger.info(f"Training data: {train_df.height} rows")
-                            sys.stdout.flush()
+                            _flush_logs()
                             
                             try:
                                 model.fit(train_df, project_root=project_root_str_orig)
                                 logger.info(f"Model.fit() completed successfully for fold {fold_idx + 1}")
+                                _flush_logs()
                             except MemoryError as e:
                                 logger.error(f"Memory error during model.fit() for fold {fold_idx + 1}: {e}")
                                 raise
@@ -1322,11 +1412,12 @@ def stage5_train_models(
                             # Evaluate on validation set
                             logger.info(f"Starting model.predict() for {model_type} fold {fold_idx + 1}...")
                             logger.info(f"Validation data: {val_df.height} rows")
-                            sys.stdout.flush()
+                            _flush_logs()
                             
                             try:
                                 val_probs = model.predict(val_df, project_root=project_root_str_orig)
                                 logger.info(f"Model.predict() completed successfully for fold {fold_idx + 1}")
+                                _flush_logs()
                             except MemoryError as e:
                                 logger.error(f"Memory error during model.predict() for fold {fold_idx + 1}: {e}")
                                 raise
@@ -1342,50 +1433,44 @@ def stage5_train_models(
                             label_map = {label: idx for idx, label in enumerate(sorted(set(val_labels)))}
                             val_y = np.array([label_map[label] for label in val_labels])
                             
-                            val_acc = (val_preds == val_y).mean()
-                            val_loss = -np.mean(np.log(val_probs[np.arange(len(val_y)), val_y] + 1e-10))  # Cross-entropy
-                            
-                            # Compute comprehensive metrics
-                            from sklearn.metrics import precision_score, recall_score, f1_score, precision_recall_fscore_support
-                            
-                            val_precision = float(precision_score(val_y, val_preds, average='binary', zero_division=0))
-                            val_recall = float(recall_score(val_y, val_preds, average='binary', zero_division=0))
-                            val_f1 = float(f1_score(val_y, val_preds, average='binary', zero_division=0))
-                            
-                            # Per-class metrics
-                            precision_per_class, recall_per_class, f1_per_class, support = precision_recall_fscore_support(
-                                val_y, val_preds, average=None, zero_division=0
+                            # Compute comprehensive metrics using shared utility
+                            metrics = compute_classification_metrics(
+                                y_true=val_y,
+                                y_pred=val_preds,
+                                y_probs=val_probs
                             )
                             
                             # Store results with hyperparameters
                             result = {
                                 "fold": fold_idx + 1,
-                                "val_loss": val_loss,
-                                "val_acc": val_acc,
-                                "val_f1": val_f1,
-                                "val_precision": val_precision,
-                                "val_recall": val_recall,
-                                "val_f1_class0": float(f1_per_class[0]) if len(f1_per_class) > 0 else 0.0,
-                                "val_precision_class0": float(precision_per_class[0]) if len(precision_per_class) > 0 else 0.0,
-                                "val_recall_class0": float(recall_per_class[0]) if len(recall_per_class) > 0 else 0.0,
-                                "val_f1_class1": float(f1_per_class[1]) if len(f1_per_class) > 1 else 0.0,
-                                "val_precision_class1": float(precision_per_class[1]) if len(precision_per_class) > 1 else 0.0,
-                                "val_recall_class1": float(recall_per_class[1]) if len(recall_per_class) > 1 else 0.0,
+                                "val_loss": metrics["val_loss"],
+                                "val_acc": metrics["val_acc"],
+                                "val_f1": metrics["val_f1"],
+                                "val_precision": metrics["val_precision"],
+                                "val_recall": metrics["val_recall"],
+                                "val_f1_class0": metrics["val_f1_class0"],
+                                "val_precision_class0": metrics["val_precision_class0"],
+                                "val_recall_class0": metrics["val_recall_class0"],
+                                "val_f1_class1": metrics["val_f1_class1"],
+                                "val_precision_class1": metrics["val_precision_class1"],
+                                "val_recall_class1": metrics["val_recall_class1"],
                             }
                             result.update(params)  # Add hyperparameters
                             param_fold_results.append(result)
                             fold_results.append(result)
                             
                             logger.info(
-                                f"Fold {fold_idx + 1} - Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, "
-                                f"Val F1: {val_f1:.4f}, Val Precision: {val_precision:.4f}, Val Recall: {val_recall:.4f}"
+                                f"Fold {fold_idx + 1} - Val Loss: {metrics['val_loss']:.4f}, Val Acc: {metrics['val_acc']:.4f}, "
+                                f"Val F1: {metrics['val_f1']:.4f}, Val Precision: {metrics['val_precision']:.4f}, Val Recall: {metrics['val_recall']:.4f}"
                             )
-                            if len(f1_per_class) > 0:
-                                for class_idx in range(len(f1_per_class)):
-                                    logger.info(
-                                        f"  Class {class_idx} - Precision: {precision_per_class[class_idx]:.4f}, "
-                                        f"Recall: {recall_per_class[class_idx]:.4f}, F1: {f1_per_class[class_idx]:.4f}"
-                                    )
+                            logger.info(
+                                f"  Class 0 - Precision: {metrics['val_precision_class0']:.4f}, "
+                                f"Recall: {metrics['val_recall_class0']:.4f}, F1: {metrics['val_f1_class0']:.4f}"
+                            )
+                            logger.info(
+                                f"  Class 1 - Precision: {metrics['val_precision_class1']:.4f}, "
+                                f"Recall: {metrics['val_recall_class1']:.4f}, F1: {metrics['val_f1_class1']:.4f}"
+                            )
                             
                             # Save model
                             model.save(str(fold_output_dir))
@@ -1415,17 +1500,7 @@ def stage5_train_models(
                             fold_results.append(result)
                         finally:
                             # Always clear model and aggressively free memory, even on error
-                            if 'model' in locals():
-                                try:
-                                    del model
-                                except Exception:
-                                    pass
-                            # Clear GPU cache if using CUDA
-                            try:
-                                if torch.cuda.is_available():
-                                    torch.cuda.empty_cache()
-                            except Exception:
-                                pass
+                            cleanup_model_and_memory(model=model if 'model' in locals() else None, clear_cuda=False)
                             aggressive_gc(clear_cuda=False)
                     
                 except Exception as e:
@@ -1454,18 +1529,13 @@ def stage5_train_models(
                             logger.debug(f"Error ending MLflow run: {e}")
                     
                     # Clear model and aggressively free memory
-                    if 'model' in locals():
-                        try:
-                            del model
-                        except Exception:
-                            pass
-                    # Clear GPU cache if using CUDA
-                    try:
-                        if 'device' in locals() and device.type == "cuda":
-                            torch.cuda.empty_cache()
-                    except Exception:
-                        pass
-                    aggressive_gc(clear_cuda='device' in locals() and device.type == "cuda" if 'device' in locals() else False)
+                    device_obj = device if 'device' in locals() else None
+                    cleanup_model_and_memory(
+                        model=model if 'model' in locals() else None,
+                        device=device_obj,
+                        clear_cuda=device_obj.type == "cuda" if device_obj and device_obj.type == "cuda" else False
+                    )
+                    aggressive_gc(clear_cuda=device_obj.type == "cuda" if device_obj and device_obj.type == "cuda" else False)
             
             # After all folds for this parameter combination, aggregate results
             if param_fold_results:
@@ -1479,39 +1549,394 @@ def stage5_train_models(
                 grid_result.update(params)  # Include hyperparameters
                 all_grid_results.append(grid_result)
                 logger.info(f"Parameter combination {param_idx + 1} - Mean F1: {mean_f1:.4f}, Mean Acc: {mean_acc:.4f}")
+                _flush_logs()
         
-        # Select best hyperparameters from grid search
+        # Select best hyperparameters from grid search (on 20% sample)
         best_params = None
-        best_fold_results = fold_results  # Default to all fold results
         if param_combinations and all_grid_results and len(all_grid_results) > 1:
             best_params = select_best_hyperparameters(model_type, all_grid_results)
-            logger.info(f"Best hyperparameters selected: {best_params}")
+            logger.info(f"Best hyperparameters selected from 20% sample: {best_params}")
+            _flush_logs()
+        elif param_combinations and len(param_combinations) == 1:
+            # Single parameter combination - use it
+            best_params = param_combinations[0]
+            logger.info(f"Using single parameter combination: {best_params}")
+        
+        # FINAL TRAINING: Train on full dataset with best hyperparameters
+        logger.info("=" * 80)
+        logger.info("FINAL TRAINING: Using full dataset with best hyperparameters")
+        logger.info("=" * 80)
+        _flush_logs()
+        
+        # Create folds from full dataset for final training
+        all_folds = stratified_kfold(
+            scaled_df,
+            n_splits=n_splits,
+            random_state=42
+        )
+        
+        if len(all_folds) != n_splits:
+            raise ValueError(f"Expected {n_splits} folds for final training, got {len(all_folds)}")
+        
+        logger.info(f"Final training: Using {n_splits}-fold stratified cross-validation on full dataset ({scaled_df.height} rows)")
+        _flush_logs()
+        
+        # Train on full dataset with best hyperparameters
+        fold_results = []
+        final_config = model_config.copy()
+        if best_params:
+            final_config.update(best_params)
+            logger.info(f"Final training using best hyperparameters: {best_params}")
+        else:
+            logger.info("Final training using default hyperparameters (no grid search)")
+        
+        # Train all folds on full dataset with best hyperparameters
+        for fold_idx in range(n_splits):
+            logger.info(f"\nFinal Training - {model_type} - Fold {fold_idx + 1}/{n_splits} (full dataset)")
+            _flush_logs()
             
-            # Find the best parameter combination's fold results
-            best_grid_result = max(all_grid_results, key=lambda x: x.get("mean_f1", 0))
-            best_fold_results = best_grid_result.get("fold_results", fold_results)
+            # Check if fold is already complete (resume mode)
+            fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
+            if resume and not delete_existing and _is_fold_complete(fold_output_dir, model_type):
+                logger.info(f"Final training fold {fold_idx + 1} already trained (found existing model). Skipping.")
+                logger.info(f"To retrain this fold, use --delete-existing flag")
+                # Try to load existing results if available
+                # For now, we'll skip and continue - the fold won't be in results
+                continue
             
-            # Save best model - find the best fold from best hyperparameter combination
-            if best_fold_results:
-                best_fold = max(best_fold_results, key=lambda x: x.get("val_f1", 0))
-                best_fold_idx = best_fold.get("fold", 1)
-                
-                # Copy best model to best_model directory
-                best_model_dir = model_output_dir / "best_model"
-                best_model_dir.mkdir(parents=True, exist_ok=True)
-                
-                best_fold_dir = model_output_dir / f"fold_{best_fold_idx}"
-                if best_fold_dir.exists():
-                    try:
-                        _copy_model_files(best_fold_dir, best_model_dir, f"fold {best_fold_idx}")
-                    except Exception as e:
-                        logger.error(f"Failed to copy best model files: {e}")
-        elif fold_results:
-            # No grid search or only one combination - use best fold from all results
+            # Get the specific fold from full dataset
+            train_df, val_df = all_folds[fold_idx]
+            
+            # Validate no data leakage (check dup_group if present)
+            if "dup_group" in scaled_df.columns:
+                train_groups = set(train_df["dup_group"].unique().to_list())
+                val_groups = set(val_df["dup_group"].unique().to_list())
+                overlap = train_groups & val_groups
+                if overlap:
+                    logger.error(
+                        f"CRITICAL: Data leakage detected in fold {fold_idx + 1}! "
+                        f"{len(overlap)} duplicate groups appear in both train and val: {list(overlap)[:5]}"
+                    )
+                    raise ValueError(f"Data leakage: duplicate groups in both train and val sets")
+                logger.info(f"Fold {fold_idx + 1}: No data leakage (checked {len(train_groups)} train groups, {len(val_groups)} val groups)")
+            
+            # Train model with best hyperparameters (reuse same training code as grid search)
+            try:
+                if is_pytorch_model(model_type):
+                    # PyTorch model training with best hyperparameters
+                    from lib.models import VideoDataset
+                    from lib.models.video import variable_ar_collate
+                    
+                    train_dataset = VideoDataset(train_df, project_root=project_root_str_orig, config=video_config)
+                    val_dataset = VideoDataset(val_df, project_root=project_root_str_orig, config=video_config)
+                    
+                    use_cuda = torch.cuda.is_available()
+                    num_workers = final_config.get("num_workers", model_config.get("num_workers", 0))
+                    batch_size = final_config.get("batch_size", model_config.get("batch_size", 8))
+                    gradient_accumulation_steps = final_config.get("gradient_accumulation_steps", model_config.get("gradient_accumulation_steps", 1))
+                    
+                    train_loader = DataLoader(
+                        train_dataset, batch_size=batch_size, shuffle=True,
+                        num_workers=num_workers, pin_memory=use_cuda,
+                        persistent_workers=num_workers > 0,
+                        prefetch_factor=2 if num_workers > 0 else None,
+                        collate_fn=variable_ar_collate
+                    )
+                    val_loader = DataLoader(
+                        val_dataset, batch_size=batch_size, shuffle=False,
+                        num_workers=num_workers, pin_memory=use_cuda,
+                        persistent_workers=num_workers > 0,
+                        prefetch_factor=2 if num_workers > 0 else None,
+                        collate_fn=variable_ar_collate
+                    )
+                    
+                    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+                    model = create_model(model_type, final_config)
+                    model = model.to(device)
+                    
+                    optim_cfg = OptimConfig(
+                        lr=final_config.get("learning_rate", model_config.get("learning_rate", 1e-4)),
+                        weight_decay=final_config.get("weight_decay", model_config.get("weight_decay", 1e-4)),
+                        max_grad_norm=final_config.get("max_grad_norm", model_config.get("max_grad_norm", 1.0)),
+                        backbone_lr=final_config.get("backbone_lr", model_config.get("backbone_lr", None)),
+                        head_lr=final_config.get("head_lr", model_config.get("head_lr", None)),
+                    )
+                    train_cfg = TrainConfig(
+                        num_epochs=final_config.get("num_epochs", model_config.get("num_epochs", 20)),
+                        device=str(device),
+                        log_interval=model_config.get("log_interval", 10),
+                        use_class_weights=model_config.get("use_class_weights", True),
+                        use_amp=model_config.get("use_amp", True),
+                        gradient_accumulation_steps=gradient_accumulation_steps,
+                        early_stopping_patience=model_config.get("early_stopping_patience", 5),
+                        scheduler_type=model_config.get("scheduler_type", "cosine"),
+                        warmup_epochs=model_config.get("warmup_epochs", 2),
+                        warmup_factor=model_config.get("warmup_factor", 0.1),
+                        log_grad_norm=model_config.get("log_grad_norm", False),
+                    )
+                    
+                    use_differential_lr = model_type in [
+                        "i3d", "r2plus1d", "slowfast", "x3d", "pretrained_inception",
+                        "vit_gru", "vit_transformer"
+                    ]
+                    
+                    fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
+                    fold_output_dir.mkdir(parents=True, exist_ok=True)
+                    
+                    # Delete existing fold if delete_existing is True
+                    if delete_existing and fold_output_dir.exists():
+                        try:
+                            import shutil
+                            shutil.rmtree(fold_output_dir)
+                            logger.info(f"Deleted existing final training fold {fold_idx + 1} directory (clean mode)")
+                        except (OSError, PermissionError, FileNotFoundError) as e:
+                            logger.warning(f"Could not delete {fold_output_dir}: {e}")
+                        fold_output_dir.mkdir(parents=True, exist_ok=True)
+                    
+                    if use_tracking:
+                        tracker = ExperimentTracker(str(fold_output_dir))
+                    run_id = f"{model_type}_fold{fold_idx + 1}_final"
+                    ckpt_manager = CheckpointManager(str(fold_output_dir), run_id=run_id)
+                    
+                    mlflow_tracker = None
+                    if use_mlflow and MLFLOW_AVAILABLE:
+                        try:
+                            mlflow_tracker = create_mlflow_tracker(
+                                experiment_name=f"{model_type}",
+                                use_mlflow=True
+                            )
+                            if mlflow_tracker:
+                                mlflow_tracker.log_config(final_config)
+                                mlflow_tracker.set_tag("fold", str(fold_idx + 1))
+                                mlflow_tracker.set_tag("model_type", model_type)
+                                mlflow_tracker.set_tag("phase", "final_training")
+                        except Exception as e:
+                            logger.warning(f"Failed to create MLflow tracker: {e}")
+                    
+                    logger.info(f"Training PyTorch model {model_type} on fold {fold_idx + 1} (full dataset)...")
+                    
+                    model = fit(model, train_loader, val_loader, optim_cfg, train_cfg, use_differential_lr=use_differential_lr)
+                    
+                    from lib.training.trainer import evaluate
+                    val_metrics = evaluate(model, val_loader, device=str(device))
+                    
+                    val_loss = val_metrics["loss"]
+                    val_acc = val_metrics["accuracy"]
+                    val_f1 = val_metrics["f1"]
+                    val_precision = val_metrics["precision"]
+                    val_recall = val_metrics["recall"]
+                    per_class = val_metrics["per_class"]
+                    
+                    result = {
+                        "fold": fold_idx + 1,
+                        "val_loss": val_loss,
+                        "val_acc": val_acc,
+                        "val_f1": val_f1,
+                        "val_precision": val_precision,
+                        "val_recall": val_recall,
+                        "val_f1_class0": per_class.get("0", {}).get("f1", 0.0),
+                        "val_precision_class0": per_class.get("0", {}).get("precision", 0.0),
+                        "val_recall_class0": per_class.get("0", {}).get("recall", 0.0),
+                        "val_f1_class1": per_class.get("1", {}).get("f1", 0.0),
+                        "val_precision_class1": per_class.get("1", {}).get("precision", 0.0),
+                        "val_recall_class1": per_class.get("1", {}).get("recall", 0.0),
+                    }
+                    if best_params:
+                        result.update(best_params)
+                    fold_results.append(result)
+                    
+                    logger.info(
+                        f"Fold {fold_idx + 1} - Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, "
+                        f"Val F1: {val_f1:.4f}, Val Precision: {val_precision:.4f}, Val Recall: {val_recall:.4f}"
+                    )
+                    
+                    model.eval()
+                    model_path = fold_output_dir / "model.pt"
+                    torch.save(model.state_dict(), model_path)
+                    logger.info(f"Saved model to {model_path}")
+                    
+                    if mlflow_tracker:
+                        try:
+                            mlflow_tracker.log_metrics({
+                                "val_loss": val_loss, "val_acc": val_acc, "val_f1": val_f1,
+                                "val_precision": val_precision, "val_recall": val_recall
+                            }, step=fold_idx + 1)
+                        except Exception as e:
+                            logger.warning(f"Failed to log to MLflow: {e}")
+                    
+                    cleanup_model_and_memory(model=model, device=device, clear_cuda=device.type == "cuda")
+                    aggressive_gc(clear_cuda=device.type == "cuda")
+                    
+                elif is_xgboost_model(model_type):
+                    # XGBoost model training with best hyperparameters
+                    fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
+                    fold_output_dir.mkdir(parents=True, exist_ok=True)
+                    
+                    # Delete existing fold if delete_existing is True
+                    if delete_existing and fold_output_dir.exists():
+                        try:
+                            import shutil
+                            shutil.rmtree(fold_output_dir)
+                            logger.info(f"Deleted existing final training fold {fold_idx + 1} directory (clean mode)")
+                        except (OSError, PermissionError, FileNotFoundError) as e:
+                            logger.warning(f"Could not delete {fold_output_dir}: {e}")
+                        fold_output_dir.mkdir(parents=True, exist_ok=True)
+                    
+                    xgb_config = model_config.copy()
+                    if best_params:
+                        xgb_config.update(best_params)
+                    model = create_model(model_type, xgb_config)
+                    
+                    model.fit(train_df, project_root=project_root_str_orig)
+                    val_probs = model.predict(val_df, project_root=project_root_str_orig)
+                    val_preds = np.argmax(val_probs, axis=1)
+                    val_labels = val_df["label"].to_list()
+                    label_map = {label: idx for idx, label in enumerate(sorted(set(val_labels)))}
+                    val_y = np.array([label_map[label] for label in val_labels])
+                    
+                    # Compute comprehensive metrics using shared utility
+                    metrics = compute_classification_metrics(
+                        y_true=val_y,
+                        y_pred=val_preds,
+                        y_probs=val_probs
+                    )
+                    
+                    result = {
+                        "fold": fold_idx + 1,
+                        "val_loss": metrics["val_loss"],
+                        "val_acc": metrics["val_acc"],
+                        "val_f1": metrics["val_f1"],
+                        "val_precision": metrics["val_precision"],
+                        "val_recall": metrics["val_recall"],
+                        "val_f1_class0": metrics["val_f1_class0"],
+                        "val_precision_class0": metrics["val_precision_class0"],
+                        "val_recall_class0": metrics["val_recall_class0"],
+                        "val_f1_class1": metrics["val_f1_class1"],
+                        "val_precision_class1": metrics["val_precision_class1"],
+                        "val_recall_class1": metrics["val_recall_class1"],
+                    }
+                    if best_params:
+                        result.update(best_params)
+                    fold_results.append(result)
+                    
+                    logger.info(
+                        f"Fold {fold_idx + 1} - Val Loss: {metrics['val_loss']:.4f}, Val Acc: {metrics['val_acc']:.4f}, "
+                        f"Val F1: {metrics['val_f1']:.4f}, Val Precision: {metrics['val_precision']:.4f}, Val Recall: {metrics['val_recall']:.4f}"
+                    )
+                    
+                    model.save(str(fold_output_dir))
+                    cleanup_model_and_memory(model=model, clear_cuda=False)
+                    aggressive_gc(clear_cuda=False)
+                    
+                else:
+                    # Baseline model training with best hyperparameters
+                    fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
+                    fold_output_dir.mkdir(parents=True, exist_ok=True)
+                    
+                    # Delete existing fold if delete_existing is True
+                    if delete_existing and fold_output_dir.exists():
+                        try:
+                            import shutil
+                            shutil.rmtree(fold_output_dir)
+                            logger.info(f"Deleted existing final training fold {fold_idx + 1} directory (clean mode)")
+                        except (OSError, PermissionError, FileNotFoundError) as e:
+                            logger.warning(f"Could not delete {fold_output_dir}: {e}")
+                        fold_output_dir.mkdir(parents=True, exist_ok=True)
+                    
+                    baseline_config = model_config.copy()
+                    if best_params:
+                        baseline_config.update(best_params)
+                    
+                    from lib.utils.paths import load_metadata_flexible
+                    if model_type in BASELINE_MODELS:
+                        stage2_df = load_metadata_flexible(features_stage2_path)
+                        if stage2_df is not None and stage2_df.height > 0:
+                            if "model_specific_config" not in baseline_config:
+                                baseline_config["model_specific_config"] = {}
+                            baseline_config["model_specific_config"]["features_stage2_path"] = features_stage2_path
+                            baseline_config["features_stage2_path"] = features_stage2_path
+                        else:
+                            raise ValueError(f"Stage 2 features required for {model_type}")
+                        
+                        if model_type in STAGE4_MODELS:
+                            stage4_df = load_metadata_flexible(features_stage4_path)
+                            if stage4_df is not None and stage4_df.height > 0:
+                                if "model_specific_config" not in baseline_config:
+                                    baseline_config["model_specific_config"] = {}
+                                baseline_config["model_specific_config"]["features_stage4_path"] = features_stage4_path
+                                baseline_config["features_stage4_path"] = features_stage4_path
+                            else:
+                                raise ValueError(f"Stage 4 features required for {model_type}")
+                        else:
+                            if "model_specific_config" not in baseline_config:
+                                baseline_config["model_specific_config"] = {}
+                            baseline_config["model_specific_config"]["features_stage4_path"] = None
+                            baseline_config["features_stage4_path"] = None
+                    
+                    model = create_model(model_type, baseline_config)
+                    model.fit(train_df, project_root=project_root_str_orig)
+                    val_probs = model.predict(val_df, project_root=project_root_str_orig)
+                    val_preds = np.argmax(val_probs, axis=1)
+                    val_labels = val_df["label"].to_list()
+                    label_map = {label: idx for idx, label in enumerate(sorted(set(val_labels)))}
+                    val_y = np.array([label_map[label] for label in val_labels])
+                    
+                    # Compute comprehensive metrics using shared utility
+                    metrics = compute_classification_metrics(
+                        y_true=val_y,
+                        y_pred=val_preds,
+                        y_probs=val_probs
+                    )
+                    
+                    result = {
+                        "fold": fold_idx + 1,
+                        "val_loss": metrics["val_loss"],
+                        "val_acc": metrics["val_acc"],
+                        "val_f1": metrics["val_f1"],
+                        "val_precision": metrics["val_precision"],
+                        "val_recall": metrics["val_recall"],
+                        "val_f1_class0": metrics["val_f1_class0"],
+                        "val_precision_class0": metrics["val_precision_class0"],
+                        "val_recall_class0": metrics["val_recall_class0"],
+                        "val_f1_class1": metrics["val_f1_class1"],
+                        "val_precision_class1": metrics["val_precision_class1"],
+                        "val_recall_class1": metrics["val_recall_class1"],
+                    }
+                    if best_params:
+                        result.update(best_params)
+                    fold_results.append(result)
+                    
+                    logger.info(
+                        f"Fold {fold_idx + 1} - Val Loss: {metrics['val_loss']:.4f}, Val Acc: {metrics['val_acc']:.4f}, "
+                        f"Val F1: {metrics['val_f1']:.4f}, Val Precision: {metrics['val_precision']:.4f}, Val Recall: {metrics['val_recall']:.4f}"
+                    )
+                    
+                    model.save(str(fold_output_dir))
+                    cleanup_model_and_memory(model=model, clear_cuda=False)
+                    aggressive_gc(clear_cuda=False)
+                    
+            except Exception as e:
+                logger.error(f"Error training final fold {fold_idx + 1}: {e}", exc_info=True)
+                fold_results.append({
+                    "fold": fold_idx + 1,
+                    "val_loss": float('nan'),
+                    "val_acc": float('nan'),
+                    "val_f1": float('nan'),
+                    "val_precision": float('nan'),
+                    "val_recall": float('nan'),
+                    "val_f1_class0": float('nan'),
+                    "val_precision_class0": float('nan'),
+                    "val_recall_class0": float('nan'),
+                    "val_f1_class1": float('nan'),
+                    "val_precision_class1": float('nan'),
+                    "val_recall_class1": float('nan'),
+                })
+        
+        # Save best model from final training
+        if fold_results:
             best_fold = max(fold_results, key=lambda x: x.get("val_f1", 0) if isinstance(x.get("val_f1"), (int, float)) and not np.isnan(x.get("val_f1", 0)) else -1)
             best_fold_idx = best_fold.get("fold", 1)
             
-            # Copy best model to best_model directory
             best_model_dir = model_output_dir / "best_model"
             best_model_dir.mkdir(parents=True, exist_ok=True)
             
@@ -1522,22 +1947,22 @@ def stage5_train_models(
                 except Exception as e:
                     logger.error(f"Failed to copy best model files: {e}")
         
-        # Aggregate results (filter out NaN values) - use best fold results if available
-        if best_fold_results:
+        # Aggregate results (filter out NaN values) - use fold_results from final training
+        if fold_results:
             valid_losses = [
-                r.get("val_loss") for r in best_fold_results
+                r.get("val_loss") for r in fold_results
                 if "val_loss" in r and isinstance(r.get("val_loss"), (int, float))
                 and not (isinstance(r.get("val_loss"), float)
                          and r.get("val_loss") != r.get("val_loss"))
             ]
             valid_accs = [
-                r.get("val_acc") for r in best_fold_results
+                r.get("val_acc") for r in fold_results
                 if "val_acc" in r and isinstance(r.get("val_acc"), (int, float))
                 and not (isinstance(r.get("val_acc"), float)
                          and r.get("val_acc") != r.get("val_acc"))
             ]
             valid_f1s = [
-                r.get("val_f1") for r in best_fold_results
+                r.get("val_f1") for r in fold_results
                 if "val_f1" in r and isinstance(r.get("val_f1"), (int, float))
                 and not (isinstance(r.get("val_f1"), float)
                          and r.get("val_f1") != r.get("val_f1"))
@@ -1557,7 +1982,7 @@ def stage5_train_models(
             )
             
             results[model_type] = {
-                "fold_results": best_fold_results,
+                "fold_results": fold_results,
                 "avg_val_loss": avg_val_loss,
                 "avg_val_acc": avg_val_acc,
                 "avg_val_f1": avg_val_f1,
@@ -1568,6 +1993,7 @@ def stage5_train_models(
                 "\n%s - Avg Val Loss: %.4f, Avg Val Acc: %.4f, Avg Val F1: %.4f",
                 model_type, avg_val_loss, avg_val_acc, avg_val_f1
             )
+            _flush_logs()
             
             # Generate visualization plots
             try:
@@ -1578,9 +2004,9 @@ def stage5_train_models(
                 from .visualization import plot_cv_fold_comparison, plot_hyperparameter_search
                 
                 plot_cv_fold_comparison(
-                    best_fold_results,
+                    fold_results,
                     plots_dir / "cv_fold_comparison.png",
-                    title=f"{model_type} - Cross-Validation Results"
+                    title=f"{model_type} - Cross-Validation Results (Full Dataset)"
                 )
                 
                 # Plot hyperparameter search results if grid search was performed
@@ -1592,6 +2018,7 @@ def stage5_train_models(
                     )
                 
                 logger.info(f"Generated plots for {model_type} in {plots_dir}")
+                _flush_logs()
             except Exception as e:
                 logger.warning(f"Failed to generate plots for {model_type}: {e}", exc_info=True)
         
@@ -1603,6 +2030,7 @@ def stage5_train_models(
         logger.info("\n" + "="*80)
         logger.info("Training Ensemble Model")
         logger.info("="*80)
+        _flush_logs()
         
         try:
             from .ensemble import train_ensemble_model
@@ -1620,9 +2048,16 @@ def stage5_train_models(
             
             results["ensemble"] = ensemble_results
             logger.info("✓ Ensemble training completed")
+            _flush_logs()
         except Exception as e:
             logger.error(f"Error training ensemble: {e}", exc_info=True)
             logger.warning("Continuing without ensemble results")
+            _flush_logs()
+    
+    logger.info("=" * 80)
+    logger.info("Stage 5: Model Training Pipeline Completed")
+    logger.info("=" * 80)
+    _flush_logs()
     
     return results
 
