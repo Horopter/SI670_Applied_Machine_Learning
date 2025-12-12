@@ -508,14 +508,15 @@ def fit_with_tracking(
             
             # Validate
             if val_loader is not None:
-                # evaluate returns a tuple, so we need to handle it properly
-                val_result = safe_execute(
+                # evaluate returns a dict, so we need to handle it properly
+                val_metrics = safe_execute(
                     lambda: evaluate(model, val_loader, device=device),
                     context=f"validation epoch {epoch}",
                     oom_retry=True,
                     max_retries=1,
                 )
-                val_loss, val_acc = val_result
+                val_loss = val_metrics["loss"]
+                val_acc = val_metrics["accuracy"]
                 
                 tracker.log_epoch_metrics(epoch, {"loss": val_loss, "accuracy": val_acc}, phase="val")
                 

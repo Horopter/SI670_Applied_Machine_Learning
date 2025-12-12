@@ -50,9 +50,27 @@ def get_video_metadata(
     
     Returns:
         Dictionary with keys: 'total_frames', 'fps', 'width', 'height', 'duration'
+    
+    Raises:
+        ValueError: If video_path is invalid
     """
-    if not Path(video_path).exists():
+    # Input validation
+    if not video_path or not isinstance(video_path, str):
+        raise ValueError(f"video_path must be a non-empty string, got: {type(video_path)}")
+    
+    video_path_obj = Path(video_path)
+    if not video_path_obj.exists():
         logger.warning(f"Video file not found: {video_path}")
+        return {
+            'total_frames': 0,
+            'fps': 30.0,
+            'width': 0,
+            'height': 0,
+            'duration': 0.0
+        }
+    
+    if not video_path_obj.is_file():
+        logger.warning(f"Video path is not a file: {video_path}")
         return {
             'total_frames': 0,
             'fps': 30.0,
@@ -81,7 +99,16 @@ def get_video_metadata(
     # Compute metadata (only once per video)
     container = None
     try:
-        container = av.open(video_path)
+        container = av.open(str(video_path))
+        if len(container.streams.video) == 0:
+            logger.warning(f"Video has no video streams: {video_path}")
+            return {
+                'total_frames': 0,
+                'fps': 30.0,
+                'width': 0,
+                'height': 0,
+                'duration': 0.0
+            }
         stream = container.streams.video[0]
         
         fps = float(stream.average_rate) if stream.average_rate else 30.0

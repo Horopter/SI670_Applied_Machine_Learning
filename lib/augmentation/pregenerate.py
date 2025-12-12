@@ -210,7 +210,20 @@ def generate_augmented_clips(
         
         # Apply temporal augmentations
         if config.temporal_augmentation_config:
-            frames = apply_temporal_augmentations(frames, config.temporal_augmentation_config)
+            try:
+                # CRITICAL: Function signature is: apply_temporal_augmentations(frames, temporal_config=dict)
+                # config.temporal_augmentation_config should already be a dict with the right structure
+                frames = apply_temporal_augmentations(frames, temporal_config=config.temporal_augmentation_config)
+            except TypeError as e:
+                # Function signature mismatch - log clearly
+                error_msg = str(e)
+                if "unexpected keyword argument" in error_msg or "got an unexpected keyword argument" in error_msg:
+                    logger.error(
+                        f"CRITICAL: Function signature mismatch in apply_temporal_augmentations: {e}. "
+                        f"Expected signature: apply_temporal_augmentations(frames, temporal_config=dict). "
+                        f"Config type: {type(config.temporal_augmentation_config)}"
+                    )
+                raise
         
         # Stack frames into clip tensor (T, C, H, W)
         if len(frames) < config.num_frames:

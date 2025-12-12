@@ -589,71 +589,88 @@ def fit(
     best_model_state = None
     initial_lr = optimizer.param_groups[0]['lr']
     
-    for epoch in range(1, train_cfg.num_epochs + 1):
-        # Handle warmup manually
-        if train_cfg.warmup_epochs > 0 and epoch <= train_cfg.warmup_epochs:
-            # Linear warmup: warmup_factor -> 1.0
-            warmup_progress = epoch / train_cfg.warmup_epochs
-            lr_scale = train_cfg.warmup_factor + (1.0 - train_cfg.warmup_factor) * warmup_progress
-            for param_group in optimizer.param_groups:
-                param_group['lr'] = initial_lr * lr_scale
-        else:
-            # After warmup, use base scheduler
-            scheduler.step()
-        
-        # Ensure model is in training mode (BatchNorm, Dropout active)
-        model.train()
-        
-        # Train
-        train_loss = train_one_epoch(
-            model, train_loader, optimizer, device=device,
-            use_class_weights=train_cfg.use_class_weights,
-            use_amp=train_cfg.use_amp,
-            epoch=epoch,
-            log_interval=train_cfg.log_interval,
-            gradient_accumulation_steps=train_cfg.gradient_accumulation_steps,
-            max_grad_norm=optim_cfg.max_grad_norm,
-            log_grad_norm=train_cfg.log_grad_norm,
-        )
-        
-        # Get current learning rate
-        current_lr = optimizer.param_groups[0]['lr']
-        logger.info(
-            f"Epoch {epoch}/{train_cfg.num_epochs}, Train Loss: {train_loss:.4f}, LR: {current_lr:.2e}"
-        )
-        
-        # Validate
-        if val_loader is not None:
-            # Ensure model is in eval mode (BatchNorm uses running stats, Dropout disabled)
-            model.eval()
-            val_metrics = evaluate(model, val_loader, device=device)
-            val_loss = val_metrics["loss"]
-            val_acc = val_metrics["accuracy"]
-            val_f1 = val_metrics["f1"]
-            val_precision = val_metrics["precision"]
-            val_recall = val_metrics["recall"]
-            logger.info(
-                f"Epoch {epoch}, Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, "
-                f"Val F1: {val_f1:.4f}, Val Precision: {val_precision:.4f}, Val Recall: {val_recall:.4f}"
+    try:
+        for epoch in range(1, train_cfg.num_epochs + 1):
+            # Handle warmup manually
+            if train_cfg.warmup_epochs > 0 and epoch <= train_cfg.warmup_epochs:
+                # Linear warmup: warmup_factor -> 1.0
+                warmup_progress = epoch / train_cfg.warmup_epochs
+                lr_scale = train_cfg.warmup_factor + (1.0 - train_cfg.warmup_factor) * warmup_progress
+                for param_group in optimizer.param_groups:
+                    param_group['lr'] = initial_lr * lr_scale
+            else:
+                # After warmup, use base scheduler
+                scheduler.step()
+            
+            # Ensure model is in training mode (BatchNorm, Dropout active)
+            model.train()
+            
+            # Train
+            train_loss = train_one_epoch(
+                model, train_loader, optimizer, device=device,
+                use_class_weights=train_cfg.use_class_weights,
+                use_amp=train_cfg.use_amp,
+                epoch=epoch,
+                log_interval=train_cfg.log_interval,
+                gradient_accumulation_steps=train_cfg.gradient_accumulation_steps,
+                max_grad_norm=optim_cfg.max_grad_norm,
+                log_grad_norm=train_cfg.log_grad_norm,
             )
             
-            # Early stopping check
-            if early_stopping is not None:
-                early_stopping.step(val_acc)
-                if early_stopping.should_stop:
-                    logger.info(f"Early stopping triggered at epoch {epoch}")
-                    break
+            # Get current learning rate
+            current_lr = optimizer.param_groups[0]['lr']
+            logger.info(
+                f"Epoch {epoch}/{train_cfg.num_epochs}, Train Loss: {train_loss:.4f}, LR: {current_lr:.2e}"
+            )
             
-            if val_acc > best_val_acc:
-                best_val_acc = val_acc
-                # Save best model state
-                best_model_state = {k: v.cpu().clone() for k, v in model.state_dict().items()}
-                logger.info(f"New best validation accuracy: {best_val_acc:.4f}")
-    
-    # Restore best model state
-    if best_model_state is not None:
-        model.load_state_dict(best_model_state)
-        logger.info("Restored best model state based on validation accuracy")
-    
-    return model
+            # Validate
+            if val_loader is not None:
+                # Ensure model is in eval mode (BatchNorm uses running stats, Dropout disabled)
+                model.eval()
+                val_metrics = evaluate(model, val_loader, device=device)
+                val_loss = val_metrics["loss"]
+                val_acc = val_metrics["accuracy"]
+                val_f1 = val_metrics["f1"]
+                val_precision = val_metrics["precision"]
+                val_recall = val_metrics["recall"]
+                logger.info(
+                    f"Epoch {epoch}, Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, "
+                    f"Val F1: {val_f1:.4f}, Val Precision: {val_precision:.4f}, Val Recall: {val_recall:.4f}"
+                )
+                
+                # Early stopping check
+                if early_stopping is not None:
+                    early_stopping.step(val_acc)
+                    if early_stopping.should_stop:
+                        logger.info(f"Early stopping triggered at epoch {epoch}")
+                        break
+                
+                if val_acc > best_val_acc:
+                    best_val_acc = val_acc
+                    # Save best model state
+                    best_model_state = {k: v.cpu().clone() for k, v in model.state_dict().items()}
+                    logger.info(f"New best validation accuracy: {best_val_acc:.4f}")
+        
+        # Restore best model state
+        if best_model_state is not None:
+            model.load_state_dict(best_model_state)
+            logger.info("Restored best model state based on validation accuracy")
+        
+        return model
+    except Exception as e:
+        # Ensure GPU cleanup on error
+        if device.startswith("cuda"):
+            try:
+                torch.cuda.empty_cache()
+            except Exception:
+                pass
+        # Re-raise exception after cleanup
+        raise
+    finally:
+        # Final cleanup
+        if device.startswith("cuda"):
+            try:
+                torch.cuda.empty_cache()
+            except Exception:
+                pass
 

@@ -137,6 +137,35 @@ Examples:
     
     args = parser.parse_args()
     
+    # Input validation
+    if not args.project_root or not isinstance(args.project_root, str):
+        logger.error(f"project_root must be a non-empty string, got: {type(args.project_root)}")
+        sys.exit(1)
+    if not args.augmented_metadata or not isinstance(args.augmented_metadata, str):
+        logger.error(f"augmented_metadata must be a non-empty string, got: {type(args.augmented_metadata)}")
+        sys.exit(1)
+    if args.num_frames is not None and (not isinstance(args.num_frames, int) or args.num_frames <= 0):
+        logger.error(f"num_frames must be a positive integer, got: {args.num_frames}")
+        sys.exit(1)
+    if not isinstance(args.frame_percentage, (int, float)) or not (0 < args.frame_percentage <= 1):
+        logger.error(f"frame_percentage must be between 0 and 1, got: {args.frame_percentage}")
+        sys.exit(1)
+    if not isinstance(args.min_frames, int) or args.min_frames <= 0:
+        logger.error(f"min_frames must be a positive integer, got: {args.min_frames}")
+        sys.exit(1)
+    if not isinstance(args.max_frames, int) or args.max_frames <= 0:
+        logger.error(f"max_frames must be a positive integer, got: {args.max_frames}")
+        sys.exit(1)
+    if args.min_frames > args.max_frames:
+        logger.error(f"min_frames ({args.min_frames}) must be <= max_frames ({args.max_frames})")
+        sys.exit(1)
+    if args.start_idx is not None and (not isinstance(args.start_idx, int) or args.start_idx < 0):
+        logger.error(f"start_idx must be a non-negative integer, got: {args.start_idx}")
+        sys.exit(1)
+    if args.end_idx is not None and (not isinstance(args.end_idx, int) or args.end_idx < 0):
+        logger.error(f"end_idx must be a non-negative integer, got: {args.end_idx}")
+        sys.exit(1)
+    
     # Normalize execution_order: "0" or "forward" -> "forward", "1" or "reverse" -> "reverse"
     if args.execution_order in ("0", "forward"):
         execution_order = "forward"
@@ -145,10 +174,27 @@ Examples:
     else:
         execution_order = "forward"  # Default
     
-    # Convert to Path objects
-    project_root = Path(args.project_root).resolve()
+    # Convert to Path objects with validation
+    try:
+        project_root = Path(args.project_root).resolve()
+        if not project_root.exists():
+            logger.error(f"Project root directory does not exist: {project_root}")
+            sys.exit(1)
+        if not project_root.is_dir():
+            logger.error(f"Project root is not a directory: {project_root}")
+            sys.exit(1)
+    except (OSError, ValueError) as e:
+        logger.error(f"Invalid project_root path: {args.project_root} - {e}")
+        sys.exit(1)
+    
     augmented_metadata_path = project_root / args.augmented_metadata
-    output_dir = project_root / args.output_dir
+    
+    try:
+        output_dir = project_root / args.output_dir
+        output_dir.mkdir(parents=True, exist_ok=True)
+    except (OSError, PermissionError) as e:
+        logger.error(f"Failed to create output directory {args.output_dir}: {e}")
+        sys.exit(1)
     
     # Logging setup - also log to file
     log_dir = project_root / "logs"

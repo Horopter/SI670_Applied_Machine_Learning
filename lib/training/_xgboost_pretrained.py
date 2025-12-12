@@ -288,7 +288,16 @@ class XGBoostPretrainedBaseline:
             "label": labels
         })
         
-        video_config = VideoConfig(num_frames=self.num_frames, fixed_size=256)
+        # Handle both old and new VideoConfig versions (some servers may not have fixed_size parameter)
+        try:
+            video_config = VideoConfig(num_frames=self.num_frames, fixed_size=256)
+        except TypeError:
+            # Fallback: server version doesn't have fixed_size parameter
+            logger.warning(
+                "VideoConfig on server doesn't support 'fixed_size' parameter. "
+                "Using default VideoConfig."
+            )
+            video_config = VideoConfig(num_frames=self.num_frames)
         dataset = VideoDataset(df, project_root=project_root, config=video_config, train=False)
         
         # Extract features

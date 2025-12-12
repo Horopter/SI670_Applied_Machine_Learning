@@ -142,12 +142,60 @@ Examples:
     
     args = parser.parse_args()
     
-    # Convert to Path objects
-    project_root = Path(args.project_root).resolve()
+    # Input validation
+    if not args.project_root or not isinstance(args.project_root, str):
+        logger.error(f"project_root must be a non-empty string, got: {type(args.project_root)}")
+        sys.exit(1)
+    if not args.scaled_metadata or not isinstance(args.scaled_metadata, str):
+        logger.error(f"scaled_metadata must be a non-empty string, got: {type(args.scaled_metadata)}")
+        sys.exit(1)
+    if not args.features_stage2 or not isinstance(args.features_stage2, str):
+        logger.error(f"features_stage2 must be a non-empty string, got: {type(args.features_stage2)}")
+        sys.exit(1)
+    if not args.features_stage4 or not isinstance(args.features_stage4, str):
+        logger.error(f"features_stage4 must be a non-empty string, got: {type(args.features_stage4)}")
+        sys.exit(1)
+    if not args.model_types or not isinstance(args.model_types, list) or len(args.model_types) == 0:
+        logger.error(f"model_types must be a non-empty list, got: {type(args.model_types)}")
+        sys.exit(1)
+    if not isinstance(args.n_splits, int) or args.n_splits <= 0:
+        logger.error(f"n_splits must be a positive integer, got: {args.n_splits}")
+        sys.exit(1)
+    if not isinstance(args.num_frames, int) or args.num_frames <= 0:
+        logger.error(f"num_frames must be a positive integer, got: {args.num_frames}")
+        sys.exit(1)
+    
+    # Convert to Path objects with validation
+    try:
+        project_root = Path(args.project_root).resolve()
+        if not project_root.exists():
+            logger.error(f"Project root directory does not exist: {project_root}")
+            sys.exit(1)
+        if not project_root.is_dir():
+            logger.error(f"Project root is not a directory: {project_root}")
+            sys.exit(1)
+    except (OSError, ValueError) as e:
+        logger.error(f"Invalid project_root path: {args.project_root} - {e}")
+        sys.exit(1)
+    
     scaled_metadata_path = project_root / args.scaled_metadata
     features_stage2_path = project_root / args.features_stage2
     features_stage4_path = project_root / args.features_stage4
-    output_dir = project_root / args.output_dir
+    
+    # Validate paths exist (warn but don't fail - they might be created later)
+    if not scaled_metadata_path.exists():
+        logger.warning(f"Scaled metadata path does not exist: {scaled_metadata_path}")
+    if not features_stage2_path.exists():
+        logger.warning(f"Stage 2 features path does not exist: {features_stage2_path}")
+    if not features_stage4_path.exists():
+        logger.warning(f"Stage 4 features path does not exist: {features_stage4_path}")
+    
+    try:
+        output_dir = project_root / args.output_dir
+        output_dir.mkdir(parents=True, exist_ok=True)
+    except (OSError, PermissionError) as e:
+        logger.error(f"Failed to create output directory {args.output_dir}: {e}")
+        sys.exit(1)
     
     # Handle "all" model types
     if "all" in args.model_types:

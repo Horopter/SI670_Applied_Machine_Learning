@@ -150,29 +150,66 @@ def create_stratified_splits(
     
     Returns:
         Tuple of (train_indices, val_indices, test_indices)
+    
+    Raises:
+        ValueError: If ratios don't sum to 1.0, or if inputs are invalid
     """
-    assert abs(train_ratio + val_ratio + test_ratio - 1.0) < 1e-6, "Ratios must sum to 1.0"
+    # Input validation
+    if features is None or len(features) == 0:
+        raise ValueError("features cannot be None or empty")
+    if labels is None or len(labels) == 0:
+        raise ValueError("labels cannot be None or empty")
+    if len(features) != len(labels):
+        raise ValueError(f"features and labels must have same length: {len(features)} != {len(labels)}")
+    if not (0 < train_ratio < 1) or not (0 < val_ratio < 1) or not (0 < test_ratio < 1):
+        raise ValueError(f"All ratios must be between 0 and 1: train={train_ratio}, val={val_ratio}, test={test_ratio}")
+    
+    ratio_sum = train_ratio + val_ratio + test_ratio
+    if abs(ratio_sum - 1.0) >= 1e-6:
+        raise ValueError(f"Ratios must sum to 1.0, got: {ratio_sum}")
     
     from sklearn.model_selection import train_test_split
     
-    # First split: train (60%) vs temp (40%)
-    train_indices, temp_indices, train_labels, temp_labels = train_test_split(
-        np.arange(len(features)),
-        labels,
-        test_size=(val_ratio + test_ratio),
-        stratify=labels,
-        random_state=random_state
-    )
-    
-    # Second split: val (20%) vs test (20%) from temp (40%)
-    val_indices, test_indices = train_test_split(
-        temp_indices,
-        test_size=test_ratio / (val_ratio + test_ratio),
-        stratify=temp_labels,
-        random_state=random_state
-    )
-    
-    return train_indices, val_indices, test_indices
+    try:
+        # First split: train (60%) vs temp (40%)
+        train_indices, temp_indices, train_labels, temp_labels = train_test_split(
+            np.arange(len(features)),
+            labels,
+            test_size=(val_ratio + test_ratio),
+            stratify=labels,
+            random_state=random_state
+        )
+        
+        # Validate first split
+        if len(train_indices) == 0 or len(temp_indices) == 0:
+            raise ValueError("First split resulted in empty train or temp set")
+        
+        # Second split: val (20%) vs test (20%) from temp (40%)
+        # When using stratify, must pass both X and y, and it returns 4 values
+        val_indices, test_indices, _, _ = train_test_split(
+            temp_indices,
+            temp_labels,
+            test_size=test_ratio / (val_ratio + test_ratio),
+            stratify=temp_labels,
+            random_state=random_state
+        )
+        
+        # Validate second split
+        if len(val_indices) == 0 or len(test_indices) == 0:
+            raise ValueError("Second split resulted in empty val or test set")
+        
+        # Ensure all indices are unique and non-overlapping
+        all_indices = set(train_indices) | set(val_indices) | set(test_indices)
+        if len(all_indices) != len(features):
+            raise ValueError(f"Split indices don't cover all samples: {len(all_indices)} != {len(features)}")
+        
+        return train_indices, val_indices, test_indices
+    except ValueError as e:
+        logger.error(f"Failed to create stratified splits: {e}")
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error creating stratified splits: {e}", exc_info=True)
+        raise ValueError(f"Stratified split creation failed: {e}") from e
 
 
 def train_model_with_cv(

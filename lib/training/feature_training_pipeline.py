@@ -130,12 +130,39 @@ def load_features_for_training(
     
     Collinearity removal is done ONCE here before any splits to avoid data leakage.
     
+    Args:
+        features_stage2_path: Path to Stage 2 features metadata (optional)
+        features_stage4_path: Path to Stage 4 features metadata (optional)
+        video_paths: List of video paths to match features
+        project_root: Project root directory
+    
+    Returns:
+        Tuple of (features, feature_names, valid_video_indices)
+        - features: Feature matrix (n_samples, n_features)
+        - feature_names: List of feature names
+        - valid_video_indices: Indices of videos that have valid features (None if all videos are valid)
+    
+    Raises:
+        ValueError: If feature loading fails or no valid features found
+        FileNotFoundError: If required feature files are missing
+    """
+    """
+    Load and combine features for training.
+    
+    Collinearity removal is done ONCE here before any splits to avoid data leakage.
+    
     Returns:
         Tuple of (features, feature_names, valid_video_indices)
         - features: Feature matrix (n_samples, n_features)
         - feature_names: List of feature names
         - valid_video_indices: Indices of videos that have valid features (None if all videos are valid)
     """
+    # Input validation
+    if not video_paths or not isinstance(video_paths, list):
+        raise ValueError(f"video_paths must be a non-empty list, got: {type(video_paths)}")
+    if not project_root or not isinstance(project_root, str):
+        raise ValueError(f"project_root must be a non-empty string, got: {type(project_root)}")
+    
     try:
         # Load features WITHOUT collinearity removal first
         features, feature_names, _, valid_video_indices = load_and_combine_features(
@@ -146,6 +173,12 @@ def load_features_for_training(
             remove_collinearity=False,  # Do it separately below
             correlation_threshold=0.95
         )
+        
+        # Validate loaded features
+        if features is None or len(features) == 0:
+            raise ValueError("No features loaded from Stage 2/4")
+        if feature_names is None or len(feature_names) == 0:
+            raise ValueError("No feature names loaded")
         
         # Remove collinear features ONCE before any splits
         original_feature_count = len(feature_names)
@@ -161,11 +194,18 @@ def load_features_for_training(
         final_feature_count = len(feature_names)
         logger.info(f"  Final feature count after collinearity removal: {final_feature_count}/{original_feature_count} ({100*final_feature_count/original_feature_count:.1f}% retained)")
         
+        # Validate after collinearity removal
+        if len(features) == 0 or features.shape[1] == 0:
+            raise ValueError("All features removed during collinearity removal - cannot proceed")
+        
         # Return video valid indices (not feature indices!)
         return features, feature_names, valid_video_indices
-    except Exception as e:
+    except (FileNotFoundError, ValueError) as e:
         logger.error(f"Failed to load features: {e}", exc_info=True)
         raise
+    except Exception as e:
+        logger.error(f"Unexpected error loading features: {e}", exc_info=True)
+        raise ValueError(f"Feature loading failed: {e}") from e
 
 
 def train_feature_model(

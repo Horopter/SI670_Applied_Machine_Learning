@@ -26,6 +26,9 @@ sys.path.insert(0, str(project_root))
 
 from lib.augmentation import stage1_augment_videos
 from lib.utils.memory import log_memory_stats
+from lib.data import load_metadata, filter_existing_videos
+from lib.utils.paths import resolve_video_path, load_metadata_flexible
+import polars as pl
 
 # Setup extensive logging
 logging.basicConfig(
@@ -40,6 +43,147 @@ logging.getLogger("lib").setLevel(logging.DEBUG)
 logging.getLogger("lib.augmentation").setLevel(logging.DEBUG)
 logging.getLogger("lib.data").setLevel(logging.DEBUG)
 logging.getLogger("lib.utils").setLevel(logging.DEBUG)
+
+
+def check_videos_needing_augmentations(
+    project_root: Path,
+    output_dir: Path,
+    num_augmentations: int,
+    start_idx: int = None,
+    end_idx: int = None
+) -> tuple[list[int], int, int]:
+    """
+    Pass 1: Check which videos need augmentations.
+    
+    Returns:
+        (videos_needing_augmentations, videos_complete, videos_incomplete)
+        - videos_needing_augmentations: List of indices in the dataframe that need augmentations
+        - videos_complete: Count of videos with all augmentations
+        - videos_incomplete: Count of videos needing augmentations
+    """
+    logger.info("PASS 1: Checking which videos need augmentations...")
+    
+    # Load input metadata
+    input_metadata_path = None
+    for csv_name in ["FVC_dup.csv", "video_index_input.csv"]:
+        candidate_path = project_root / "data" / csv_name
+        if candidate_path.exists():
+            input_metadata_path = candidate_path
+            break
+    
+    if input_metadata_path is None:
+        raise FileNotFoundError("Metadata file not found for resume mode")
+    
+    df = load_metadata(str(input_metadata_path))
+    df = filter_existing_videos(df, str(project_root))
+    
+    # Apply range filtering if specified
+    total_videos = df.height
+    if start_idx is not None or end_idx is not None:
+        start = start_idx if start_idx is not None else 0
+        end = end_idx if end_idx is not None else total_videos
+        if start < 0:
+            start = 0
+        if end > total_videos:
+            end = total_videos
+        if start >= end:
+            raise ValueError(f"Invalid range: start_idx={start}, end_idx={end}")
+        df = df.slice(start, end - start)
+    
+    # Check existing metadata
+    metadata_path_arrow = output_dir / "augmented_metadata.arrow"
+    metadata_path_parquet = output_dir / "augmented_metadata.parquet"
+    metadata_path_csv = output_dir / "augmented_metadata.csv"
+    
+    metadata_path = None
+    if metadata_path_arrow.exists():
+        metadata_path = metadata_path_arrow
+    elif metadata_path_parquet.exists():
+        metadata_path = metadata_path_parquet
+    elif metadata_path_csv.exists():
+        metadata_path = metadata_path_csv
+    
+    # Load existing metadata to check what's already done
+    existing_video_ids_with_all_augs = set()
+    if metadata_path and metadata_path.exists():
+        try:
+            if metadata_path.suffix == '.arrow':
+                existing_metadata = pl.read_ipc(metadata_path)
+            elif metadata_path.suffix == '.parquet':
+                existing_metadata = pl.read_parquet(metadata_path)
+            else:
+                existing_metadata = pl.read_csv(str(metadata_path))
+            
+            # Count augmentations per video
+            video_aug_counts = {}
+            for row in existing_metadata.iter_rows(named=True):
+                original_video = row.get("original_video", "")
+                aug_idx = row.get("augmentation_idx", -1)
+                if aug_idx >= 0:
+                    video_path_obj = Path(original_video)
+                    if len(video_path_obj.parts) >= 2:
+                        video_id = video_path_obj.parts[-2]
+                        video_id = "".join(c if c.isalnum() or c in ('-', '_') else '_' for c in video_id)
+                        video_aug_counts[video_id] = video_aug_counts.get(video_id, 0) + 1
+            
+            for video_id, count in video_aug_counts.items():
+                if count >= num_augmentations:
+                    existing_video_ids_with_all_augs.add(video_id)
+        except Exception as e:
+            logger.warning(f"Could not load existing metadata: {e}")
+    
+    # Pass 1: Identify videos that need augmentations
+    videos_needing_augmentations = []
+    videos_complete = 0
+    videos_incomplete = 0
+    
+    for idx in range(df.height):
+        row = df.row(idx, named=True)
+        video_rel = row["video_path"]
+        
+        try:
+            video_path = resolve_video_path(video_rel, project_root)
+            if not Path(video_path).exists():
+                videos_needing_augmentations.append(idx)
+                videos_incomplete += 1
+                continue
+            
+            # Extract video_id (same logic as in stage1_augment_videos)
+            video_path_obj = Path(video_path)
+            if len(video_path_obj.parts) >= 2:
+                video_id = video_path_obj.parts[-2]
+            else:
+                import hashlib
+                video_id = hashlib.md5(str(video_path).encode()).hexdigest()[:12]
+            
+            video_id = "".join(c if c.isalnum() or c in ('-', '_') else '_' for c in video_id)
+            
+            # Check if all augmentations exist (both in metadata and as files)
+            all_augmentations_exist = True
+            if video_id in existing_video_ids_with_all_augs:
+                # Double-check files actually exist on disk
+                for aug_idx in range(num_augmentations):
+                    aug_path = output_dir / f"{video_id}_aug{aug_idx}.mp4"
+                    if not aug_path.exists():
+                        all_augmentations_exist = False
+                        break
+            else:
+                all_augmentations_exist = False
+            
+            if all_augmentations_exist:
+                videos_complete += 1
+                if (idx + 1) % 100 == 0:
+                    logger.info(f"Checked {idx + 1}/{df.height} videos... ({videos_complete} complete, {videos_incomplete} need augmentations)")
+            else:
+                videos_incomplete += 1
+                videos_needing_augmentations.append(idx)
+                
+        except Exception as e:
+            logger.debug(f"Error checking video {video_rel}: {e}")
+            videos_needing_augmentations.append(idx)
+            videos_incomplete += 1
+    
+    return videos_needing_augmentations, videos_complete, videos_incomplete
 
 
 def main():
@@ -80,7 +224,7 @@ Examples:
     parser.add_argument(
         "--resume",
         action="store_true",
-        help="Resume from existing augmented metadata (skip already processed videos)"
+        help="Two-pass mode: First pass checks which videos need augmentations, second pass generates only missing augmentations"
     )
     parser.add_argument(
         "--delete-existing",
@@ -193,14 +337,126 @@ Examples:
     stage_start = time.time()
     
     try:
-        result_df = stage1_augment_videos(
-            project_root=str(project_root),
-            num_augmentations=args.num_augmentations,
-            output_dir=args.output_dir,
-            delete_existing=args.delete_existing,
-            start_idx=args.start_idx,
-            end_idx=args.end_idx
-        )
+        # Two-pass mode when --resume is enabled
+        if args.resume:
+            logger.info("=" * 80)
+            logger.info("RESUME MODE: Two-Pass Augmentation")
+            logger.info("=" * 80)
+            
+            # Pass 1: Check which videos need augmentations
+            pass1_start = time.time()
+            videos_needing_augmentations, videos_complete, videos_incomplete = check_videos_needing_augmentations(
+                project_root=project_root,
+                output_dir=output_dir,
+                num_augmentations=args.num_augmentations,
+                start_idx=args.start_idx,
+                end_idx=args.end_idx
+            )
+            pass1_duration = time.time() - pass1_start
+            
+            logger.info("=" * 80)
+            logger.info("PASS 1 COMPLETE: Augmentation Status Check")
+            logger.info("=" * 80)
+            logger.info(f"Check duration: {pass1_duration:.2f} seconds ({pass1_duration / 60:.2f} minutes)")
+            logger.info(f"Total videos checked: {videos_complete + videos_incomplete}")
+            logger.info(f"Videos with complete augmentations: {videos_complete}")
+            logger.info(f"Videos needing augmentations: {videos_incomplete}")
+            logger.info("=" * 80)
+            
+            if videos_incomplete == 0:
+                logger.info("All videos already have augmentations. Nothing to do.")
+                return 0
+            
+            # Pass 2: Generate augmentations only for videos that need them
+            logger.info("=" * 80)
+            logger.info("PASS 2: Generating augmentations for %d videos...", videos_incomplete)
+            logger.info("=" * 80)
+            
+            # Load input metadata to create filtered version
+            input_metadata_path = None
+            for csv_name in ["FVC_dup.csv", "video_index_input.csv"]:
+                candidate_path = project_root / "data" / csv_name
+                if candidate_path.exists():
+                    input_metadata_path = candidate_path
+                    break
+            
+            if input_metadata_path is None:
+                logger.error("Metadata file not found for resume mode")
+                return 1
+            
+            df = load_metadata(str(input_metadata_path))
+            df = filter_existing_videos(df, str(project_root))
+            
+            # Apply range filtering if specified
+            total_videos = df.height
+            if args.start_idx is not None or args.end_idx is not None:
+                start = args.start_idx if args.start_idx is not None else 0
+                end = args.end_idx if args.end_idx is not None else total_videos
+                if start < 0:
+                    start = 0
+                if end > total_videos:
+                    end = total_videos
+                if start >= end:
+                    logger.warning(f"Invalid range: start_idx={start}, end_idx={end}")
+                    return 1
+                df = df.slice(start, end - start)
+            
+            # Create filtered dataframe with only videos that need augmentations
+            # Adjust indices if we're in a range
+            base_idx = args.start_idx if args.start_idx is not None else 0
+            adjusted_indices = [base_idx + idx for idx in videos_needing_augmentations]
+            df_to_process = df.filter(pl.int_range(0, df.height).is_in(videos_needing_augmentations))
+            
+            # Save filtered metadata temporarily
+            temp_metadata_path = project_root / "data" / ".temp_stage1_resume_metadata.csv"
+            original_metadata_backup = None
+            try:
+                df_to_process.write_csv(temp_metadata_path)
+                logger.info(f"Created temporary metadata file with {df_to_process.height} videos needing augmentations")
+                
+                # Temporarily backup and replace the original metadata file
+                original_metadata_backup = project_root / "data" / f".backup_{input_metadata_path.name}"
+                import shutil
+                shutil.copy2(input_metadata_path, original_metadata_backup)
+                shutil.copy2(temp_metadata_path, input_metadata_path)
+                
+                # Now call stage1_augment_videos - it will use the filtered metadata
+                result_df = stage1_augment_videos(
+                    project_root=str(project_root),
+                    num_augmentations=args.num_augmentations,
+                    output_dir=args.output_dir,
+                    delete_existing=False,  # Never delete in resume mode
+                    start_idx=None,  # Process all videos in filtered list
+                    end_idx=None
+                )
+                
+            except Exception as e:
+                logger.error(f"Error in resume mode pass 2: {e}", exc_info=True)
+                raise
+            finally:
+                # Always restore original metadata file and clean up
+                if original_metadata_backup and original_metadata_backup.exists():
+                    try:
+                        shutil.copy2(original_metadata_backup, input_metadata_path)
+                        original_metadata_backup.unlink()
+                    except Exception as e:
+                        logger.warning(f"Could not restore original metadata: {e}")
+                # Clean up temp file
+                if temp_metadata_path.exists():
+                    try:
+                        temp_metadata_path.unlink()
+                    except Exception as e:
+                        logger.warning(f"Could not remove temp metadata: {e}")
+        else:
+            # Normal single-pass mode
+            result_df = stage1_augment_videos(
+                project_root=str(project_root),
+                num_augmentations=args.num_augmentations,
+                output_dir=args.output_dir,
+                delete_existing=args.delete_existing,
+                start_idx=args.start_idx,
+                end_idx=args.end_idx
+            )
         
         stage_duration = time.time() - stage_start
         
@@ -218,7 +474,6 @@ Examples:
             
             # Log statistics
             try:
-                import polars as pl
                 if "is_original" in result_df.columns:
                     original_count = result_df.filter(pl.col("is_original") == True).height
                     augmented_count = result_df.filter(pl.col("is_original") == False).height

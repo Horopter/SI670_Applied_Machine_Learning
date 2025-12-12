@@ -208,7 +208,7 @@ def list_available_models(include_xgboost: bool = True) -> List[str]:
     return list(MODEL_MEMORY_CONFIGS.keys())
 
 
-def create_model(model_type: str, config: RunConfig) -> Any:
+def create_model(model_type: str, config: "RunConfig") -> Any:
     """
     Create a model instance based on model type and config.
     
@@ -218,7 +218,17 @@ def create_model(model_type: str, config: RunConfig) -> Any:
     
     Returns:
         Model instance (PyTorch nn.Module or sklearn-style model)
+    
+    Raises:
+        ValueError: If model_type is unknown or invalid
+        ImportError: If required model modules cannot be imported
     """
+    # Input validation
+    if not model_type or not isinstance(model_type, str):
+        raise ValueError(f"model_type must be a non-empty string, got: {type(model_type)}")
+    if config is None:
+        raise ValueError("config cannot be None")
+    
     # Handle both RunConfig and dict
     if isinstance(config, dict):
         model_specific = config.get("model_specific_config", {})
@@ -230,15 +240,22 @@ def create_model(model_type: str, config: RunConfig) -> Any:
             model_specific = {}
         num_frames = getattr(config, 'num_frames', 1000)
     
-    # Helper to safely get parameter from model_specific dict
+    # Helper to safely get parameter from model_specific dict or top-level config
     def get_param(key, default):
-        if isinstance(model_specific, dict):
+        # First check model_specific_config (preferred location)
+        if isinstance(model_specific, dict) and key in model_specific:
             return model_specific.get(key, default)
+        # Fallback to top-level config for backward compatibility
+        if isinstance(config, dict) and key in config:
+            return config.get(key, default)
         return default
     
     if model_type == "logistic_regression":
         from ._linear import LogisticRegressionBaseline
         return LogisticRegressionBaseline(
+            features_stage2_path=get_param("features_stage2_path", None),
+            features_stage4_path=None,
+            use_stage2_only=True,
             cache_dir=get_param("feature_cache_dir", None),
             num_frames=get_param("num_frames", num_frames)
         )
@@ -266,6 +283,9 @@ def create_model(model_type: str, config: RunConfig) -> Any:
     elif model_type == "svm":
         from ._svm import SVMBaseline
         return SVMBaseline(
+            features_stage2_path=get_param("features_stage2_path", None),
+            features_stage4_path=None,
+            use_stage2_only=True,
             cache_dir=get_param("feature_cache_dir", None),
             num_frames=get_param("num_frames", num_frames)
         )
@@ -443,7 +463,11 @@ def create_model(model_type: str, config: RunConfig) -> Any:
         )
     
     else:
-        raise ValueError(f"Unknown model type: {model_type}. Available: {list_available_models()}")
+        available = list_available_models()
+        raise ValueError(
+            f"Unknown model type: {model_type}. "
+            f"Available models: {', '.join(available[:10])}{'...' if len(available) > 10 else ''}"
+        )
 
 
 def is_xgboost_model(model_type: str) -> bool:

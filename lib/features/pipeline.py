@@ -33,7 +33,8 @@ def extract_features_from_video(
     extractor: Optional[HandcraftedFeatureExtractor] = None,
     frame_percentage: Optional[float] = None,
     min_frames: int = 5,
-    max_frames: int = 50
+    max_frames: int = 50,
+    project_root: Optional[str] = None
 ) -> dict:
     """
     Extract features from a video by sampling frames.
@@ -45,10 +46,25 @@ def extract_features_from_video(
         frame_percentage: Percentage of frames to sample (default: 0.10 = 10% if num_frames not provided)
         min_frames: Minimum frames to sample (for percentage-based sampling, default: 5)
         max_frames: Maximum frames to sample (for percentage-based sampling, default: 50)
+        project_root: Project root directory (optional, used for cache file path)
     
     Returns:
         Dictionary of aggregated features
     """
+    # Input validation
+    if not video_path or not isinstance(video_path, str):
+        raise ValueError(f"video_path must be a non-empty string, got: {type(video_path)}")
+    if num_frames is not None and (not isinstance(num_frames, int) or num_frames <= 0):
+        raise ValueError(f"num_frames must be a positive integer, got: {num_frames}")
+    if frame_percentage is not None and (not isinstance(frame_percentage, (int, float)) or not (0 < frame_percentage <= 1)):
+        raise ValueError(f"frame_percentage must be between 0 and 1, got: {frame_percentage}")
+    if not isinstance(min_frames, int) or min_frames <= 0:
+        raise ValueError(f"min_frames must be a positive integer, got: {min_frames}")
+    if not isinstance(max_frames, int) or max_frames <= 0:
+        raise ValueError(f"max_frames must be a positive integer, got: {max_frames}")
+    if min_frames > max_frames:
+        raise ValueError(f"min_frames ({min_frames}) must be <= max_frames ({max_frames})")
+    
     if extractor is None:
         extractor = HandcraftedFeatureExtractor()
     
@@ -56,10 +72,20 @@ def extract_features_from_video(
     from lib.utils.video_cache import get_video_metadata
     from lib.utils.paths import calculate_adaptive_num_frames
     
-    # Use persistent cache file for cross-stage caching
-    cache_file = get_video_metadata_cache_path(project_root)
-    metadata = get_video_metadata(video_path, use_cache=True, cache_file=cache_file)
-    total_frames = metadata['total_frames']
+    # Use persistent cache file for cross-stage caching (if project_root provided)
+    try:
+        if project_root:
+            cache_file = get_video_metadata_cache_path(project_root)
+        else:
+            cache_file = None
+        metadata = get_video_metadata(video_path, use_cache=True, cache_file=cache_file)
+        if metadata is None:
+            logger.warning(f"Could not get video metadata for {video_path}")
+            return {}
+        total_frames = metadata.get('total_frames', 0)
+    except Exception as e:
+        logger.error(f"Failed to get video metadata for {video_path}: {e}")
+        return {}
     
     if total_frames == 0:
         logger.warning(f"Video has no frames: {video_path}")
@@ -80,10 +106,29 @@ def extract_features_from_video(
     
     container = None
     try:
-        container = av.open(video_path)
+        # Validate video file exists
+        video_path_obj = Path(video_path)
+        if not video_path_obj.exists():
+            logger.error(f"Video file does not exist: {video_path}")
+            return {}
+        if not video_path_obj.is_file():
+            logger.error(f"Video path is not a file: {video_path}")
+            return {}
+        
+        container = av.open(str(video_path))
+        if len(container.streams.video) == 0:
+            logger.error(f"Video has no video streams: {video_path}")
+            container.close()
+            return {}
+        
         stream = container.streams.video[0]
         
         # Sample frames uniformly
+        if total_frames <= 0:
+            logger.warning(f"Video has {total_frames} frames: {video_path}")
+            container.close()
+            return {}
+        
         frame_indices = np.linspace(0, total_frames - 1, frames_to_sample, dtype=int)
         
         all_features = []
@@ -92,13 +137,18 @@ def extract_features_from_video(
         for packet in container.demux(stream):
             for frame in packet.decode():
                 if frame_count in frame_indices:
-                    frame_array = frame.to_ndarray(format='rgb24')
-                    features = extractor.extract(frame_array, video_path)
-                    all_features.append(features)
-                    
-                    # Aggressive GC after each frame extraction
-                    del frame_array
-                    aggressive_gc(clear_cuda=False)
+                    try:
+                        frame_array = frame.to_ndarray(format='rgb24')
+                        features = extractor.extract(frame_array, video_path)
+                        if features:
+                            all_features.append(features)
+                    except Exception as e:
+                        logger.warning(f"Failed to extract features from frame {frame_count} of {video_path}: {e}")
+                    finally:
+                        # Aggressive GC after each frame extraction
+                        if 'frame_array' in locals():
+                            del frame_array
+                        aggressive_gc(clear_cuda=False)
                 
                 frame_count += 1
                 if frame_count >= total_frames or len(all_features) >= frames_to_sample:
@@ -109,6 +159,7 @@ def extract_features_from_video(
         
         # Aggregate features across frames (mean)
         if not all_features:
+            logger.warning(f"No features extracted from {video_path}")
             return {}
         
         aggregated = {}
@@ -118,15 +169,18 @@ def extract_features_from_video(
         
         return aggregated
         
+    except av.AVError as e:
+        logger.error(f"PyAV error extracting features from {video_path}: {e}")
+        return {}
     except Exception as e:
-        logger.error(f"Failed to extract features from {video_path}: {e}")
+        logger.error(f"Failed to extract features from {video_path}: {e}", exc_info=True)
         return {}
     finally:
         if container is not None:
             try:
                 container.close()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Error closing video container: {e}")
         aggressive_gc(clear_cuda=False)
 
 
@@ -163,15 +217,50 @@ def stage2_extract_features(
     Returns:
         DataFrame with feature metadata
     """
-    project_root = Path(project_root)
-    output_dir = project_root / output_dir
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # Input validation
+    if not project_root or not isinstance(project_root, str):
+        raise ValueError(f"project_root must be a non-empty string, got: {type(project_root)}")
+    if not augmented_metadata_path or not isinstance(augmented_metadata_path, str):
+        raise ValueError(f"augmented_metadata_path must be a non-empty string, got: {type(augmented_metadata_path)}")
+    if not isinstance(output_dir, str):
+        raise ValueError(f"output_dir must be a string, got: {type(output_dir)}")
+    if start_idx is not None and (not isinstance(start_idx, int) or start_idx < 0):
+        raise ValueError(f"start_idx must be a non-negative integer, got: {start_idx}")
+    if end_idx is not None and (not isinstance(end_idx, int) or end_idx < 0):
+        raise ValueError(f"end_idx must be a non-negative integer, got: {end_idx}")
+    if execution_order not in ["forward", "reverse"]:
+        raise ValueError(f"execution_order must be 'forward' or 'reverse', got: {execution_order}")
+    
+    try:
+        project_root_path = Path(project_root).resolve()
+        if not project_root_path.exists():
+            raise FileNotFoundError(f"Project root directory does not exist: {project_root_path}")
+        if not project_root_path.is_dir():
+            raise NotADirectoryError(f"Project root is not a directory: {project_root_path}")
+    except (OSError, ValueError) as e:
+        logger.error(f"Invalid project_root path: {project_root} - {e}")
+        raise ValueError(f"Invalid project_root path: {project_root}") from e
+    
+    project_root_str = str(project_root_path)  # Keep as string for function calls
+    
+    try:
+        output_dir_path = project_root_path / output_dir
+        output_dir_path.mkdir(parents=True, exist_ok=True)
+    except (OSError, PermissionError) as e:
+        logger.error(f"Failed to create output directory {output_dir}: {e}")
+        raise ValueError(f"Cannot create output directory: {output_dir}") from e
+    
+    output_dir = output_dir_path  # Use Path object for path operations
     
     # Load augmented metadata (support CSV, Arrow, and Parquet)
     logger.info("Stage 2: Loading augmented metadata...")
     from lib.utils.paths import load_metadata_flexible, validate_metadata_columns, write_metadata_atomic
     
-    df = load_metadata_flexible(augmented_metadata_path)
+    try:
+        df = load_metadata_flexible(augmented_metadata_path)
+    except Exception as e:
+        logger.error(f"Failed to load augmented metadata from {augmented_metadata_path}: {e}")
+        raise
     if df is None:
         logger.error(f"Augmented metadata not found: {augmented_metadata_path} (checked .arrow, .parquet, .csv)")
         return pl.DataFrame()
@@ -300,7 +389,7 @@ def stage2_extract_features(
         label = row["label"]
         
         try:
-            video_path = resolve_video_path(video_rel, project_root)
+            video_path = resolve_video_path(video_rel, project_root_str)
             
             if not Path(video_path).exists():
                 logger.warning(f"Video not found: {video_path}")
@@ -313,7 +402,7 @@ def stage2_extract_features(
             video_id = Path(video_path).stem
             feature_path_parquet = output_dir / f"{video_id}_features.parquet"
             feature_path_npy = output_dir / f"{video_id}_features.npy"
-            feature_path_rel = str(feature_path_parquet.relative_to(project_root))
+            feature_path_rel = str(feature_path_parquet.relative_to(project_root_path))
             
             if resume and not delete_existing:
                 # Check if feature file exists
@@ -352,7 +441,7 @@ def stage2_extract_features(
                 frame_percentage=frame_percentage,
                 min_frames=min_frames,
                 max_frames=max_frames,
-                project_root=project_root,
+                project_root=project_root_str,
                 oom_retry=True,
                 max_retries=1,
                 context=f"Stage 2: extracting features from {Path(video_path).name}"
@@ -384,7 +473,7 @@ def stage2_extract_features(
             feature_row = {
                 "video_path": video_rel,
                 "label": label,
-                "feature_path": str(feature_path.relative_to(project_root)),
+                "feature_path": str(feature_path.relative_to(project_root_path)),
             }
             feature_row.update(features)  # Add all feature values
             feature_rows.append(feature_row)

@@ -64,22 +64,51 @@ def train_sklearn_logreg(
     Returns:
         Training results dictionary
     """
-    project_root_path = Path(project_root).resolve()
+    # Input validation
+    if not project_root or not isinstance(project_root, str):
+        raise ValueError(f"project_root must be a non-empty string, got: {type(project_root)}")
+    if not scaled_metadata_path or not isinstance(scaled_metadata_path, str):
+        raise ValueError(f"scaled_metadata_path must be a non-empty string, got: {type(scaled_metadata_path)}")
+    if not features_stage2_path or not isinstance(features_stage2_path, str):
+        raise ValueError(f"features_stage2_path must be a non-empty string, got: {type(features_stage2_path)}")
+    if not output_dir or not isinstance(output_dir, str):
+        raise ValueError(f"output_dir must be a non-empty string, got: {type(output_dir)}")
+    if n_splits <= 0 or not isinstance(n_splits, int):
+        raise ValueError(f"n_splits must be a positive integer, got: {n_splits}")
+    
+    try:
+        project_root_path = Path(project_root).resolve()
+        if not project_root_path.exists():
+            raise FileNotFoundError(f"Project root directory does not exist: {project_root_path}")
+        if not project_root_path.is_dir():
+            raise NotADirectoryError(f"Project root is not a directory: {project_root_path}")
+    except (OSError, ValueError) as e:
+        logger.error(f"Invalid project_root path: {project_root} - {e}")
+        raise ValueError(f"Invalid project_root path: {project_root}") from e
+    
     # Handle relative output_dir paths
-    if Path(output_dir).is_absolute():
-        output_dir_path = Path(output_dir)
-    else:
-        output_dir_path = project_root_path / output_dir
-    output_dir_path.mkdir(parents=True, exist_ok=True)
+    try:
+        if Path(output_dir).is_absolute():
+            output_dir_path = Path(output_dir)
+        else:
+            output_dir_path = project_root_path / output_dir
+        output_dir_path.mkdir(parents=True, exist_ok=True)
+    except (OSError, PermissionError) as e:
+        logger.error(f"Failed to create output directory {output_dir}: {e}")
+        raise ValueError(f"Cannot create output directory: {output_dir}") from e
     
     # Load metadata
     logger.info("Loading scaled metadata...")
-    scaled_df = load_metadata_flexible(scaled_metadata_path)
-    if scaled_df is None or scaled_df.height == 0:
-        raise ValueError(f"Scaled metadata not found: {scaled_metadata_path}")
-    
-    if scaled_df.height <= 3000:
-        raise ValueError(f"Insufficient data: {scaled_df.height} rows (need > 3000)")
+    try:
+        scaled_df = load_metadata_flexible(scaled_metadata_path)
+        if scaled_df is None or scaled_df.height == 0:
+            raise ValueError(f"Scaled metadata not found or empty: {scaled_metadata_path}")
+        
+        if scaled_df.height <= 3000:
+            raise ValueError(f"Insufficient data: {scaled_df.height} rows (need > 3000)")
+    except Exception as e:
+        logger.error(f"Failed to load scaled metadata from {scaled_metadata_path}: {e}")
+        raise
     
     video_paths = scaled_df["video_path"].to_list()
     labels = scaled_df["label"].to_list()
@@ -97,12 +126,16 @@ def train_sklearn_logreg(
     
     # Load features
     logger.info("Loading features from Stage 2/4...")
-    features, feature_names, valid_video_indices = load_features_for_training(
-        features_stage2_path,
-        features_stage4_path,
-        video_paths,
-        project_root
-    )
+    try:
+        features, feature_names, valid_video_indices = load_features_for_training(
+            features_stage2_path,
+            features_stage4_path,
+            video_paths,
+            project_root
+        )
+    except Exception as e:
+        logger.error(f"Failed to load features: {e}", exc_info=True)
+        raise ValueError(f"Feature loading failed: {e}") from e
     
     # Filter to valid video indices if needed
     if valid_video_indices is not None:
@@ -301,8 +334,12 @@ def train_sklearn_logreg(
     logger.info(f"Test Acc: {test_acc:.4f}")
     
     # Save model and results
-    joblib.dump(final_model, output_dir_path / "model.joblib")
-    joblib.dump(scaler_final, output_dir_path / "scaler.joblib")
+    try:
+        joblib.dump(final_model, output_dir_path / "model.joblib")
+        joblib.dump(scaler_final, output_dir_path / "scaler.joblib")
+    except Exception as e:
+        logger.error(f"Failed to save model/scaler: {e}")
+        raise IOError(f"Cannot save model files to {output_dir_path}") from e
     
     # Ensure JSON serializability (convert numpy types to native Python types)
     def make_json_serializable(obj):
@@ -332,12 +369,20 @@ def train_sklearn_logreg(
         "grid_results": make_json_serializable(grid_results)
     }
     
-    with open(output_dir_path / "results.json", "w") as f:
-        json.dump(results, f, indent=2)
+    try:
+        with open(output_dir_path / "results.json", "w") as f:
+            json.dump(results, f, indent=2)
+    except (OSError, IOError, PermissionError) as e:
+        logger.error(f"Failed to save results.json: {e}")
+        raise IOError(f"Cannot write results.json to {output_dir_path}") from e
     
     # Also save feature names for reference
-    with open(output_dir_path / "feature_names.json", "w") as f:
-        json.dump(feature_names, f, indent=2)
+    try:
+        with open(output_dir_path / "feature_names.json", "w") as f:
+            json.dump(feature_names, f, indent=2)
+    except (OSError, IOError, PermissionError) as e:
+        logger.warning(f"Failed to save feature_names.json: {e}")
+        # Non-critical, continue
     
     # Plot ROC/PR curves
     fpr, tpr, _ = roc_curve(y_test, test_probs)
@@ -361,8 +406,12 @@ def train_sklearn_logreg(
     ax2.grid(True)
     
     plt.tight_layout()
-    plt.savefig(output_dir_path / "roc_pr_curves.png", dpi=150)
-    plt.close()
+    try:
+        plt.savefig(output_dir_path / "roc_pr_curves.png", dpi=150)
+        plt.close()
+    except Exception as e:
+        logger.warning(f"Failed to save ROC/PR curves plot: {e}")
+        plt.close()  # Ensure plot is closed even on error
     
     logger.info(f"Training complete. Results saved to: {output_dir_path}")
     

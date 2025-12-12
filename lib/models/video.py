@@ -521,16 +521,38 @@ class VideoDataset(Dataset):
         if not use_scaled_videos and self.train:
             try:
                 from lib.augmentation.transforms import apply_temporal_augmentations
-                temporal_config = getattr(self.config, 'temporal_augmentation_config', None) or {}
-                frames = apply_temporal_augmentations(
-                    frames,
-                    train=self.train,
-                    frame_drop_prob=temporal_config.get('frame_drop_prob', 0.1),
-                    frame_dup_prob=temporal_config.get('frame_dup_prob', 0.1),
-                    reverse_prob=temporal_config.get('reverse_prob', 0.1),
-                )
-            except ImportError:
-                pass  # Temporal augmentations not available, skip
+                # Get temporal config from VideoConfig, or use defaults
+                base_temporal_config = getattr(self.config, 'temporal_augmentation_config', None) or {}
+                # Build proper temporal_config dict matching function signature
+                # Function expects: frame_drop, frame_duplicate, reverse (boolean flags)
+                # Also accepts probabilities if needed, but function uses hardcoded 0.1
+                temporal_config = {
+                    'frame_drop': base_temporal_config.get('frame_drop', False) or base_temporal_config.get('frame_drop_prob', 0.0) > 0,
+                    'frame_duplicate': base_temporal_config.get('frame_duplicate', False) or base_temporal_config.get('frame_dup_prob', 0.0) > 0,
+                    'reverse': base_temporal_config.get('reverse', False) or base_temporal_config.get('reverse_prob', 0.0) > 0,
+                }
+                # Only apply if at least one augmentation is enabled
+                if any(temporal_config.values()):
+                    # CRITICAL: Function signature is: apply_temporal_augmentations(frames, temporal_config=dict)
+                    # DO NOT pass train=, frame_drop_prob=, etc. as separate parameters
+                    frames = apply_temporal_augmentations(frames, temporal_config=temporal_config)
+            except ImportError as e:
+                # Temporal augmentations module not available, skip silently
+                logger.debug(f"Temporal augmentations not available: {e}")
+            except TypeError as e:
+                # Function signature mismatch - log clearly for debugging
+                error_msg = str(e)
+                if "unexpected keyword argument" in error_msg or "got an unexpected keyword argument" in error_msg:
+                    logger.error(
+                        f"CRITICAL: Function signature mismatch in apply_temporal_augmentations: {e}. "
+                        f"Expected signature: apply_temporal_augmentations(frames, temporal_config=dict). "
+                        f"Please check lib/augmentation/transforms.py for correct signature."
+                    )
+                # Skip temporal augmentations on error
+                logger.warning(f"Skipping temporal augmentations due to error: {e}")
+            except Exception as e:
+                # Catch any other unexpected errors
+                logger.warning(f"Unexpected error applying temporal augmentations: {e}, skipping")
 
         # Check if we have frames to stack
         if len(frames) == 0:

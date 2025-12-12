@@ -30,6 +30,75 @@ from lib.utils.memory import aggressive_gc
 
 logger = logging.getLogger(__name__)
 
+# Constants for model type classification
+BASELINE_MODELS = {
+    "logistic_regression",
+    "logistic_regression_stage2",
+    "logistic_regression_stage2_stage4",
+    "svm",
+    "svm_stage2",
+    "svm_stage2_stage4"
+}
+
+STAGE2_MODELS = {
+    "logistic_regression",
+    "logistic_regression_stage2",
+    "logistic_regression_stage2_stage4",
+    "svm",
+    "svm_stage2",
+    "svm_stage2_stage4"
+}
+
+STAGE4_MODELS = {
+    "logistic_regression_stage2_stage4",
+    "svm_stage2_stage4"
+}
+
+# Model file extensions to copy
+MODEL_FILE_EXTENSIONS = ["*.pt", "*.joblib", "*.json"]
+
+
+def _copy_model_files(source_dir: Path, dest_dir: Path, model_name: str = "") -> None:
+    """
+    Copy model files from source directory to destination directory.
+    
+    Args:
+        source_dir: Source directory containing model files
+        dest_dir: Destination directory to copy files to
+        model_name: Optional model name for logging
+    
+    Raises:
+        OSError: If copying fails
+    """
+    import shutil
+    
+    if not source_dir.exists():
+        logger.warning(f"Source directory does not exist: {source_dir}")
+        return
+    
+    try:
+        dest_dir.mkdir(parents=True, exist_ok=True)
+    except (OSError, PermissionError) as e:
+        logger.error(f"Failed to create destination directory {dest_dir}: {e}")
+        raise OSError(f"Cannot create destination directory: {dest_dir}") from e
+    
+    copied_count = 0
+    for ext in MODEL_FILE_EXTENSIONS:
+        for model_file in source_dir.glob(ext):
+            try:
+                shutil.copy2(model_file, dest_dir / model_file.name)
+                copied_count += 1
+            except (OSError, IOError, PermissionError) as e:
+                logger.warning(f"Failed to copy {model_file} to {dest_dir}: {e}")
+    
+    if copied_count > 0:
+        log_msg = f"Copied {copied_count} model file(s) from {source_dir.name} to {dest_dir.name}"
+        if model_name:
+            log_msg = f"Saved best model from {model_name}: {log_msg}"
+        logger.info(log_msg)
+    else:
+        logger.warning(f"No model files found in {source_dir} to copy")
+
 
 def _ensure_lib_models_exists(project_root_path: Path) -> None:
     """
@@ -51,7 +120,8 @@ def _ensure_lib_models_exists(project_root_path: Path) -> None:
     
     # Create minimal __init__.py if missing
     if not models_init.exists():
-        models_init.write_text('''"""
+        try:
+            models_init.write_text('''"""
 Video models and datasets module (minimal stub).
 
 This is a minimal stub created automatically.
@@ -62,11 +132,15 @@ from .video import VideoConfig, VideoDataset
 
 __all__ = ["VideoConfig", "VideoDataset"]
 ''')
-        logger.info(f"Created minimal lib/models/__init__.py at {models_init}")
+            logger.info(f"Created minimal lib/models/__init__.py at {models_init}")
+        except (OSError, IOError, PermissionError) as e:
+            logger.error(f"Failed to create minimal __init__.py at {models_init}: {e}")
+            raise
     
     # Create minimal video.py if missing
     if not video_py.exists():
-        video_py.write_text('''"""
+        try:
+            video_py.write_text('''"""
 Video configuration and dataset (minimal stub).
 
 This is a minimal stub created automatically.
@@ -119,11 +193,14 @@ class VideoDataset(Dataset):
     def __getitem__(self, idx: int):
         raise RuntimeError("VideoDataset stub cannot be used")
 ''')
-        logger.info(f"Created minimal lib/models/video.py at {video_py}")
-        logger.warning(
-            "Created minimal lib/models stub. "
-            "For PyTorch models to work, ensure the full lib/models directory is synced to the server."
-        )
+            logger.info(f"Created minimal lib/models/video.py at {video_py}")
+            logger.warning(
+                "Created minimal lib/models stub. "
+                "For PyTorch models to work, ensure the full lib/models directory is synced to the server."
+            )
+        except (OSError, IOError, PermissionError) as e:
+            logger.error(f"Failed to create minimal video.py at {video_py}: {e}")
+            raise
 
 
 def _validate_stage5_prerequisites(
@@ -213,23 +290,8 @@ def _validate_stage5_prerequisites(
     logger.info("MODEL REQUIREMENTS CHECK")
     logger.info("=" * 80)
     
-    # Models that require Stage 2 features (not the old logistic_regression/svm)
-    stage2_models = {
-        "logistic_regression_stage2",
-        "logistic_regression_stage2_stage4",
-        "svm_stage2",
-        "svm_stage2_stage4"
-    }
-    
-    # Models that require Stage 4 features
-    stage4_models = {
-        "logistic_regression_stage2_stage4",
-        "svm_stage2_stage4"
-    }
-    
-    # Old models (logistic_regression, svm without suffix) extract features from videos
-    # They don't require Stage 2/4
-    
+    # All baseline models (svm, logistic_regression and their variants) require Stage 2 features
+    # Stage 5 only trains - features must be pre-extracted in Stage 2/4
     for model_type in model_types:
         missing = []
         
@@ -238,11 +300,11 @@ def _validate_stage5_prerequisites(
             missing.append("Stage 3 (scaled videos)")
         
         # Stage 2 models require Stage 2
-        if model_type in stage2_models and not results["stage2_available"]:
+        if model_type in STAGE2_MODELS and not results["stage2_available"]:
             missing.append("Stage 2 (features)")
         
         # Stage 2+4 models require Stage 4
-        if model_type in stage4_models and not results["stage4_available"]:
+        if model_type in STAGE4_MODELS and not results["stage4_available"]:
             missing.append("Stage 4 (scaled features)")
         
         if missing:
@@ -289,14 +351,16 @@ def _validate_stage5_prerequisites(
     failure_lines.append("")
     
     # Check if Stage 2 was expected but missing
-    stage2_required_models = [m for m in model_types if m in stage2_models]
+    # All baseline models require Stage 2 features
+    stage2_required_models = [m for m in model_types if m in STAGE2_MODELS]
     if stage2_required_models and not results["stage2_available"]:
         failures_detected = True
         failure_lines.append("STAGE 2 FAILURE DETECTED")
         failure_lines.append("-" * 80)
         failure_lines.append(f"Expected: Stage 2 features metadata at: {features_stage2_path}")
         failure_lines.append(f"Status: NOT FOUND or EMPTY")
-        failure_lines.append(f"Required for models: {', '.join(stage2_required_models)}")
+        failure_lines.append(f"Required for ALL baseline models: {', '.join(stage2_required_models)}")
+        failure_lines.append("Note: All baseline models (svm, logistic_regression and variants) require Stage 2 features.")
         failure_lines.append("")
         failure_lines.append("ACTION REQUIRED:")
         failure_lines.append("  - Run Stage 2 feature extraction:")
@@ -305,7 +369,7 @@ def _validate_stage5_prerequisites(
         failure_lines.append("")
     
     # Check if Stage 4 was expected but missing
-    stage4_required_models = [m for m in model_types if m in stage4_models]
+    stage4_required_models = [m for m in model_types if m in STAGE4_MODELS]
     if stage4_required_models and not results["stage4_available"]:
         failures_detected = True
         failure_lines.append("STAGE 4 FAILURE DETECTED")
@@ -381,7 +445,7 @@ def stage5_train_models(
     train_ensemble: bool = False,
     ensemble_method: str = "meta_learner",
     delete_existing: bool = False
-) -> Dict:
+) -> Dict[str, Any]:
     """
     Stage 5: Train models using scaled videos and features.
     
@@ -402,17 +466,54 @@ def stage5_train_models(
     Returns:
         Dictionary of training results
     """
+    # Input validation
+    if not project_root or not isinstance(project_root, str):
+        raise ValueError(f"project_root must be a non-empty string, got: {type(project_root)}")
+    if not scaled_metadata_path or not isinstance(scaled_metadata_path, str):
+        raise ValueError(f"scaled_metadata_path must be a non-empty string, got: {type(scaled_metadata_path)}")
+    if not features_stage2_path or not isinstance(features_stage2_path, str):
+        raise ValueError(f"features_stage2_path must be a non-empty string, got: {type(features_stage2_path)}")
+    if not features_stage4_path or not isinstance(features_stage4_path, str):
+        raise ValueError(f"features_stage4_path must be a non-empty string, got: {type(features_stage4_path)}")
+    if not model_types or not isinstance(model_types, list) or len(model_types) == 0:
+        raise ValueError(f"model_types must be a non-empty list, got: {type(model_types)}")
+    if n_splits <= 0 or not isinstance(n_splits, int):
+        raise ValueError(f"n_splits must be a positive integer, got: {n_splits}")
+    if num_frames <= 0 or not isinstance(num_frames, int):
+        raise ValueError(f"num_frames must be a positive integer, got: {num_frames}")
+    if not isinstance(output_dir, str):
+        raise ValueError(f"output_dir must be a string, got: {type(output_dir)}")
+    
     # Convert project_root to Path and resolve it once (avoid variable shadowing)
-    project_root_path = Path(project_root).resolve()
+    try:
+        project_root_path = Path(project_root).resolve()
+        if not project_root_path.exists():
+            raise FileNotFoundError(f"Project root directory does not exist: {project_root_path}")
+        if not project_root_path.is_dir():
+            raise NotADirectoryError(f"Project root is not a directory: {project_root_path}")
+    except (OSError, ValueError) as e:
+        logger.error(f"Invalid project_root path: {project_root} - {e}")
+        raise ValueError(f"Invalid project_root path: {project_root}") from e
+    
     project_root_str = str(project_root_path)
     # Keep original string for backward compatibility in function calls
     project_root_str_orig = project_root_str
     
     # Ensure lib/models directory exists (create minimal stub if missing)
-    _ensure_lib_models_exists(project_root_path)
+    try:
+        _ensure_lib_models_exists(project_root_path)
+    except Exception as e:
+        logger.error(f"Failed to ensure lib/models exists: {e}")
+        raise
     
-    output_dir = project_root_path / output_dir
-    output_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        output_dir_path = project_root_path / output_dir
+        output_dir_path.mkdir(parents=True, exist_ok=True)
+    except (OSError, PermissionError) as e:
+        logger.error(f"Failed to create output directory {output_dir}: {e}")
+        raise ValueError(f"Cannot create output directory: {output_dir}") from e
+    
+    output_dir = output_dir_path
     
     # CRITICAL: Validate all prerequisites before starting any training
     validation_results = _validate_stage5_prerequisites(
@@ -432,8 +533,8 @@ def stage5_train_models(
         )
         if not validation_results["stage3_available"]:
             error_msg += "  - Stage 3 (scaled videos): REQUIRED for all models\n"
-        if any("stage2" in m for m in model_types) and not validation_results["stage2_available"]:
-            error_msg += "  - Stage 2 (features): REQUIRED for *_stage2 models\n"
+        if any(m in STAGE2_MODELS for m in model_types) and not validation_results["stage2_available"]:
+            error_msg += "  - Stage 2 (features): REQUIRED for all baseline models (svm, logistic_regression and variants)\n"
         if any("stage2_stage4" in m for m in model_types) and not validation_results["stage4_available"]:
             error_msg += "  - Stage 4 (scaled features): REQUIRED for *_stage2_stage4 models\n"
         raise FileNotFoundError(error_msg)
@@ -529,10 +630,20 @@ def stage5_train_models(
     
     # Create video config (will be used only for PyTorch models)
     # Always use scaled videos - augmentation done in Stage 1, scaling in Stage 3
-    video_config = VideoConfig(
-        num_frames=num_frames,
-        use_scaled_videos=True  # Stage 5 only trains - all preprocessing done in earlier stages
-    )
+    # Handle both old and new VideoConfig versions (some servers may not have use_scaled_videos yet)
+    try:
+        # Try with use_scaled_videos (newer version)
+        video_config = VideoConfig(
+            num_frames=num_frames,
+            use_scaled_videos=True  # Stage 5 only trains - all preprocessing done in earlier stages
+        )
+    except TypeError:
+        # Fallback: server version doesn't have use_scaled_videos parameter
+        logger.warning(
+            "VideoConfig on server doesn't support 'use_scaled_videos' parameter. "
+            "Using default VideoConfig (videos should already be scaled from Stage 3)."
+        )
+        video_config = VideoConfig(num_frames=num_frames)
     
     results = {}
     
@@ -647,38 +758,39 @@ def stage5_train_models(
                     logger.info(f"Fold {fold_idx + 1}: No data leakage (checked {len(train_groups)} train groups, {len(val_groups)} val groups)")
                 
                 # Train model
-                if is_pytorch_model(model_type):
-                    # Create datasets for PyTorch models
-                    # Lazy import to avoid circular dependency
-                    # Ensure project root is in Python path for imports
-                    # Note: sys and importlib.util are already imported at module level
-                    # project_root_path is already resolved at function start
-                    
-                    # Import VideoDataset - fail fast if not available (required for video-based models)
-                    try:
-                        from lib.models import VideoDataset
-                    except ImportError as e:
-                        raise ImportError(
+                try:
+                    if is_pytorch_model(model_type):
+                        # Create datasets for PyTorch models
+                        # Lazy import to avoid circular dependency
+                        # Ensure project root is in Python path for imports
+                        # Note: sys and importlib.util are already imported at module level
+                        # project_root_path is already resolved at function start
+                        
+                        # Import VideoDataset - fail fast if not available (required for video-based models)
+                        try:
+                            from lib.models import VideoDataset
+                        except ImportError as e:
+                            raise ImportError(
                             f"Cannot import VideoDataset from lib.models. "
                             f"Required for video-based models. Error: {e}"
                         ) from e
-                    train_dataset = VideoDataset(
+                        train_dataset = VideoDataset(
                         train_df,
                         project_root=project_root_str_orig,
                         config=video_config,
-                    )
-                    val_dataset = VideoDataset(
+                        )
+                        val_dataset = VideoDataset(
                         val_df,
                         project_root=project_root_str_orig,
                         config=video_config,
-                    )
+                        )
                     
-                    # Create data loaders
-                    # GPU-optimized DataLoader settings
-                    use_cuda = torch.cuda.is_available()
-                    num_workers = current_config.get("num_workers", model_config.get("num_workers", 0))
+                        # Create data loaders
+                        # GPU-optimized DataLoader settings
+                        use_cuda = torch.cuda.is_available()
+                        num_workers = current_config.get("num_workers", model_config.get("num_workers", 0))
                     
-                    train_loader = DataLoader(
+                        train_loader = DataLoader(
                         train_dataset,
                         batch_size=current_config.get("batch_size", model_config.get("batch_size", 8)),
                         shuffle=True,
@@ -686,8 +798,8 @@ def stage5_train_models(
                         pin_memory=use_cuda,  # Faster GPU transfer
                         persistent_workers=num_workers > 0,  # Keep workers alive between epochs
                         prefetch_factor=2 if num_workers > 0 else None,  # Prefetch batches
-                    )
-                    val_loader = DataLoader(
+                        )
+                        val_loader = DataLoader(
                         val_dataset,
                         batch_size=current_config.get("batch_size", model_config.get("batch_size", 8)),
                         shuffle=False,
@@ -695,25 +807,43 @@ def stage5_train_models(
                         pin_memory=use_cuda,
                         persistent_workers=num_workers > 0,
                         prefetch_factor=2 if num_workers > 0 else None,
-                    )
-                    # PyTorch model training
-                    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-                    model = create_model(model_type, model_config)
-                    model = model.to(device)
+                        )
+                        # PyTorch model training
+                        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+                        try:
+                            model = create_model(model_type, model_config)
+                        except TypeError as e:
+                            error_msg = str(e)
+                            if "unexpected keyword argument" in error_msg or "got an unexpected keyword argument" in error_msg:
+                                logger.error(
+                                    f"CRITICAL: Function signature mismatch in create_model for {model_type}: {e}. "
+                                    f"Config type: {type(model_config)}, Config keys: {list(model_config.keys()) if isinstance(model_config, dict) else 'N/A'}. "
+                                    f"Please check lib/training/model_factory.py::create_model() for correct signature."
+                                )
+                            raise
+                        except ValueError as e:
+                            logger.error(
+                                f"Value error creating model {model_type}: {e}. "
+                                f"Config: {model_config if isinstance(model_config, dict) else 'RunConfig object'}"
+                            )
+                            raise
+                        model = model.to(device)
                     
-                    # Create optimizer and scheduler with ML best practices
-                    # Use hyperparameters from grid search if available
-                    optim_cfg = OptimConfig(
+                        # Create optimizer and scheduler with ML best practices
+                        # Use hyperparameters from grid search if available
+                        optim_cfg = OptimConfig(
                         lr=current_config.get("learning_rate", model_config.get("learning_rate", 1e-4)),
                         weight_decay=current_config.get("weight_decay", model_config.get("weight_decay", 1e-4)),
                         max_grad_norm=current_config.get("max_grad_norm", model_config.get("max_grad_norm", 1.0)),  # Gradient clipping
                         # Use differential LR for pretrained models
                         backbone_lr=current_config.get("backbone_lr", model_config.get("backbone_lr", None)),
                         head_lr=current_config.get("head_lr", model_config.get("head_lr", None)),
-                    )
-                    train_cfg = TrainConfig(
+                        )
+                        train_cfg = TrainConfig(
                         num_epochs=current_config.get("num_epochs", model_config.get("num_epochs", 20)),
                         device=str(device),
+                        log_interval=model_config.get("log_interval", 10),
+                        use_class_weights=model_config.get("use_class_weights", True),
                         use_amp=model_config.get("use_amp", True),
                         gradient_accumulation_steps=model_config.get("gradient_accumulation_steps", 1),
                         early_stopping_patience=model_config.get("early_stopping_patience", 5),
@@ -721,21 +851,23 @@ def stage5_train_models(
                         warmup_epochs=model_config.get("warmup_epochs", 2),  # LR warmup
                         warmup_factor=model_config.get("warmup_factor", 0.1),
                         log_grad_norm=model_config.get("log_grad_norm", False),  # Debug gradient norms
-                    )
+                        )
                     
-                    # Determine if we should use differential LR (for pretrained models)
-                    use_differential_lr = model_type in [
+                        # Determine if we should use differential LR (for pretrained models)
+                        use_differential_lr = model_type in [
                         "i3d", "r2plus1d", "slowfast", "x3d", "pretrained_inception",
                         "vit_gru", "vit_transformer"
-                    ]
+                        ]
                     
-                    # Create tracker and checkpoint manager
-                    fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
-                    fold_output_dir.mkdir(parents=True, exist_ok=True)
+                        # Create tracker and checkpoint manager
+                        fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
+                        fold_output_dir.mkdir(parents=True, exist_ok=True)
                     
-                    if use_tracking:
-                        tracker = ExperimentTracker(str(fold_output_dir))
-                        ckpt_manager = CheckpointManager(str(fold_output_dir))
+                        if use_tracking:
+                            tracker = ExperimentTracker(str(fold_output_dir))
+                        # Generate unique run_id for this fold and hyperparameter combination
+                        run_id = f"{model_type}_fold{fold_idx + 1}_param{param_idx + 1}"
+                        ckpt_manager = CheckpointManager(str(fold_output_dir), run_id=run_id)
                         
                         # Create MLflow tracker if available
                         mlflow_tracker = None
@@ -752,115 +884,115 @@ def stage5_train_models(
                                     mlflow_tracker.set_tag("model_type", model_type)
                             except Exception as e:
                                 logger.warning(f"Failed to create MLflow tracker: {e}")
-                    else:
-                        tracker = None
-                        ckpt_manager = None
+                        else:
+                            tracker = None
+                            ckpt_manager = None
                         mlflow_tracker = None
                     
-                    logger.info(f"Training PyTorch model {model_type} on fold {fold_idx + 1}...")
+                        logger.info(f"Training PyTorch model {model_type} on fold {fold_idx + 1}...")
                     
-                    # Validate datasets before training
-                    if len(train_dataset) == 0:
-                        raise ValueError(f"Training dataset is empty for fold {fold_idx + 1}")
-                    if len(val_dataset) == 0:
-                        raise ValueError(f"Validation dataset is empty for fold {fold_idx + 1}")
+                        # Validate datasets before training
+                        if len(train_dataset) == 0:
+                            raise ValueError(f"Training dataset is empty for fold {fold_idx + 1}")
+                        if len(val_dataset) == 0:
+                            raise ValueError(f"Validation dataset is empty for fold {fold_idx + 1}")
                     
-                    # Validate model initialization
-                    try:
-                        model.eval()
-                        with torch.no_grad():
-                            # Test forward pass with a sample batch
-                            sample_batch = next(iter(train_loader))
-                            sample_clips, sample_labels = sample_batch
-                            sample_clips = sample_clips.to(device)
-                            sample_output = model(sample_clips)
-                            logger.info(f"Model forward pass test successful. Output shape: {sample_output.shape}")
-                            del sample_batch, sample_clips, sample_labels, sample_output
+                        # Validate model initialization
+                        try:
+                            model.eval()
+                            with torch.no_grad():
+                                # Test forward pass with a sample batch
+                                sample_batch = next(iter(train_loader))
+                                sample_clips, sample_labels = sample_batch
+                                sample_clips = sample_clips.to(device)
+                                sample_output = model(sample_clips)
+                                logger.info(f"Model forward pass test successful. Output shape: {sample_output.shape}")
+                                del sample_batch, sample_clips, sample_labels, sample_output
+                                if device.type == "cuda":
+                                    torch.cuda.empty_cache()
+                        except Exception as e:
+                            logger.error(f"Model forward pass test failed: {e}", exc_info=True)
+                            raise ValueError(f"Model initialization failed: {e}") from e
+                    
+                        # Train with comprehensive error handling
+                        try:
+                            model = fit(
+                                model,
+                                train_loader,
+                                val_loader,
+                                optim_cfg,
+                                train_cfg,
+                                use_differential_lr=use_differential_lr,  # Use differential LR for pretrained models
+                            )
+                            
+                            # Evaluate final model
+                            from lib.training.trainer import evaluate
+                            val_metrics = evaluate(model, val_loader, device=str(device))
+                            
+                            val_loss = val_metrics["loss"]
+                            val_acc = val_metrics["accuracy"]
+                            val_f1 = val_metrics["f1"]
+                            val_precision = val_metrics["precision"]
+                            val_recall = val_metrics["recall"]
+                            per_class = val_metrics["per_class"]
+                        except RuntimeError as e:
+                            # Catch CUDA OOM, invalid tensor operations, etc.
+                            error_msg = str(e)
+                            if "out of memory" in error_msg.lower() or "cuda" in error_msg.lower():
+                                logger.error(
+                                    f"CUDA OOM or runtime error during training: {e}. "
+                                    f"Model: {model_type}, Fold: {fold_idx + 1}, "
+                                    f"Batch size: {current_config.get('batch_size', model_config.get('batch_size', 8))}"
+                                )
+                            else:
+                                logger.error(
+                                    f"Runtime error during training: {e}. "
+                                    f"Model: {model_type}, Fold: {fold_idx + 1}"
+                                )
+                            # Clean up GPU memory
                             if device.type == "cuda":
                                 torch.cuda.empty_cache()
-                    except Exception as e:
-                        logger.error(f"Model forward pass test failed: {e}", exc_info=True)
-                        raise ValueError(f"Model initialization failed: {e}") from e
-                    
-                    # Train with comprehensive error handling
-                    try:
-                        model = fit(
-                            model,
-                            train_loader,
-                            val_loader,
-                            optim_cfg,
-                            train_cfg,
-                            use_differential_lr=use_differential_lr,  # Use differential LR for pretrained models
-                        )
-                        
-                        # Evaluate final model
-                        from lib.training.trainer import evaluate
-                        val_metrics = evaluate(model, val_loader, device=str(device))
-                        
-                        val_loss = val_metrics["loss"]
-                        val_acc = val_metrics["accuracy"]
-                        val_f1 = val_metrics["f1"]
-                        val_precision = val_metrics["precision"]
-                        val_recall = val_metrics["recall"]
-                        per_class = val_metrics["per_class"]
-                    except RuntimeError as e:
-                        # Catch CUDA OOM, invalid tensor operations, etc.
-                        error_msg = str(e)
-                        if "out of memory" in error_msg.lower() or "cuda" in error_msg.lower():
+                            raise
+                        except ValueError as e:
                             logger.error(
-                                f"CUDA OOM or runtime error during training: {e}. "
-                                f"Model: {model_type}, Fold: {fold_idx + 1}, "
-                                f"Batch size: {current_config.get('batch_size', model_config.get('batch_size', 8))}"
-                            )
-                        else:
-                            logger.error(
-                                f"Runtime error during training: {e}. "
+                                f"Value error during training (likely input shape issue): {e}. "
                                 f"Model: {model_type}, Fold: {fold_idx + 1}"
                             )
-                        # Clean up GPU memory
-                        if device.type == "cuda":
-                            torch.cuda.empty_cache()
-                        raise
-                    except ValueError as e:
-                        logger.error(
-                            f"Value error during training (likely input shape issue): {e}. "
-                            f"Model: {model_type}, Fold: {fold_idx + 1}"
-                        )
-                        raise
-                    except Exception as e:
-                        logger.error(
-                            f"Unexpected error during training: {e}. "
-                            f"Model: {model_type}, Fold: {fold_idx + 1}",
-                            exc_info=True
-                        )
-                        # Clean up GPU memory
-                        if device.type == "cuda":
-                            torch.cuda.empty_cache()
-                        raise
-                        
-                        # Store results with hyperparameters
+                            raise
+                        except Exception as e:
+                            logger.error(
+                                f"Unexpected error during training: {e}. "
+                                f"Model: {model_type}, Fold: {fold_idx + 1}",
+                                exc_info=True
+                            )
+                            # Clean up GPU memory
+                            if device.type == "cuda":
+                                torch.cuda.empty_cache()
+                            raise
+                    
+                        # Store results with hyperparameters (only reached on success)
                         result = {
-                            "fold": fold_idx + 1,
-                            "val_loss": val_loss,
-                            "val_acc": val_acc,
-                            "val_f1": val_f1,
-                            "val_precision": val_precision,
-                            "val_recall": val_recall,
-                            "val_f1_class0": per_class.get("0", {}).get("f1", 0.0),
-                            "val_precision_class0": per_class.get("0", {}).get("precision", 0.0),
-                            "val_recall_class0": per_class.get("0", {}).get("recall", 0.0),
-                            "val_f1_class1": per_class.get("1", {}).get("f1", 0.0),
-                            "val_precision_class1": per_class.get("1", {}).get("precision", 0.0),
-                            "val_recall_class1": per_class.get("1", {}).get("recall", 0.0),
+                        "fold": fold_idx + 1,
+                        "val_loss": val_loss,
+                        "val_acc": val_acc,
+                        "val_f1": val_f1,
+                        "val_precision": val_precision,
+                        "val_recall": val_recall,
+                        "val_f1_class0": per_class.get("0", {}).get("f1", 0.0),
+                        "val_precision_class0": per_class.get("0", {}).get("precision", 0.0),
+                        "val_recall_class0": per_class.get("0", {}).get("recall", 0.0),
+                        "val_f1_class1": per_class.get("1", {}).get("f1", 0.0),
+                        "val_precision_class1": per_class.get("1", {}).get("precision", 0.0),
+                        "val_recall_class1": per_class.get("1", {}).get("recall", 0.0),
                         }
                         # Add hyperparameters to result
                         result.update(params)
                         param_fold_results.append(result)
                         fold_results.append(result)
-                        
+                    
                         logger.info(
-                            f"Fold {fold_idx + 1} - Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, "
-                            f"Val F1: {val_f1:.4f}, Val Precision: {val_precision:.4f}, Val Recall: {val_recall:.4f}"
+                        f"Fold {fold_idx + 1} - Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, "
+                        f"Val F1: {val_f1:.4f}, Val Precision: {val_precision:.4f}, Val Recall: {val_recall:.4f}"
                         )
                         if per_class:
                             for class_idx, metrics in per_class.items():
@@ -868,7 +1000,7 @@ def stage5_train_models(
                                     f"  Class {class_idx} - Precision: {metrics['precision']:.4f}, "
                                     f"Recall: {metrics['recall']:.4f}, F1: {metrics['f1']:.4f}"
                                 )
-                        
+                    
                         # Log to MLflow if available
                         if 'mlflow_tracker' in locals() and mlflow_tracker is not None:
                             try:
@@ -894,21 +1026,279 @@ def stage5_train_models(
                                     )
                             except Exception as e:
                                 logger.warning(f"Failed to log to MLflow: {e}")
-                        
-                        # Save model for ensemble training
-                        model.eval()
-                        model_path = fold_output_dir / "model.pt"
-                        torch.save(model.state_dict(), model_path)
-                        logger.info(f"Saved model to {model_path}")
-                        
-                    except Exception as e:
-                        logger.error(f"Error training fold {fold_idx + 1}: {e}", exc_info=True)
-                        fold_results.append({
-                            "fold": fold_idx + 1,
-                            "val_loss": float('nan'),
-                            "val_acc": float('nan'),
-                        })
                     
+                        # Save model for ensemble training
+                        try:
+                            model.eval()
+                            model_path = fold_output_dir / "model.pt"
+                            torch.save(model.state_dict(), model_path)
+                            logger.info(f"Saved model to {model_path}")
+                        except (OSError, IOError, PermissionError) as e:
+                            logger.error(f"Failed to save model to {model_path}: {e}")
+                            raise IOError(f"Cannot save model to {model_path}") from e
+                    
+                    elif is_xgboost_model(model_type):
+                        # XGBoost model training (uses pretrained models for feature extraction)
+                        logger.info(f"Training XGBoost model {model_type} on fold {fold_idx + 1}...")
+                        
+                        fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
+                        fold_output_dir.mkdir(parents=True, exist_ok=True)
+                        
+                        try:
+                            # Create XGBoost model with hyperparameters
+                            xgb_config = model_config.copy()
+                            xgb_config.update(params)  # Apply grid search hyperparameters
+                            model = create_model(model_type, xgb_config)
+                            
+                            # Train XGBoost (handles feature extraction internally)
+                            model.fit(train_df, project_root=project_root_str_orig)
+                            
+                            # Evaluate on validation set
+                            val_probs = model.predict(val_df, project_root=project_root_str_orig)
+                            val_preds = np.argmax(val_probs, axis=1)
+                            val_labels = val_df["label"].to_list()
+                            label_map = {label: idx for idx, label in enumerate(sorted(set(val_labels)))}
+                            val_y = np.array([label_map[label] for label in val_labels])
+                            
+                            val_acc = (val_preds == val_y).mean()
+                            val_loss = -np.mean(np.log(val_probs[np.arange(len(val_y)), val_y] + 1e-10))  # Cross-entropy
+                            
+                            # Compute comprehensive metrics
+                            from sklearn.metrics import precision_score, recall_score, f1_score, precision_recall_fscore_support
+                            
+                            val_precision = float(precision_score(val_y, val_preds, average='binary', zero_division=0))
+                            val_recall = float(recall_score(val_y, val_preds, average='binary', zero_division=0))
+                            val_f1 = float(f1_score(val_y, val_preds, average='binary', zero_division=0))
+                            
+                            # Per-class metrics
+                            precision_per_class, recall_per_class, f1_per_class, support = precision_recall_fscore_support(
+                                val_y, val_preds, average=None, zero_division=0
+                            )
+                            
+                            # Store results with hyperparameters
+                            result = {
+                                "fold": fold_idx + 1,
+                                "val_loss": val_loss,
+                                "val_acc": val_acc,
+                                "val_f1": val_f1,
+                                "val_precision": val_precision,
+                                "val_recall": val_recall,
+                                "val_f1_class0": float(f1_per_class[0]) if len(f1_per_class) > 0 else 0.0,
+                                "val_precision_class0": float(precision_per_class[0]) if len(precision_per_class) > 0 else 0.0,
+                                "val_recall_class0": float(recall_per_class[0]) if len(recall_per_class) > 0 else 0.0,
+                                "val_f1_class1": float(f1_per_class[1]) if len(f1_per_class) > 1 else 0.0,
+                                "val_precision_class1": float(precision_per_class[1]) if len(precision_per_class) > 1 else 0.0,
+                                "val_recall_class1": float(recall_per_class[1]) if len(recall_per_class) > 1 else 0.0,
+                            }
+                            result.update(params)  # Add hyperparameters
+                            param_fold_results.append(result)
+                            fold_results.append(result)
+                            
+                            logger.info(
+                                f"Fold {fold_idx + 1} - Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, "
+                                f"Val F1: {val_f1:.4f}, Val Precision: {val_precision:.4f}, Val Recall: {val_recall:.4f}"
+                            )
+                            if len(f1_per_class) > 0:
+                                for class_idx in range(len(f1_per_class)):
+                                    logger.info(
+                                        f"  Class {class_idx} - Precision: {precision_per_class[class_idx]:.4f}, "
+                                        f"Recall: {recall_per_class[class_idx]:.4f}, F1: {f1_per_class[class_idx]:.4f}"
+                                    )
+                            
+                            # Save model
+                            model.save(str(fold_output_dir))
+                            logger.info(f"Saved XGBoost model to {fold_output_dir}")
+                        
+                        except Exception as e:
+                            logger.error(f"Error training XGBoost fold {fold_idx + 1}: {e}", exc_info=True)
+                            result = {
+                                "fold": fold_idx + 1,
+                                "val_loss": float('nan'),
+                                "val_acc": float('nan'),
+                            }
+                            result.update(params)
+                            param_fold_results.append(result)
+                            fold_results.append(result)
+                        
+                        finally:
+                            # Always cleanup resources, even on error
+                            if 'model' in locals():
+                                try:
+                                    del model
+                                except Exception:
+                                    pass
+                            # Clear GPU cache if using CUDA
+                            try:
+                                if torch.cuda.is_available():
+                                    torch.cuda.empty_cache()
+                            except Exception:
+                                pass
+                            aggressive_gc(clear_cuda=True)
+                    
+                    else:
+                        # Baseline model training (sklearn)
+                        logger.info(f"Training baseline model {model_type} on fold {fold_idx + 1}...")
+                        
+                        fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
+                        fold_output_dir.mkdir(parents=True, exist_ok=True)
+                        
+                        try:
+                            # Create baseline model with hyperparameters
+                            baseline_config = model_config.copy()
+                            baseline_config.update(params)  # Apply grid search hyperparameters
+                            
+                            # Add feature paths for baseline models
+                            # All baseline models (svm, logistic_regression and their variants) require Stage 2 features
+                            # Stage 5 only trains - features must be pre-extracted in Stage 2/4
+                            from lib.utils.paths import load_metadata_flexible
+                            
+                            # All baseline models require Stage 2 features
+                            if model_type in BASELINE_MODELS:
+                                # Check if Stage 2 metadata exists and is not empty
+                                stage2_df = load_metadata_flexible(features_stage2_path)
+                                if stage2_df is not None and stage2_df.height > 0:
+                                    # CRITICAL: Set features_stage2_path in model_specific_config, not top level
+                                    # create_model() looks for it in model_specific_config dict
+                                    if "model_specific_config" not in baseline_config:
+                                        baseline_config["model_specific_config"] = {}
+                                    baseline_config["model_specific_config"]["features_stage2_path"] = features_stage2_path
+                                    # Also set at top level for backward compatibility
+                                    baseline_config["features_stage2_path"] = features_stage2_path
+                                    logger.debug(f"Passing Stage 2 features path to {model_type}: {features_stage2_path}")
+                                else:
+                                    # Stage 2 is required for all baseline models - fail early with clear error
+                                    raise ValueError(
+                                        f"Stage 2 features are REQUIRED for {model_type}. "
+                                        f"Features must be pre-extracted in Stage 2. "
+                                        f"Stage 2 metadata not found or empty at: {features_stage2_path}. "
+                                        f"Please run Stage 2 feature extraction first."
+                                    )
+                                
+                                # For models that use Stage 4, check if it exists
+                                if model_type in STAGE4_MODELS:
+                                    stage4_df = load_metadata_flexible(features_stage4_path)
+                                    if stage4_df is not None and stage4_df.height > 0:
+                                        # CRITICAL: Set features_stage4_path in model_specific_config
+                                        if "model_specific_config" not in baseline_config:
+                                            baseline_config["model_specific_config"] = {}
+                                        baseline_config["model_specific_config"]["features_stage4_path"] = features_stage4_path
+                                        # Also set at top level for backward compatibility
+                                        baseline_config["features_stage4_path"] = features_stage4_path
+                                        logger.debug(f"Passing Stage 4 features path to {model_type}: {features_stage4_path}")
+                                    else:
+                                        # Stage 4 is required for these models
+                                        raise ValueError(
+                                            f"Stage 4 features are REQUIRED for {model_type}. "
+                                            f"Features must be pre-extracted in Stage 4. "
+                                            f"Stage 4 metadata not found or empty at: {features_stage4_path}. "
+                                            f"Please run Stage 4 scaled feature extraction first."
+                                        )
+                                else:
+                                    # For stage2_only models, explicitly set stage4_path to None
+                                    if "model_specific_config" not in baseline_config:
+                                        baseline_config["model_specific_config"] = {}
+                                    baseline_config["model_specific_config"]["features_stage4_path"] = None
+                                    baseline_config["features_stage4_path"] = None
+                            
+                            model = create_model(model_type, baseline_config)
+                            
+                            # Train baseline (handles feature extraction internally)
+                            model.fit(train_df, project_root=project_root_str_orig)
+                            
+                            # Evaluate on validation set
+                            val_probs = model.predict(val_df, project_root=project_root_str_orig)
+                            val_preds = np.argmax(val_probs, axis=1)
+                            val_labels = val_df["label"].to_list()
+                            label_map = {label: idx for idx, label in enumerate(sorted(set(val_labels)))}
+                            val_y = np.array([label_map[label] for label in val_labels])
+                            
+                            val_acc = (val_preds == val_y).mean()
+                            val_loss = -np.mean(np.log(val_probs[np.arange(len(val_y)), val_y] + 1e-10))  # Cross-entropy
+                            
+                            # Compute comprehensive metrics
+                            from sklearn.metrics import precision_score, recall_score, f1_score, precision_recall_fscore_support
+                            
+                            val_precision = float(precision_score(val_y, val_preds, average='binary', zero_division=0))
+                            val_recall = float(recall_score(val_y, val_preds, average='binary', zero_division=0))
+                            val_f1 = float(f1_score(val_y, val_preds, average='binary', zero_division=0))
+                            
+                            # Per-class metrics
+                            precision_per_class, recall_per_class, f1_per_class, support = precision_recall_fscore_support(
+                                val_y, val_preds, average=None, zero_division=0
+                            )
+                            
+                            # Store results with hyperparameters
+                            result = {
+                                "fold": fold_idx + 1,
+                                "val_loss": val_loss,
+                                "val_acc": val_acc,
+                                "val_f1": val_f1,
+                                "val_precision": val_precision,
+                                "val_recall": val_recall,
+                                "val_f1_class0": float(f1_per_class[0]) if len(f1_per_class) > 0 else 0.0,
+                                "val_precision_class0": float(precision_per_class[0]) if len(precision_per_class) > 0 else 0.0,
+                                "val_recall_class0": float(recall_per_class[0]) if len(recall_per_class) > 0 else 0.0,
+                                "val_f1_class1": float(f1_per_class[1]) if len(f1_per_class) > 1 else 0.0,
+                                "val_precision_class1": float(precision_per_class[1]) if len(precision_per_class) > 1 else 0.0,
+                                "val_recall_class1": float(recall_per_class[1]) if len(recall_per_class) > 1 else 0.0,
+                            }
+                            result.update(params)  # Add hyperparameters
+                            param_fold_results.append(result)
+                            fold_results.append(result)
+                            
+                            logger.info(
+                                f"Fold {fold_idx + 1} - Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, "
+                                f"Val F1: {val_f1:.4f}, Val Precision: {val_precision:.4f}, Val Recall: {val_recall:.4f}"
+                            )
+                            if len(f1_per_class) > 0:
+                                for class_idx in range(len(f1_per_class)):
+                                    logger.info(
+                                        f"  Class {class_idx} - Precision: {precision_per_class[class_idx]:.4f}, "
+                                        f"Recall: {recall_per_class[class_idx]:.4f}, F1: {f1_per_class[class_idx]:.4f}"
+                                    )
+                            
+                            # Save model
+                            model.save(str(fold_output_dir))
+                            logger.info(f"Saved baseline model to {fold_output_dir}")
+                        
+                        except Exception as e:
+                            logger.error(
+                                f"Error training baseline fold {fold_idx + 1}: {e}",
+                                exc_info=True
+                            )
+                            result = {
+                                "fold": fold_idx + 1,
+                                "val_loss": float('nan'),
+                                "val_acc": float('nan'),
+                            }
+                            result.update(params)
+                            param_fold_results.append(result)
+                            fold_results.append(result)
+                        finally:
+                            # Always clear model and aggressively free memory, even on error
+                            if 'model' in locals():
+                                try:
+                                    del model
+                                except Exception:
+                                    pass
+                            # Clear GPU cache if using CUDA
+                            try:
+                                import torch
+                                if torch.cuda.is_available():
+                                    torch.cuda.empty_cache()
+                            except Exception:
+                                pass
+                            aggressive_gc(clear_cuda=False)
+                    
+                except Exception as e:
+                    logger.error(f"Error training fold {fold_idx + 1}: {e}", exc_info=True)
+                    fold_results.append({
+                        "fold": fold_idx + 1,
+                        "val_loss": float('nan'),
+                        "val_acc": float('nan'),
+                    })
+                finally:
+                    # Always cleanup resources, even on error
                     # End MLflow run if active
                     if 'mlflow_tracker' in locals() and mlflow_tracker is not None:
                         try:
@@ -918,218 +1308,17 @@ def stage5_train_models(
                     
                     # Clear model and aggressively free memory
                     if 'model' in locals():
-                        del model
-                    torch.cuda.empty_cache() if torch.cuda.is_available() else None
-                    aggressive_gc(clear_cuda=False)
-                
-                elif is_xgboost_model(model_type):
-                    # XGBoost model training (uses pretrained models for feature extraction)
-                    logger.info(f"Training XGBoost model {model_type} on fold {fold_idx + 1}...")
-                    
-                    fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
-                    fold_output_dir.mkdir(parents=True, exist_ok=True)
-                    
+                        try:
+                            del model
+                        except Exception:
+                            pass
+                    # Clear GPU cache if using CUDA
                     try:
-                        # Create XGBoost model with hyperparameters
-                        xgb_config = model_config.copy()
-                        xgb_config.update(params)  # Apply grid search hyperparameters
-                        model = create_model(model_type, xgb_config)
-                        
-                        # Train XGBoost (handles feature extraction internally)
-                        model.fit(train_df, project_root=project_root_str_orig)
-                        
-                        # Evaluate on validation set
-                        val_probs = model.predict(val_df, project_root=project_root_str_orig)
-                        val_preds = np.argmax(val_probs, axis=1)
-                        val_labels = val_df["label"].to_list()
-                        label_map = {label: idx for idx, label in enumerate(sorted(set(val_labels)))}
-                        val_y = np.array([label_map[label] for label in val_labels])
-                        
-                        val_acc = (val_preds == val_y).mean()
-                        val_loss = -np.mean(np.log(val_probs[np.arange(len(val_y)), val_y] + 1e-10))  # Cross-entropy
-                        
-                        # Compute comprehensive metrics
-                        from sklearn.metrics import precision_score, recall_score, f1_score, precision_recall_fscore_support
-                        
-                        val_precision = float(precision_score(val_y, val_preds, average='binary', zero_division=0))
-                        val_recall = float(recall_score(val_y, val_preds, average='binary', zero_division=0))
-                        val_f1 = float(f1_score(val_y, val_preds, average='binary', zero_division=0))
-                        
-                        # Per-class metrics
-                        precision_per_class, recall_per_class, f1_per_class, support = precision_recall_fscore_support(
-                            val_y, val_preds, average=None, zero_division=0
-                        )
-                        
-                        # Store results with hyperparameters
-                        result = {
-                            "fold": fold_idx + 1,
-                            "val_loss": val_loss,
-                            "val_acc": val_acc,
-                            "val_f1": val_f1,
-                            "val_precision": val_precision,
-                            "val_recall": val_recall,
-                            "val_f1_class0": float(f1_per_class[0]) if len(f1_per_class) > 0 else 0.0,
-                            "val_precision_class0": float(precision_per_class[0]) if len(precision_per_class) > 0 else 0.0,
-                            "val_recall_class0": float(recall_per_class[0]) if len(recall_per_class) > 0 else 0.0,
-                            "val_f1_class1": float(f1_per_class[1]) if len(f1_per_class) > 1 else 0.0,
-                            "val_precision_class1": float(precision_per_class[1]) if len(precision_per_class) > 1 else 0.0,
-                            "val_recall_class1": float(recall_per_class[1]) if len(recall_per_class) > 1 else 0.0,
-                        }
-                        result.update(params)  # Add hyperparameters
-                        param_fold_results.append(result)
-                        fold_results.append(result)
-                        
-                        logger.info(
-                            f"Fold {fold_idx + 1} - Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, "
-                            f"Val F1: {val_f1:.4f}, Val Precision: {val_precision:.4f}, Val Recall: {val_recall:.4f}"
-                        )
-                        if len(f1_per_class) > 0:
-                            for class_idx in range(len(f1_per_class)):
-                                logger.info(
-                                    f"  Class {class_idx} - Precision: {precision_per_class[class_idx]:.4f}, "
-                                    f"Recall: {recall_per_class[class_idx]:.4f}, F1: {f1_per_class[class_idx]:.4f}"
-                                )
-                        
-                        # Save model
-                        model.save(str(fold_output_dir))
-                        logger.info(f"Saved XGBoost model to {fold_output_dir}")
-                        
-                    except Exception as e:
-                        logger.error(f"Error training XGBoost fold {fold_idx + 1}: {e}", exc_info=True)
-                        result = {
-                            "fold": fold_idx + 1,
-                            "val_loss": float('nan'),
-                            "val_acc": float('nan'),
-                        }
-                        result.update(params)
-                        param_fold_results.append(result)
-                        fold_results.append(result)
-                    
-                    # Clear model and aggressively free memory
-                    if 'model' in locals():
-                        del model
-                    torch.cuda.empty_cache() if torch.cuda.is_available() else None
-                    aggressive_gc(clear_cuda=True)
-                    
-                else:
-                    # Baseline model training (sklearn)
-                    logger.info(f"Training baseline model {model_type} on fold {fold_idx + 1}...")
-                    
-                    fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
-                    fold_output_dir.mkdir(parents=True, exist_ok=True)
-                    
-                    try:
-                        # Create baseline model with hyperparameters
-                        baseline_config = model_config.copy()
-                        baseline_config.update(params)  # Apply grid search hyperparameters
-                        
-                        # Add feature paths for baseline models (all logistic_regression and svm variants)
-                        # Check if metadata files exist and are not empty before passing paths
-                        from lib.utils.paths import load_metadata_flexible
-                        
-                        if model_type in ["logistic_regression", "logistic_regression_stage2", "logistic_regression_stage2_stage4",
-                                         "svm", "svm_stage2", "svm_stage2_stage4"]:
-                            # Check if Stage 2 metadata exists and is not empty
-                            stage2_df = load_metadata_flexible(features_stage2_path)
-                            if stage2_df is not None and stage2_df.height > 0:
-                                baseline_config["features_stage2_path"] = features_stage2_path
-                                logger.debug(f"Passing Stage 2 features path to {model_type}: {features_stage2_path}")
-                            else:
-                                baseline_config["features_stage2_path"] = None
-                                logger.warning(f"Stage 2 metadata not available for {model_type}, will extract features from videos")
-                            
-                            # For models that use Stage 4, check if it exists
-                            if model_type in ["logistic_regression_stage2_stage4", "svm_stage2_stage4"]:
-                                stage4_df = load_metadata_flexible(features_stage4_path)
-                                if stage4_df is not None and stage4_df.height > 0:
-                                    baseline_config["features_stage4_path"] = features_stage4_path
-                                    logger.debug(f"Passing Stage 4 features path to {model_type}: {features_stage4_path}")
-                                else:
-                                    baseline_config["features_stage4_path"] = None
-                                    logger.warning(f"Stage 4 metadata not available for {model_type}")
-                            else:
-                                # For stage2_only models, explicitly set stage4_path to None
-                                baseline_config["features_stage4_path"] = None
-                        
-                        model = create_model(model_type, baseline_config)
-                        
-                        # Train baseline (handles feature extraction internally)
-                        model.fit(train_df, project_root=project_root_str_orig)
-                        
-                        # Evaluate on validation set
-                        val_probs = model.predict(val_df, project_root=project_root_str_orig)
-                        val_preds = np.argmax(val_probs, axis=1)
-                        val_labels = val_df["label"].to_list()
-                        label_map = {label: idx for idx, label in enumerate(sorted(set(val_labels)))}
-                        val_y = np.array([label_map[label] for label in val_labels])
-                        
-                        val_acc = (val_preds == val_y).mean()
-                        val_loss = -np.mean(np.log(val_probs[np.arange(len(val_y)), val_y] + 1e-10))  # Cross-entropy
-                        
-                        # Compute comprehensive metrics
-                        from sklearn.metrics import precision_score, recall_score, f1_score, precision_recall_fscore_support
-                        
-                        val_precision = float(precision_score(val_y, val_preds, average='binary', zero_division=0))
-                        val_recall = float(recall_score(val_y, val_preds, average='binary', zero_division=0))
-                        val_f1 = float(f1_score(val_y, val_preds, average='binary', zero_division=0))
-                        
-                        # Per-class metrics
-                        precision_per_class, recall_per_class, f1_per_class, support = precision_recall_fscore_support(
-                            val_y, val_preds, average=None, zero_division=0
-                        )
-                        
-                        # Store results with hyperparameters
-                        result = {
-                            "fold": fold_idx + 1,
-                            "val_loss": val_loss,
-                            "val_acc": val_acc,
-                            "val_f1": val_f1,
-                            "val_precision": val_precision,
-                            "val_recall": val_recall,
-                            "val_f1_class0": float(f1_per_class[0]) if len(f1_per_class) > 0 else 0.0,
-                            "val_precision_class0": float(precision_per_class[0]) if len(precision_per_class) > 0 else 0.0,
-                            "val_recall_class0": float(recall_per_class[0]) if len(recall_per_class) > 0 else 0.0,
-                            "val_f1_class1": float(f1_per_class[1]) if len(f1_per_class) > 1 else 0.0,
-                            "val_precision_class1": float(precision_per_class[1]) if len(precision_per_class) > 1 else 0.0,
-                            "val_recall_class1": float(recall_per_class[1]) if len(recall_per_class) > 1 else 0.0,
-                        }
-                        result.update(params)  # Add hyperparameters
-                        param_fold_results.append(result)
-                        fold_results.append(result)
-                        
-                        logger.info(
-                            f"Fold {fold_idx + 1} - Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, "
-                            f"Val F1: {val_f1:.4f}, Val Precision: {val_precision:.4f}, Val Recall: {val_recall:.4f}"
-                        )
-                        if len(f1_per_class) > 0:
-                            for class_idx in range(len(f1_per_class)):
-                                logger.info(
-                                    f"  Class {class_idx} - Precision: {precision_per_class[class_idx]:.4f}, "
-                                    f"Recall: {recall_per_class[class_idx]:.4f}, F1: {f1_per_class[class_idx]:.4f}"
-                                )
-                        
-                        # Save model
-                        model.save(str(fold_output_dir))
-                        logger.info(f"Saved baseline model to {fold_output_dir}")
-                        
-                    except Exception as e:
-                        logger.error(
-                            f"Error training baseline fold {fold_idx + 1}: {e}",
-                            exc_info=True
-                        )
-                        result = {
-                            "fold": fold_idx + 1,
-                            "val_loss": float('nan'),
-                            "val_acc": float('nan'),
-                        }
-                        result.update(params)
-                        param_fold_results.append(result)
-                        fold_results.append(result)
-                    
-                    # Clear model and aggressively free memory
-                    if 'model' in locals():
-                        del model
-                    aggressive_gc(clear_cuda=False)
+                        if 'device' in locals() and device.type == "cuda":
+                            torch.cuda.empty_cache()
+                    except Exception:
+                        pass
+                    aggressive_gc(clear_cuda='device' in locals() and device.type == "cuda" if 'device' in locals() else False)
             
             # After all folds for this parameter combination, aggregate results
             if param_fold_results:
@@ -1166,15 +1355,10 @@ def stage5_train_models(
                 
                 best_fold_dir = model_output_dir / f"fold_{best_fold_idx}"
                 if best_fold_dir.exists():
-                    import shutil
-                    # Copy model files
-                    for model_file in best_fold_dir.glob("*.pt"):
-                        shutil.copy2(model_file, best_model_dir / model_file.name)
-                    for model_file in best_fold_dir.glob("*.joblib"):
-                        shutil.copy2(model_file, best_model_dir / model_file.name)
-                    for model_file in best_fold_dir.glob("*.json"):
-                        shutil.copy2(model_file, best_model_dir / model_file.name)
-                    logger.info(f"Saved best model from fold {best_fold_idx} to {best_model_dir}")
+                    try:
+                        _copy_model_files(best_fold_dir, best_model_dir, f"fold {best_fold_idx}")
+                    except Exception as e:
+                        logger.error(f"Failed to copy best model files: {e}")
         elif fold_results:
             # No grid search or only one combination - use best fold from all results
             best_fold = max(fold_results, key=lambda x: x.get("val_f1", 0) if isinstance(x.get("val_f1"), (int, float)) and not np.isnan(x.get("val_f1", 0)) else -1)
@@ -1186,15 +1370,10 @@ def stage5_train_models(
             
             best_fold_dir = model_output_dir / f"fold_{best_fold_idx}"
             if best_fold_dir.exists():
-                import shutil
-                # Copy model files
-                for model_file in best_fold_dir.glob("*.pt"):
-                    shutil.copy2(model_file, best_model_dir / model_file.name)
-                for model_file in best_fold_dir.glob("*.joblib"):
-                    shutil.copy2(model_file, best_model_dir / model_file.name)
-                for model_file in best_fold_dir.glob("*.json"):
-                    shutil.copy2(model_file, best_model_dir / model_file.name)
-                logger.info(f"Saved best model from fold {best_fold_idx} to {best_model_dir}")
+                try:
+                    _copy_model_files(best_fold_dir, best_model_dir, f"fold {best_fold_idx}")
+                except Exception as e:
+                    logger.error(f"Failed to copy best model files: {e}")
         
         # Aggregate results (filter out NaN values) - use best fold results if available
         if best_fold_results:

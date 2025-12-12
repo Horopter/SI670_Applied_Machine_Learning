@@ -141,13 +141,20 @@ class ExperimentTracker:
     
     def log_config(self, config: RunConfig) -> None:
         """Save run configuration."""
-        config_dict = config.to_dict()
-        config_dict['run_id'] = self.run_id
+        if config is None:
+            raise ValueError("config cannot be None")
         
-        with open(self.config_file, 'w') as f:
-            json.dump(config_dict, f, indent=2)
-        
-        logger.info("Saved run config to %s", self.config_file)
+        try:
+            config_dict = config.to_dict()
+            config_dict['run_id'] = self.run_id
+            
+            with open(self.config_file, 'w') as f:
+                json.dump(config_dict, f, indent=2)
+            
+            logger.info("Saved run config to %s", self.config_file)
+        except (OSError, IOError, PermissionError) as e:
+            logger.error(f"Failed to save run config: {e}")
+            raise IOError(f"Cannot write config file to {self.config_file}") from e
     
     def log_metadata(self, metadata: Dict[str, Any]) -> None:
         """Log additional metadata (system info, git commit, etc.)."""
@@ -240,10 +247,25 @@ class CheckpointManager:
         
         Args:
             checkpoint_dir: Directory for checkpoints
-            run_id: Run ID for this experiment
+            run_id: Run ID for this experiment (REQUIRED)
+        
+        Raises:
+            ValueError: If run_id is missing or invalid
+            OSError: If checkpoint directory cannot be created
         """
-        self.checkpoint_dir = Path(checkpoint_dir)
-        self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        # Input validation
+        if not run_id or not isinstance(run_id, str):
+            raise ValueError(f"run_id is REQUIRED and must be a non-empty string, got: {type(run_id)}")
+        if not checkpoint_dir or not isinstance(checkpoint_dir, str):
+            raise ValueError(f"checkpoint_dir must be a non-empty string, got: {type(checkpoint_dir)}")
+        
+        try:
+            self.checkpoint_dir = Path(checkpoint_dir)
+            self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        except (OSError, PermissionError) as e:
+            logger.error(f"Failed to create checkpoint directory {checkpoint_dir}: {e}")
+            raise OSError(f"Cannot create checkpoint directory: {checkpoint_dir}") from e
+        
         self.run_id = run_id
         
         self.best_metric: Optional[float] = None
@@ -256,9 +278,32 @@ class CheckpointManager:
         """
         Save full training state checkpoint.
         
+        Args:
+            model: PyTorch model
+            optimizer: Optimizer
+            scheduler: Optional learning rate scheduler
+            epoch: Current epoch number
+            metrics: Dictionary of metrics
+            is_best: Whether this is the best checkpoint so far
+            prefix: Checkpoint file prefix
+        
         Returns:
             Path to saved checkpoint
+        
+        Raises:
+            ValueError: If inputs are invalid
+            IOError: If checkpoint cannot be saved
         """
+        # Input validation
+        if model is None:
+            raise ValueError("model cannot be None")
+        if optimizer is None:
+            raise ValueError("optimizer cannot be None")
+        if not isinstance(epoch, int) or epoch < 0:
+            raise ValueError(f"epoch must be a non-negative integer, got: {epoch}")
+        if not isinstance(metrics, dict):
+            raise ValueError(f"metrics must be a dictionary, got: {type(metrics)}")
+        
         checkpoint = {
             'epoch': epoch,
             'run_id': self.run_id,
@@ -269,23 +314,27 @@ class CheckpointManager:
             'timestamp': datetime.now().isoformat(),
         }
         
-        # Save regular checkpoint
-        checkpoint_path = self.checkpoint_dir / f"{prefix}_epoch_{epoch}.pt"
-        torch.save(checkpoint, checkpoint_path)
-        
-        # Save best checkpoint
-        if is_best:
-            best_path = self.checkpoint_dir / "best_model.pt"
-            torch.save(checkpoint, best_path)
-            self.best_metric = metrics.get('val_accuracy', metrics.get('val_loss', 0.0))
-            self.best_epoch = epoch
-            logger.info("Saved best model checkpoint (epoch %d, metric=%.4f)", epoch, self.best_metric)
-        
-        # Save latest checkpoint
-        latest_path = self.checkpoint_dir / "latest_checkpoint.pt"
-        torch.save(checkpoint, latest_path)
-        
-        return str(checkpoint_path)
+        try:
+            # Save regular checkpoint
+            checkpoint_path = self.checkpoint_dir / f"{prefix}_epoch_{epoch}.pt"
+            torch.save(checkpoint, checkpoint_path)
+            
+            # Save best checkpoint
+            if is_best:
+                best_path = self.checkpoint_dir / "best_model.pt"
+                torch.save(checkpoint, best_path)
+                self.best_metric = metrics.get('val_accuracy', metrics.get('val_loss', 0.0))
+                self.best_epoch = epoch
+                logger.info("Saved best model checkpoint (epoch %d, metric=%.4f)", epoch, self.best_metric)
+            
+            # Save latest checkpoint
+            latest_path = self.checkpoint_dir / "latest_checkpoint.pt"
+            torch.save(checkpoint, latest_path)
+            
+            return str(checkpoint_path)
+        except (OSError, IOError, PermissionError) as e:
+            logger.error(f"Failed to save checkpoint: {e}")
+            raise IOError(f"Cannot save checkpoint to {self.checkpoint_dir}") from e
     
     def load_checkpoint(self, checkpoint_path: str, model: torch.nn.Module,
                        optimizer: Optional[torch.optim.Optimizer] = None,

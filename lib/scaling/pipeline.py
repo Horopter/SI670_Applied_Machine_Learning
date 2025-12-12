@@ -35,7 +35,8 @@ def scale_video(
     max_frames: Optional[int] = 500,
     chunk_size: int = 400,
     method: str = "autoencoder",
-    autoencoder: Optional[object] = None
+    autoencoder: Optional[object] = None,
+    project_root: Optional[str] = None
 ) -> bool:
     """
     Scale a single video to target max dimension using chunked processing to avoid OOM.
@@ -51,10 +52,21 @@ def scale_video(
         chunk_size: Number of frames to process per chunk (default: 500)
         method: Scaling method ("letterbox" or "autoencoder")
         autoencoder: Optional autoencoder model for autoencoder method
+        project_root: Project root directory (optional, used for cache file path)
     
     Returns:
         True if successful, False otherwise
     """
+    # Input validation
+    if not video_path or not isinstance(video_path, str):
+        raise ValueError(f"video_path must be a non-empty string, got: {type(video_path)}")
+    if not output_path or not isinstance(output_path, str):
+        raise ValueError(f"output_path must be a non-empty string, got: {type(output_path)}")
+    if not isinstance(target_size, int) or target_size <= 0:
+        raise ValueError(f"target_size must be a positive integer, got: {target_size}")
+    if method not in ["letterbox", "autoencoder"]:
+        raise ValueError(f"method must be 'letterbox' or 'autoencoder', got: {method}")
+    
     import tempfile
     import shutil
     
@@ -71,8 +83,8 @@ def scale_video(
         
         # Get video metadata - handle any format from Stage 1
         try:
-            # Use persistent cache file for cross-stage caching
-            cache_file = get_video_metadata_cache_path(project_root)
+            # Use persistent cache file for cross-stage caching (if project_root provided)
+            cache_file = get_video_metadata_cache_path(project_root) if project_root else None
             metadata = get_video_metadata(video_path, use_cache=True, cache_file=cache_file)
             total_frames = metadata.get('total_frames', 0)
             fps = metadata.get('fps', 30.0)  # Default FPS if not available
@@ -292,15 +304,55 @@ def stage3_scale_videos(
     Returns:
         DataFrame with scaled video metadata (includes original_width and original_height)
     """
-    project_root = Path(project_root)
-    output_dir = project_root / output_dir
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # Input validation
+    if not project_root or not isinstance(project_root, str):
+        raise ValueError(f"project_root must be a non-empty string, got: {type(project_root)}")
+    if not augmented_metadata_path or not isinstance(augmented_metadata_path, str):
+        raise ValueError(f"augmented_metadata_path must be a non-empty string, got: {type(augmented_metadata_path)}")
+    if not isinstance(output_dir, str):
+        raise ValueError(f"output_dir must be a string, got: {type(output_dir)}")
+    if not isinstance(target_size, int) or target_size <= 0:
+        raise ValueError(f"target_size must be a positive integer, got: {target_size}")
+    if method not in ["letterbox", "autoencoder", "resolution"]:
+        raise ValueError(f"method must be 'letterbox', 'autoencoder', or 'resolution', got: {method}")
+    if start_idx is not None and (not isinstance(start_idx, int) or start_idx < 0):
+        raise ValueError(f"start_idx must be a non-negative integer, got: {start_idx}")
+    if end_idx is not None and (not isinstance(end_idx, int) or end_idx < 0):
+        raise ValueError(f"end_idx must be a non-negative integer, got: {end_idx}")
+    if execution_order not in ["forward", "reverse"]:
+        raise ValueError(f"execution_order must be 'forward' or 'reverse', got: {execution_order}")
+    
+    try:
+        project_root_path = Path(project_root).resolve()
+        if not project_root_path.exists():
+            raise FileNotFoundError(f"Project root directory does not exist: {project_root_path}")
+        if not project_root_path.is_dir():
+            raise NotADirectoryError(f"Project root is not a directory: {project_root_path}")
+    except (OSError, ValueError) as e:
+        logger.error(f"Invalid project_root path: {project_root} - {e}")
+        raise ValueError(f"Invalid project_root path: {project_root}") from e
+    
+    project_root_str = str(project_root_path)  # Keep as string for function calls
+    
+    try:
+        output_dir_path = project_root_path / output_dir
+        output_dir_path.mkdir(parents=True, exist_ok=True)
+    except (OSError, PermissionError) as e:
+        logger.error(f"Failed to create output directory {output_dir}: {e}")
+        raise ValueError(f"Cannot create output directory: {output_dir}") from e
+    
+    output_dir = output_dir_path  # Use Path object for path operations
+    project_root = project_root_path  # Use Path object for path operations
     
     # Load augmented metadata (support both CSV and Arrow/Parquet)
     logger.info("Stage 3: Loading augmented metadata...")
     from lib.utils.paths import load_metadata_flexible, validate_metadata_columns
     
-    df = load_metadata_flexible(augmented_metadata_path)
+    try:
+        df = load_metadata_flexible(augmented_metadata_path)
+    except Exception as e:
+        logger.error(f"Failed to load augmented metadata from {augmented_metadata_path}: {e}")
+        raise
     if df is None:
         logger.error(f"Augmented metadata not found: {augmented_metadata_path} (checked .arrow, .parquet, .csv)")
         return pl.DataFrame()
@@ -542,7 +594,8 @@ def stage3_scale_videos(
                 max_frames=max_frames,
                 chunk_size=chunk_size,
                 method=method,
-                autoencoder=autoencoder
+                autoencoder=autoencoder,
+                project_root=str(project_root)  # Pass project_root as string
             )
             
             if success:

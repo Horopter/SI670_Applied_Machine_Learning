@@ -124,10 +124,20 @@ def train_video_model(
     # Create video config - always use scaled videos (from Stage 3)
     # No resizing, no augmentation - videos are already processed
     # fixed_size/max_size are ignored when use_scaled_videos=True, but kept for compatibility
-    video_config = VideoConfig(
-        num_frames=num_frames,
-        use_scaled_videos=True  # Always use scaled videos - augmentation done in Stage 1, scaling in Stage 3
-    )
+    # Handle both old and new VideoConfig versions (some servers may not have use_scaled_videos yet)
+    try:
+        # Try with use_scaled_videos (newer version)
+        video_config = VideoConfig(
+            num_frames=num_frames,
+            use_scaled_videos=True  # Always use scaled videos - augmentation done in Stage 1, scaling in Stage 3
+        )
+    except TypeError:
+        # Fallback: server version doesn't have use_scaled_videos parameter
+        logger.warning(
+            "VideoConfig on server doesn't support 'use_scaled_videos' parameter. "
+            "Using default VideoConfig (videos should already be scaled from Stage 3)."
+        )
+        video_config = VideoConfig(num_frames=num_frames)
     use_variable_ar = (model_type == "variable_ar_cnn")
     
     # Get model memory config for batch size and gradient accumulation

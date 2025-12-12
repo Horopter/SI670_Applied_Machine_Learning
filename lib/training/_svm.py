@@ -43,22 +43,11 @@ class SVMBaseline:
         Initialize baseline model.
         
         Args:
-            features_stage2_path: Path to Stage 2 features metadata (None = extract from videos)
-            features_stage4_path: Path to Stage 4 features metadata
+            features_stage2_path: Path to Stage 2 features metadata (REQUIRED for training in Stage 5)
+            features_stage4_path: Path to Stage 4 features metadata (optional, for stage2_stage4 models)
             use_stage2_only: If True, use only Stage 2 features; if False, combine Stage 2 + Stage 4
             cache_dir: Directory to cache extracted features (unused, kept for compatibility)
-            num_frames: Number of frames to sample (used when extracting from videos)
-        """
-        self.num_frames = num_frames
-        """
-        Initialize baseline model.
-        
-        Args:
-            features_stage2_path: Path to Stage 2 features metadata
-            features_stage4_path: Path to Stage 4 features metadata
-            use_stage2_only: If True, use only Stage 2 features; if False, combine Stage 2 + Stage 4
-            cache_dir: Directory to cache extracted features (unused, kept for compatibility)
-            num_frames: Number of frames to sample (unused, kept for compatibility)
+            num_frames: Number of frames to sample (used only if extracting features during prediction)
         """
         self.features_stage2_path = features_stage2_path
         self.features_stage4_path = features_stage4_path
@@ -87,46 +76,58 @@ class SVMBaseline:
         stage2_path = self.features_stage2_path
         stage4_path = None if self.use_stage2_only else self.features_stage4_path
         
-        # Validate Stage 2 path if provided (check file exists and is not empty)
-        if stage2_path:
-            from pathlib import Path
-            from lib.utils.paths import load_metadata_flexible
-            stage2_path_obj = Path(stage2_path)
-            if not stage2_path_obj.exists():
-                logger.warning(f"Stage 2 metadata file does not exist: {stage2_path}, falling back to extraction")
-                stage2_path = None
-            else:
-                # Check if file is not empty
-                test_df = load_metadata_flexible(stage2_path)
-                if test_df is None or test_df.height == 0:
-                    logger.warning(f"Stage 2 metadata file is empty: {stage2_path}, falling back to extraction")
-                    stage2_path = None
-                else:
-                    logger.info(f"Using Stage 2 features from: {stage2_path} ({test_df.height} rows)")
-        
-        # Validate Stage 4 path if provided
-        if stage4_path:
-            from pathlib import Path
-            from lib.utils.paths import load_metadata_flexible
-            stage4_path_obj = Path(stage4_path)
-            if not stage4_path_obj.exists():
-                logger.warning(f"Stage 4 metadata file does not exist: {stage4_path}, using Stage 2 only")
-                stage4_path = None
-            else:
-                # Check if file is not empty
-                test_df = load_metadata_flexible(stage4_path)
-                if test_df is None or test_df.height == 0:
-                    logger.warning(f"Stage 4 metadata file is empty: {stage4_path}, using Stage 2 only")
-                    stage4_path = None
-        
-        # CRITICAL: Never extract features during training - they must already be extracted in Stage 2/4
+        # CRITICAL: Stage 2 features are REQUIRED for all SVM models
+        # Stage 5 only trains - features must be pre-extracted in Stage 2/4
         if not stage2_path:
             raise ValueError(
-                f"Stage 2 features path is required for {self.__class__.__name__}. "
-                f"Features should already be extracted in Stage 2. "
+                f"Stage 2 features path is REQUIRED for {self.__class__.__name__}. "
+                f"Features must be pre-extracted in Stage 2. "
                 f"Do NOT re-extract features during training. "
-                f"Please provide features_stage2_path in model configuration."
+                f"Please provide features_stage2_path in model configuration. "
+                f"Expected Stage 2 features metadata file."
             )
+        
+        # Validate Stage 2 path exists and is not empty
+        from pathlib import Path
+        from lib.utils.paths import load_metadata_flexible
+        stage2_path_obj = Path(stage2_path)
+        if not stage2_path_obj.exists():
+            raise FileNotFoundError(
+                f"Stage 2 features metadata file does not exist: {stage2_path}. "
+                f"Features must be pre-extracted in Stage 2. "
+                f"Please run Stage 2 feature extraction first."
+            )
+        
+        # Check if file is not empty
+        test_df = load_metadata_flexible(stage2_path)
+        if test_df is None or test_df.height == 0:
+            raise ValueError(
+                f"Stage 2 features metadata file is empty: {stage2_path}. "
+                f"Features must be pre-extracted in Stage 2. "
+                f"Please run Stage 2 feature extraction first."
+            )
+        
+        logger.info(f"Using Stage 2 features from: {stage2_path} ({test_df.height} rows)")
+        
+        # Validate Stage 4 path if provided (for stage2_stage4 models)
+        if stage4_path:
+            stage4_path_obj = Path(stage4_path)
+            if not stage4_path_obj.exists():
+                raise FileNotFoundError(
+                    f"Stage 4 features metadata file does not exist: {stage4_path}. "
+                    f"Stage 4 is required for {self.__class__.__name__} when use_stage2_only=False. "
+                    f"Please run Stage 4 scaled feature extraction first."
+                )
+            
+            # Check if file is not empty
+            test_df = load_metadata_flexible(stage4_path)
+            if test_df is None or test_df.height == 0:
+                raise ValueError(
+                    f"Stage 4 features metadata file is empty: {stage4_path}. "
+                    f"Stage 4 is required for {self.__class__.__name__} when use_stage2_only=False. "
+                    f"Please run Stage 4 scaled feature extraction first."
+                )
+            logger.info(f"Using Stage 4 features from: {stage4_path} ({test_df.height} rows)")
         else:
             logger.info(
                 f"Loading features for {len(video_paths)} videos "
@@ -239,43 +240,39 @@ class SVMBaseline:
         stage2_path = self.features_stage2_path
         stage4_path = None if self.use_stage2_only else self.features_stage4_path
         
-        # If no Stage 2 path provided, extract features from videos directly
+        # CRITICAL: Stage 2 features are REQUIRED for prediction
+        # Features must be pre-extracted in Stage 2/4 - no in-prediction extraction
         if not stage2_path:
-            from lib.features.handcrafted import HandcraftedFeatureExtractor
-            from lib.utils.memory import aggressive_gc
-            
-            feature_extractor = HandcraftedFeatureExtractor(
-                cache_dir=None,
-                num_frames=self.num_frames if hasattr(self, 'num_frames') else 1000,
-                include_codec=True
+            raise ValueError(
+                f"Stage 2 features path is REQUIRED for {self.__class__.__name__}.predict(). "
+                f"Features must be pre-extracted in Stage 2. "
+                f"Do NOT re-extract features during prediction. "
+                f"Please provide features_stage2_path in model configuration."
             )
-            
-            features = feature_extractor.extract_batch(
-                video_paths,
-                project_root,
-                batch_size=1
+        
+        # Validate Stage 2 path exists
+        from pathlib import Path
+        stage2_path_obj = Path(stage2_path)
+        if not stage2_path_obj.exists():
+            raise FileNotFoundError(
+                f"Stage 2 features metadata file does not exist: {stage2_path}. "
+                f"Features must be pre-extracted in Stage 2. "
+                f"Please run Stage 2 feature extraction first."
             )
-            
-            # Apply same feature filtering as during training
-            if self.feature_indices is not None:
-                features = features[:, self.feature_indices]
-                logger.debug(f"Applied feature filtering: {len(self.feature_indices)} features")
-            
-            aggressive_gc(clear_cuda=False)
-        else:
-            # Load and combine features
-            features, _, _, _ = load_and_combine_features(
-                features_stage2_path=stage2_path,
-                features_stage4_path=stage4_path,
-                video_paths=video_paths,
-                project_root=project_root,
-                remove_collinearity=False  # Don't remove collinearity again, use same features as training
-            )
-            
-            # Apply same feature filtering as during training
-            if self.feature_indices is not None:
-                features = features[:, self.feature_indices]
-                logger.debug(f"Applied feature filtering: {len(self.feature_indices)} features")
+        
+        # Load and combine features
+        features, _, _, _ = load_and_combine_features(
+            features_stage2_path=stage2_path,
+            features_stage4_path=stage4_path,
+            video_paths=video_paths,
+            project_root=project_root,
+            remove_collinearity=False  # Don't remove collinearity again, use same features as training
+        )
+        
+        # Apply same feature filtering as during training
+        if self.feature_indices is not None:
+            features = features[:, self.feature_indices]
+            logger.debug(f"Applied feature filtering: {len(self.feature_indices)} features")
         
         # Scale features
         features_scaled = self.scaler.transform(features)

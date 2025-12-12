@@ -218,7 +218,7 @@ def train_ensemble_model(
     output_dir: str = "data/training_results",
     ensemble_method: str = "meta_learner",  # "meta_learner" or "weighted_average"
     hidden_dim: int = 64
-) -> Dict:
+) -> Dict[str, Any]:
     """
     Train an ensemble model using predictions from trained base models.
     
@@ -241,25 +241,79 @@ def train_ensemble_model(
     
     Returns:
         Dictionary of ensemble results
+    
+    Raises:
+        ValueError: If inputs are invalid
+        FileNotFoundError: If required files are missing
     """
-    project_root = Path(project_root)
-    base_models_dir = project_root / base_models_dir
-    output_dir = project_root / output_dir
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # Input validation
+    if not project_root or not isinstance(project_root, str):
+        raise ValueError(f"project_root must be a non-empty string, got: {type(project_root)}")
+    if not scaled_metadata_path or not isinstance(scaled_metadata_path, str):
+        raise ValueError(f"scaled_metadata_path must be a non-empty string, got: {type(scaled_metadata_path)}")
+    if not base_model_types or not isinstance(base_model_types, list) or len(base_model_types) == 0:
+        raise ValueError(f"base_model_types must be a non-empty list, got: {type(base_model_types)}")
+    if not isinstance(n_splits, int) or n_splits <= 0:
+        raise ValueError(f"n_splits must be a positive integer, got: {n_splits}")
+    if not isinstance(num_frames, int) or num_frames <= 0:
+        raise ValueError(f"num_frames must be a positive integer, got: {num_frames}")
+    if ensemble_method not in ["meta_learner", "weighted_average"]:
+        raise ValueError(f"ensemble_method must be 'meta_learner' or 'weighted_average', got: {ensemble_method}")
+    if not isinstance(hidden_dim, int) or hidden_dim <= 0:
+        raise ValueError(f"hidden_dim must be a positive integer, got: {hidden_dim}")
+    
+    try:
+        project_root_path = Path(project_root).resolve()
+        if not project_root_path.exists():
+            raise FileNotFoundError(f"Project root directory does not exist: {project_root_path}")
+        if not project_root_path.is_dir():
+            raise NotADirectoryError(f"Project root is not a directory: {project_root_path}")
+    except (OSError, ValueError) as e:
+        logger.error(f"Invalid project_root path: {project_root} - {e}")
+        raise ValueError(f"Invalid project_root path: {project_root}") from e
+    
+    project_root_str = str(project_root_path)  # Keep as string for function calls
+    
+    try:
+        base_models_dir_path = project_root_path / base_models_dir
+        output_dir_path = project_root_path / output_dir
+        output_dir_path.mkdir(parents=True, exist_ok=True)
+    except (OSError, PermissionError) as e:
+        logger.error(f"Failed to create output directory {output_dir}: {e}")
+        raise ValueError(f"Cannot create output directory: {output_dir}") from e
+    
+    base_models_dir = base_models_dir_path
+    output_dir = output_dir_path
     
     # Load metadata
     logger.info("Loading metadata for ensemble training...")
     from lib.utils.paths import load_metadata_flexible
     
-    scaled_df = load_metadata_flexible(scaled_metadata_path)
-    if scaled_df is None:
-        raise FileNotFoundError(f"Scaled metadata not found: {scaled_metadata_path}")
+    try:
+        scaled_df = load_metadata_flexible(scaled_metadata_path)
+        if scaled_df is None:
+            raise FileNotFoundError(f"Scaled metadata not found: {scaled_metadata_path}")
+        if scaled_df.height == 0:
+            raise ValueError(f"Scaled metadata is empty: {scaled_metadata_path}")
+    except Exception as e:
+        logger.error(f"Failed to load scaled metadata from {scaled_metadata_path}: {e}")
+        raise
+    
     logger.info(f"Found {scaled_df.height} videos")
     
     # Create video config
     # Lazy import to avoid circular dependency
     from lib.models import VideoConfig
-    video_config = VideoConfig(num_frames=num_frames, fixed_size=256)
+    # Handle both old and new VideoConfig versions (some servers may not have fixed_size parameter)
+    try:
+        video_config = VideoConfig(num_frames=num_frames, fixed_size=256)
+    except TypeError:
+        # Fallback: server version doesn't have fixed_size parameter
+        logger.warning(
+            "VideoConfig on server doesn't support 'fixed_size' parameter. "
+            "Using default VideoConfig."
+        )
+        video_config = VideoConfig(num_frames=num_frames)
     
     # Get all folds
     all_folds = stratified_kfold(scaled_df, n_splits=n_splits, random_state=42)
@@ -274,11 +328,25 @@ def train_ensemble_model(
         
         train_df, val_df = all_folds[fold_idx]
         
+        # Validate folds
+        if train_df.height == 0 or val_df.height == 0:
+            logger.error(f"Empty fold {fold_idx + 1}: train={train_df.height}, val={val_df.height}")
+            continue
+        
         # Create datasets
         # Lazy import to avoid circular dependency
-        from lib.models import VideoDataset
-        train_dataset = VideoDataset(train_df, project_root=str(project_root), config=video_config)
-        val_dataset = VideoDataset(val_df, project_root=str(project_root), config=video_config)
+        try:
+            from lib.models import VideoDataset
+        except ImportError as e:
+            logger.error(f"Cannot import VideoDataset from lib.models: {e}")
+            raise ImportError(f"VideoDataset required for ensemble training: {e}") from e
+        
+        try:
+            train_dataset = VideoDataset(train_df, project_root=project_root_str, config=video_config)
+            val_dataset = VideoDataset(val_df, project_root=project_root_str, config=video_config)
+        except Exception as e:
+            logger.error(f"Failed to create datasets for fold {fold_idx + 1}: {e}", exc_info=True)
+            continue
         
         # Get labels
         train_labels = train_df["label"].to_numpy()
@@ -359,16 +427,22 @@ def train_ensemble_model(
             meta_model = fit(meta_model, train_loader, val_loader, optim_cfg, train_cfg)
             
             # Evaluate
-            val_loss, val_acc = evaluate(meta_model, val_loader, device=str(device))
+            val_metrics = evaluate(meta_model, val_loader, device=str(device))
+            val_loss = val_metrics["loss"]
+            val_acc = val_metrics["accuracy"]
             
             # Save ensemble model
-            ensemble_dir = output_dir / "ensemble" / f"fold_{fold_idx + 1}"
-            ensemble_dir.mkdir(parents=True, exist_ok=True)
-            torch.save(meta_model.state_dict(), ensemble_dir / "meta_learner.pt")
-            
-            # Save which models were used
-            with open(ensemble_dir / "base_models.txt", "w") as f:
-                f.write("\n".join(sorted(train_predictions.keys())))
+            try:
+                ensemble_dir = output_dir / "ensemble" / f"fold_{fold_idx + 1}"
+                ensemble_dir.mkdir(parents=True, exist_ok=True)
+                torch.save(meta_model.state_dict(), ensemble_dir / "meta_learner.pt")
+                
+                # Save which models were used
+                with open(ensemble_dir / "base_models.txt", "w") as f:
+                    f.write("\n".join(sorted(train_predictions.keys())))
+            except (OSError, IOError, PermissionError) as e:
+                logger.error(f"Failed to save ensemble model for fold {fold_idx + 1}: {e}")
+                raise IOError(f"Cannot save ensemble model to {ensemble_dir}") from e
             
         elif ensemble_method == "weighted_average":
             # Simple weighted average (learn weights on validation set)
