@@ -329,7 +329,7 @@ LOG_FILE="$ORIG_DIR/logs/stage3b_scaling_${SLURM_JOB_ID:-$$}.log"
 mkdir -p "$(dirname "$LOG_FILE")"
 
 cd "$ORIG_DIR" || exit 1
-PYTHON_CMD=$(which python || echo "python")
+PYTHON_CMD=$(which python3 2>/dev/null || which python 2>/dev/null || echo "python3")
 # Use unbuffered Python for immediate output
 PYTHON_CMD="$PYTHON_CMD -u"
 

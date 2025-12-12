@@ -67,7 +67,8 @@ def train_gradient_boosting(
     features_stage4_path: Optional[str],
     output_dir: str,
     n_splits: int = 5,
-    models: List[str] = ["xgboost", "lightgbm", "catboost"]
+    models: List[str] = ["xgboost", "lightgbm", "catboost"],
+    delete_existing: bool = False
 ) -> Dict[str, Any]:
     """
     Train XGBoost, LightGBM, and CatBoost on features.
@@ -90,6 +91,16 @@ def train_gradient_boosting(
         output_dir_path = Path(output_dir)
     else:
         output_dir_path = project_root_path / output_dir
+    
+    # Delete existing output directory if delete_existing is True
+    if delete_existing and output_dir_path.exists():
+        try:
+            import shutil
+            shutil.rmtree(output_dir_path)
+            logger.info(f"Deleted existing output directory (clean mode): {output_dir_path}")
+        except (OSError, PermissionError, FileNotFoundError) as e:
+            logger.warning(f"Could not delete {output_dir_path}: {e}")
+    
     output_dir_path.mkdir(parents=True, exist_ok=True)
     
     # Load metadata
@@ -497,6 +508,11 @@ def main():
     parser.add_argument("--n-splits", type=int, default=5)
     parser.add_argument("--models", type=str, nargs="+", default=["xgboost", "lightgbm", "catboost"],
                        help="Models to train: xgboost, lightgbm, catboost")
+    parser.add_argument(
+        "--delete-existing",
+        action="store_true",
+        help="Delete existing output directory before training (clean mode, default: False)"
+    )
     
     args = parser.parse_args()
     
@@ -507,7 +523,8 @@ def main():
         features_stage4_path=args.features_stage4,
         output_dir=args.output_dir,
         n_splits=args.n_splits,
-        models=args.models
+        models=args.models,
+        delete_existing=args.delete_existing
     )
 
 

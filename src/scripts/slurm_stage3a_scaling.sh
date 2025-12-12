@@ -119,14 +119,14 @@ MISSING_PACKAGES=()
 for pkg in "${PREREQ_PACKAGES[@]}"; do
     case "$pkg" in
         "opencv-python")
-            if ! python -c "import cv2" 2>/dev/null; then
+            if ! python3 -c "import cv2" 2>/dev/null; then
                 MISSING_PACKAGES+=("$pkg")
             else
                 log "✓ $pkg (cv2) found"
             fi
             ;;
         *)
-            if ! python -c "import $pkg" 2>/dev/null; then
+            if ! python3 -c "import $pkg" 2>/dev/null; then
                 MISSING_PACKAGES+=("$pkg")
             else
                 log "✓ $pkg found"
@@ -186,7 +186,7 @@ log "Substage: 3a (first of 8 substages)"
 # Substage index: 0 (3a is first substage)
 SUBSTAGE_INDEX=0
 
-RANGE_RESULT=$(python -c "
+RANGE_RESULT=$(python3 -c "
 import polars as pl
 import sys
 
@@ -339,7 +339,8 @@ LOG_FILE="$ORIG_DIR/logs/stage3a_scaling_${SLURM_JOB_ID:-$$}.log"
 mkdir -p "$(dirname "$LOG_FILE")"
 
 cd "$ORIG_DIR" || exit 1
-PYTHON_CMD=$(which python || echo "python")
+# Use python3 from module, fallback to python3, then python
+PYTHON_CMD=$(which python3 2>/dev/null || which python 2>/dev/null || echo "python3")
 # Use unbuffered Python for immediate output
 PYTHON_CMD="$PYTHON_CMD -u"
 

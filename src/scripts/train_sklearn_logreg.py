@@ -97,7 +97,8 @@ def train_sklearn_logreg(
     features_stage2_path: str,
     features_stage4_path: Optional[str],
     output_dir: str,
-    n_splits: int = 5
+    n_splits: int = 5,
+    delete_existing: bool = False
 ) -> Dict[str, Any]:
     """
     Train sklearn LogisticRegression with L1/L2/ElasticNet regularization.
@@ -141,6 +142,16 @@ def train_sklearn_logreg(
             output_dir_path = Path(output_dir)
         else:
             output_dir_path = project_root_path / output_dir
+        
+        # Delete existing output directory if delete_existing is True
+        if delete_existing and output_dir_path.exists():
+            try:
+                import shutil
+                shutil.rmtree(output_dir_path)
+                logger.info(f"Deleted existing output directory (clean mode): {output_dir_path}")
+            except (OSError, PermissionError, FileNotFoundError) as e:
+                logger.warning(f"Could not delete {output_dir_path}: {e}")
+        
         output_dir_path.mkdir(parents=True, exist_ok=True)
     except (OSError, PermissionError) as e:
         logger.error(f"Failed to create output directory {output_dir}: {e}")
@@ -154,9 +165,17 @@ def train_sklearn_logreg(
             raise ValueError(f"Scaled metadata not found or empty: {scaled_metadata_path}")
         
         if scaled_df.height <= 3000:
+            logger.error(f"Insufficient data for training: {scaled_df.height} rows (need > 3000)")
             raise ValueError(f"Insufficient data: {scaled_df.height} rows (need > 3000)")
+        
+        # Log validation success message (matches SLURM script expectation)
+        logger.info(f"✓ Data validation passed: {scaled_df.height} rows (> 3000 required)")
+        sys.stdout.flush()
+        sys.stderr.flush()
     except Exception as e:
         logger.error(f"Failed to load scaled metadata from {scaled_metadata_path}: {e}")
+        sys.stdout.flush()
+        sys.stderr.flush()
         raise
     
     video_paths = scaled_df["video_path"].to_list()
@@ -205,8 +224,13 @@ def train_sklearn_logreg(
     
     logger.info(f"✓ Loaded {len(feature_names)} features for {len(features)} videos")
     logger.info(f"  Input dimension: {features.shape[1]}")
+    sys.stdout.flush()
+    sys.stderr.flush()
     
     if len(features) < 3000:
+        logger.error(f"Insufficient data for training: {len(features)} valid videos (need > 3000)")
+        sys.stdout.flush()
+        sys.stderr.flush()
         raise ValueError(f"Insufficient valid videos: {len(features)} < 3000")
     
     # Create 60-20-20 split
@@ -219,6 +243,8 @@ def train_sklearn_logreg(
     y_train, y_val, y_test = labels_array[train_idx], labels_array[val_idx], labels_array[test_idx]
     
     logger.info(f"Train: {len(X_train)}, Val: {len(X_val)}, Test: {len(X_test)}")
+    sys.stdout.flush()
+    sys.stderr.flush()
     
     # OPTIMIZATION: Use 20% stratified sample for hyperparameter search (faster)
     # Final training will use full dataset for robustness
@@ -568,6 +594,8 @@ def train_sklearn_logreg(
         plt.close()  # Ensure plot is closed even on error
     
     logger.info(f"Training complete. Results saved to: {output_dir_path}")
+    sys.stdout.flush()
+    sys.stderr.flush()
     
     return results
 
@@ -580,6 +608,11 @@ def main():
     parser.add_argument("--features-stage4", type=str, default=None)
     parser.add_argument("--output-dir", type=str, required=True)
     parser.add_argument("--n-splits", type=int, default=5)
+    parser.add_argument(
+        "--delete-existing",
+        action="store_true",
+        help="Delete existing output directory before training (clean mode, default: False)"
+    )
     
     args = parser.parse_args()
     
@@ -589,7 +622,8 @@ def main():
         features_stage2_path=args.features_stage2,
         features_stage4_path=args.features_stage4,
         output_dir=args.output_dir,
-        n_splits=args.n_splits
+        n_splits=args.n_splits,
+        delete_existing=args.delete_existing
     )
 
 

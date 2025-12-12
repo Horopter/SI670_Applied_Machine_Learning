@@ -18,6 +18,7 @@
 #SBATCH --error=logs/stage5/stage5n-%j.err
 #SBATCH --mail-user=santoshd@umich.edu,urvim@umich.edu,suzanef@umich.edu
 #SBATCH --mail-type=FAIL,TIME_LIMIT,NODE_FAIL
+#SBATCH --export=ALL
 
 set -euo pipefail
 set -o errtrace
@@ -78,11 +79,14 @@ export VIRTUAL_ENV_DISABLE_PROMPT=1
 # Environment Variables
 # ============================================================================
 
+export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 export PYTORCH_ALLOC_CONF="expandable_segments:true,max_split_size_mb:512"
 export TOKENIZERS_PARALLELISM=false
 export PYTHONUNBUFFERED=1
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-4}"
 export MKL_NUM_THREADS="${SLURM_CPUS_PER_TASK:-4}"
+export CUDA_LAUNCH_BLOCKING=0
+export CUDA_DEVICE_ORDER=PCI_BUS_ID
 
 # ============================================================================
 # System Information
@@ -95,8 +99,8 @@ log "Host:        $(hostname)"
 log "Date:        $(date -Is)"
 log "SLURM_JOBID: ${SLURM_JOB_ID:-none}"
 log "Working directory: $(pwd)"
-log "Python:      $(which python 2>/dev/null || echo 'not found')"
-log "Python version: $(python --version 2>&1 || echo 'unknown')"
+log "Python:      $(which python3 2>/dev/null || which python 2>/dev/null || echo 'not found')"
+log "Python version: $(python3 --version 2>&1 || python --version 2>&1 || echo 'unknown')"
 log "=========================================="
 
 # ============================================================================
@@ -183,13 +187,13 @@ log "Starting Stage 5: vivit Model Training"
 log "=========================================="
 
 MODEL_TYPE="vivit"
-NUM_FRAMES="${FVC_NUM_FRAMES:-1000}"
+NUM_FRAMES="${FVC_NUM_FRAMES:-500}"
 N_SPLITS="${FVC_N_SPLITS:-5}"
 OUTPUT_DIR="${FVC_STAGE5_OUTPUT_DIR:-data/stage5}"
 USE_TRACKING="${FVC_USE_TRACKING:-true}"
 DELETE_EXISTING="${FVC_DELETE_EXISTING:-0}"
 
-log "Model type: $MODEL_TYPE (feature-based)"
+log "Model type: $MODEL_TYPE (memory-intensive - using reduced num_frames=500 by default, override with FVC_NUM_FRAMES) (feature-based)"
 log "Frames per video: $NUM_FRAMES (uniformly sampled from each scaled video)"
 log "K-fold splits: $N_SPLITS"
 log "Output directory: $OUTPUT_DIR"
@@ -201,9 +205,9 @@ LOG_FILE="$ORIG_DIR/logs/stage5/stage5n_${SLURM_JOB_ID:-$$}.log"
 mkdir -p "$(dirname "$LOG_FILE")"
 
 cd "$ORIG_DIR" || exit 1
-PYTHON_CMD=$(which python || echo "python")
+PYTHON_CMD=$(which python3 2>/dev/null || which python 2>/dev/null || echo "python3")
 # Use unbuffered Python for immediate output
-PYTHON_CMD="$PYTHON_CMD -u"
+# Note: -u flag will be added when calling $PYTHON_CMD
 
 # ============================================================================
 # Import Validation: Verify all imports work before expensive training
@@ -249,6 +253,9 @@ fi
 DELETE_FLAG=""
 if [ "$DELETE_EXISTING" = "1" ] || [ "$DELETE_EXISTING" = "true" ] || [ "$DELETE_EXISTING" = "yes" ]; then
     DELETE_FLAG="--delete-existing"
+    log "✓ Delete existing flag enabled: $DELETE_FLAG"
+else
+    log "⚠ Delete existing flag disabled (FVC_DELETE_EXISTING='${FVC_DELETE_EXISTING:-not set}', DELETE_EXISTING='$DELETE_EXISTING')"
 fi
 
 TRACKING_FLAG=""
@@ -258,8 +265,9 @@ fi
 
 log "Running Stage 5 training script for $MODEL_TYPE..."
 log "Log file: $LOG_FILE"
+log "Command flags: DELETE_FLAG='$DELETE_FLAG' TRACKING_FLAG='$TRACKING_FLAG'"
 
-if "$PYTHON_CMD" "$PYTHON_SCRIPT" \
+if "$PYTHON_CMD" -u "$PYTHON_SCRIPT" \
     --project-root "$ORIG_DIR" \
     --scaled-metadata "$SCALED_METADATA" \
     --features-stage2 "$FEATURES_STAGE2" \
@@ -281,6 +289,14 @@ else
     STAGE5_DURATION=$((STAGE5_END - STAGE5_START))
     log "✗ ERROR: Stage 5 ($MODEL_TYPE) failed after ${STAGE5_DURATION}s"
     log "Check log file: $LOG_FILE"
+    
+    # Check for specific error types
+    if grep -q "CUDA out of memory\|OutOfMemoryError\|OOM" "$LOG_FILE" 2>/dev/null; then
+        log "✗ ERROR: CUDA Out of Memory detected"
+        log "  Model: $MODEL_TYPE, Frames: ${NUM_FRAMES:-unknown}"
+        log "  Try reducing FVC_NUM_FRAMES (current: ${NUM_FRAMES:-unknown})"
+        log "  Example: FVC_NUM_FRAMES=250 sbatch src/scripts/$(basename $0)"
+    fi
     exit 1
 fi
 

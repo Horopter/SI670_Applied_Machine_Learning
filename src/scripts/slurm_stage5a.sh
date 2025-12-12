@@ -18,6 +18,7 @@
 #SBATCH --error=logs/stage5/stage5a-%j.err
 #SBATCH --mail-user=santoshd@umich.edu,urvim@umich.edu,suzanef@umich.edu
 #SBATCH --mail-type=FAIL,TIME_LIMIT,NODE_FAIL
+#SBATCH --export=ALL
 
 set -euo pipefail
 set -o errtrace
@@ -78,11 +79,14 @@ export VIRTUAL_ENV_DISABLE_PROMPT=1
 # Environment Variables
 # ============================================================================
 
+export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 export PYTORCH_ALLOC_CONF="expandable_segments:true,max_split_size_mb:512"
 export TOKENIZERS_PARALLELISM=false
 export PYTHONUNBUFFERED=1
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
 export MKL_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
+export CUDA_LAUNCH_BLOCKING=0
+export CUDA_DEVICE_ORDER=PCI_BUS_ID
 
 # ============================================================================
 # System Information
@@ -95,8 +99,8 @@ log "Host:        $(hostname)"
 log "Date:        $(date -Is)"
 log "SLURM_JOBID: ${SLURM_JOB_ID:-none}"
 log "Working directory: $(pwd)"
-log "Python:      $(which python 2>/dev/null || echo 'not found')"
-log "Python version: $(python --version 2>&1 || echo 'unknown')"
+log "Python:      $(which python3 2>/dev/null || which python 2>/dev/null || echo 'not found')"
+log "Python version: $(python3 --version 2>&1 || python --version 2>&1 || echo 'unknown')"
 log "=========================================="
 
 # ============================================================================
@@ -114,14 +118,14 @@ MISSING_PACKAGES=()
 for pkg in "${PREREQ_PACKAGES[@]}"; do
     case "$pkg" in
         "opencv-python")
-            if ! python -c "import cv2" 2>/dev/null; then
+            if ! python3 -c "import cv2" 2>/dev/null; then
                 MISSING_PACKAGES+=("$pkg")
             else
                 log "✓ $pkg (cv2) found"
             fi
             ;;
         "scikit-learn")
-            if ! python -c "import sklearn" 2>/dev/null; then
+            if ! python3 -c "import sklearn" 2>/dev/null; then
                 MISSING_PACKAGES+=("$pkg")
             else
                 log "✓ $pkg (sklearn) found"
@@ -134,14 +138,14 @@ for pkg in "${PREREQ_PACKAGES[@]}"; do
                 log "✓ $pkg found (installed via pip)"
             elif python -c "import pkg_resources; pkg_resources.get_distribution('$pkg')" 2>/dev/null; then
                 log "✓ $pkg found (installed via pkg_resources)"
-            elif timeout 10 python -c "import $pkg" 2>/dev/null; then
+            elif timeout 10 python3 -c "import $pkg" 2>/dev/null; then
                 log "✓ $pkg found (import successful)"
             else
                 MISSING_PACKAGES+=("$pkg")
             fi
             ;;
         *)
-            if ! python -c "import $pkg" 2>/dev/null; then
+            if ! python3 -c "import $pkg" 2>/dev/null; then
                 MISSING_PACKAGES+=("$pkg")
             else
                 log "✓ $pkg found"
@@ -226,9 +230,9 @@ mkdir -p "$(dirname "$LOG_FILE")"
 touch "$LOG_FILE"
 
 cd "$ORIG_DIR" || exit 1
-PYTHON_CMD=$(which python || echo "python")
+PYTHON_CMD=$(which python3 2>/dev/null || which python 2>/dev/null || echo "python3")
 # Use unbuffered Python for immediate output
-PYTHON_CMD="$PYTHON_CMD -u"
+# Note: -u flag will be added when calling $PYTHON_CMD
 
 # ============================================================================
 # Import Validation: Verify all imports work before expensive training
@@ -244,7 +248,7 @@ if [ ! -f "$VALIDATION_SCRIPT" ]; then
     log "  Skipping import validation (not recommended)"
 else
     log "Running import validation (testing with dummy tensors)..."
-    VALIDATION_OUTPUT=$("$PYTHON_CMD" "$VALIDATION_SCRIPT" 2>&1 | tee -a "$LOG_FILE")
+    VALIDATION_OUTPUT=$("$PYTHON_CMD" -u "$VALIDATION_SCRIPT" 2>&1 | tee -a "$LOG_FILE")
     VALIDATION_EXIT_CODE=${PIPESTATUS[0]}
     
     # Check if validation actually passed (all tests passed)
@@ -277,7 +281,7 @@ if [ ! -f "$SANITY_CHECK_SCRIPT" ]; then
     log "  Skipping feature sanity check"
 else
     log "Running feature sanity check..."
-    if "$PYTHON_CMD" "$SANITY_CHECK_SCRIPT" 2>&1 | tee -a "$LOG_FILE"; then
+    if "$PYTHON_CMD" -u "$SANITY_CHECK_SCRIPT" 2>&1 | tee -a "$LOG_FILE"; then
         log "✓ Feature sanity check passed"
     else
         SANITY_EXIT_CODE=${PIPESTATUS[0]}
@@ -321,6 +325,9 @@ fi
 DELETE_FLAG=""
 if [ "$DELETE_EXISTING" = "1" ] || [ "$DELETE_EXISTING" = "true" ] || [ "$DELETE_EXISTING" = "yes" ]; then
     DELETE_FLAG="--delete-existing"
+    log "✓ Delete existing flag enabled: $DELETE_FLAG"
+else
+    log "⚠ Delete existing flag disabled (FVC_DELETE_EXISTING='${FVC_DELETE_EXISTING:-not set}', DELETE_EXISTING='$DELETE_EXISTING')"
 fi
 
 TRACKING_FLAG=""
@@ -330,8 +337,9 @@ fi
 
 log "Running Stage 5 training script for $MODEL_TYPE..."
 log "Log file: $LOG_FILE"
+log "Command flags: DELETE_FLAG='$DELETE_FLAG' TRACKING_FLAG='$TRACKING_FLAG'"
 
-if "$PYTHON_CMD" "$PYTHON_SCRIPT" \
+if "$PYTHON_CMD" -u "$PYTHON_SCRIPT" \
     --project-root "$ORIG_DIR" \
     --scaled-metadata "$SCALED_METADATA" \
     --features-stage2 "$FEATURES_STAGE2" \

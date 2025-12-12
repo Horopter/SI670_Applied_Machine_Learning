@@ -19,6 +19,7 @@
 #SBATCH --error=logs/stage5/stage5alpha-%j.err
 #SBATCH --mail-user=santoshd@umich.edu,urvim@umich.edu,suzanef@umich.edu
 #SBATCH --mail-type=FAIL,TIME_LIMIT,NODE_FAIL
+#SBATCH --export=ALL
 
 set -euo pipefail
 set -o errtrace
@@ -79,11 +80,14 @@ export VIRTUAL_ENV_DISABLE_PROMPT=1
 # Environment Variables
 # ============================================================================
 
+export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 export PYTORCH_ALLOC_CONF="expandable_segments:true,max_split_size_mb:512"
 export TOKENIZERS_PARALLELISM=false
 export PYTHONUNBUFFERED=1
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
 export MKL_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
+export CUDA_LAUNCH_BLOCKING=0
+export CUDA_DEVICE_ORDER=PCI_BUS_ID
 
 # ============================================================================
 # System Information
@@ -96,8 +100,8 @@ log "Host:        $(hostname)"
 log "Date:        $(date -Is)"
 log "SLURM_JOBID: ${SLURM_JOB_ID:-none}"
 log "Working directory: $(pwd)"
-log "Python:      $(which python 2>/dev/null || echo 'not found')"
-log "Python version: $(python --version 2>&1 || echo 'unknown')"
+log "Python:      $(which python3 2>/dev/null || which python 2>/dev/null || echo 'not found')"
+log "Python version: $(python3 --version 2>&1 || python --version 2>&1 || echo 'unknown')"
 log "=========================================="
 
 # ============================================================================
@@ -114,14 +118,14 @@ MISSING_PACKAGES=()
 for pkg in "${PREREQ_PACKAGES[@]}"; do
     case "$pkg" in
         "sklearn")
-            if ! python -c "import sklearn" 2>/dev/null; then
+            if ! python3 -c "import sklearn" 2>/dev/null; then
                 MISSING_PACKAGES+=("$pkg")
             else
                 log "✓ $pkg (sklearn) found"
             fi
             ;;
         *)
-            if ! python -c "import $pkg" 2>/dev/null; then
+            if ! python3 -c "import $pkg" 2>/dev/null; then
                 MISSING_PACKAGES+=("$pkg")
             else
                 log "✓ $pkg found"
@@ -200,9 +204,9 @@ mkdir -p "$(dirname "$LOG_FILE")"
 touch "$LOG_FILE"
 
 cd "$ORIG_DIR" || exit 1
-PYTHON_CMD=$(which python || echo "python")
+PYTHON_CMD=$(which python3 2>/dev/null || which python 2>/dev/null || echo "python3")
 # Use unbuffered Python for immediate output
-PYTHON_CMD="$PYTHON_CMD -u"
+# Note: -u flag will be added when calling $PYTHON_CMD
 
 # ============================================================================
 # Stage 5ALPHA Execution
@@ -232,23 +236,28 @@ fi
 DELETE_FLAG=""
 if [ "$DELETE_EXISTING" = "1" ] || [ "$DELETE_EXISTING" = "true" ] || [ "$DELETE_EXISTING" = "yes" ]; then
     DELETE_FLAG="--delete-existing"
+    log "✓ Delete existing flag enabled: $DELETE_FLAG"
+else
+    log "⚠ Delete existing flag disabled (FVC_DELETE_EXISTING='${FVC_DELETE_EXISTING:-not set}', DELETE_EXISTING='$DELETE_EXISTING')"
 fi
 
 log "Running sklearn LogisticRegression training script..."
 log "Log file: $LOG_FILE"
+log "Command flags: DELETE_FLAG='$DELETE_FLAG'"
 
 FEATURES_STAGE4_ARG=""
 if [ -n "$FEATURES_STAGE4" ]; then
     FEATURES_STAGE4_ARG="--features-stage4 $FEATURES_STAGE4"
 fi
 
-if "$PYTHON_CMD" "$PYTHON_SCRIPT" \
+if "$PYTHON_CMD" -u "$PYTHON_SCRIPT" \
     --project-root "$ORIG_DIR" \
     --scaled-metadata "$SCALED_METADATA" \
     --features-stage2 "$FEATURES_STAGE2" \
     $FEATURES_STAGE4_ARG \
     --output-dir "$OUTPUT_DIR/sklearn_logreg" \
     --n-splits "$N_SPLITS" \
+    $DELETE_FLAG \
     2>&1 | tee "$LOG_FILE"; then
     
     # Verify dataframe row count check passed

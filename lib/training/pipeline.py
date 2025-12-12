@@ -664,16 +664,33 @@ def stage5_train_models(
     # Create video config (will be used only for PyTorch models)
     # Always use scaled videos - augmentation done in Stage 1, scaling in Stage 3
     # Handle both old and new VideoConfig versions (some servers may not have use_scaled_videos yet)
+    # For x3d model, use chunked frame loading to prevent OOM (200 frames per chunk, 1000 total)
+    use_chunked_loading = False
+    chunk_size = None
+    for model_type in model_types:
+        if model_type == "x3d":
+            use_chunked_loading = True
+            chunk_size = 200  # Process 200 frames per chunk to reduce peak memory
+            logger.info(f"Enabling chunked frame loading for {model_type}: chunk_size={chunk_size}, num_frames={num_frames}")
+            break
+    
     try:
-        # Try with use_scaled_videos (newer version)
-        video_config = VideoConfig(
-            num_frames=num_frames,
-            use_scaled_videos=True  # Stage 5 only trains - all preprocessing done in earlier stages
-        )
+        # Try with use_scaled_videos and chunk_size (newer version)
+        if use_chunked_loading and chunk_size is not None:
+            video_config = VideoConfig(
+                num_frames=num_frames,
+                use_scaled_videos=True,  # Stage 5 only trains - all preprocessing done in earlier stages
+                chunk_size=chunk_size  # Chunked loading for OOM prevention
+            )
+        else:
+            video_config = VideoConfig(
+                num_frames=num_frames,
+                use_scaled_videos=True  # Stage 5 only trains - all preprocessing done in earlier stages
+            )
     except TypeError:
-        # Fallback: server version doesn't have use_scaled_videos parameter
+        # Fallback: server version doesn't support these parameters
         logger.warning(
-            "VideoConfig on server doesn't support 'use_scaled_videos' parameter. "
+            "VideoConfig on server doesn't support 'use_scaled_videos' or 'chunk_size' parameters. "
             "Using default VideoConfig (videos should already be scaled from Stage 3)."
         )
         video_config = VideoConfig(num_frames=num_frames)
@@ -811,8 +828,19 @@ def stage5_train_models(
                 logger.info(f"\nHyperparameter Search - {model_type} - Fold {fold_idx + 1}/{n_splits} (20% sample)")
                 _flush_logs()
                 
-                # Check if fold is already complete (resume mode)
+                # Delete existing fold if delete_existing is True (do this BEFORE checking if complete)
                 fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
+                if delete_existing and fold_output_dir.exists():
+                    try:
+                        import shutil
+                        shutil.rmtree(fold_output_dir)
+                        logger.info(f"Deleted existing hyperparameter search fold {fold_idx + 1} directory (clean mode)")
+                        _flush_logs()
+                    except (OSError, PermissionError, FileNotFoundError) as e:
+                        logger.warning(f"Could not delete {fold_output_dir}: {e}")
+                        _flush_logs()
+                
+                # Check if fold is already complete (resume mode) - only if not deleting
                 if resume and not delete_existing and _is_fold_complete(fold_output_dir, model_type):
                     logger.info(f"Fold {fold_idx + 1} already trained (found existing model). Skipping.")
                     logger.info(f"To retrain this fold, use --delete-existing flag")
@@ -958,15 +986,7 @@ def stage5_train_models(
                         fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
                         fold_output_dir.mkdir(parents=True, exist_ok=True)
                         
-                        # Delete existing fold if delete_existing is True
-                        if delete_existing and fold_output_dir.exists():
-                            try:
-                                import shutil
-                                shutil.rmtree(fold_output_dir)
-                                logger.info(f"Deleted existing fold {fold_idx + 1} directory (clean mode)")
-                            except (OSError, PermissionError, FileNotFoundError) as e:
-                                logger.warning(f"Could not delete {fold_output_dir}: {e}")
-                            fold_output_dir.mkdir(parents=True, exist_ok=True)
+                        # Note: Fold deletion already handled above before the resume check
                     
                         if use_tracking:
                             tracker = ExperimentTracker(str(fold_output_dir))
@@ -1216,15 +1236,7 @@ def stage5_train_models(
                         fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
                         fold_output_dir.mkdir(parents=True, exist_ok=True)
                         
-                        # Delete existing fold if delete_existing is True
-                        if delete_existing and fold_output_dir.exists():
-                            try:
-                                import shutil
-                                shutil.rmtree(fold_output_dir)
-                                logger.info(f"Deleted existing fold {fold_idx + 1} directory (clean mode)")
-                            except (OSError, PermissionError, FileNotFoundError) as e:
-                                logger.warning(f"Could not delete {fold_output_dir}: {e}")
-                            fold_output_dir.mkdir(parents=True, exist_ok=True)
+                        # Note: Fold deletion already handled above before the resume check
                         
                         try:
                             # Create XGBoost model with hyperparameters
@@ -1318,15 +1330,7 @@ def stage5_train_models(
                         fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
                         fold_output_dir.mkdir(parents=True, exist_ok=True)
                         
-                        # Delete existing fold if delete_existing is True
-                        if delete_existing and fold_output_dir.exists():
-                            try:
-                                import shutil
-                                shutil.rmtree(fold_output_dir)
-                                logger.info(f"Deleted existing fold {fold_idx + 1} directory (clean mode)")
-                            except (OSError, PermissionError, FileNotFoundError) as e:
-                                logger.warning(f"Could not delete {fold_output_dir}: {e}")
-                            fold_output_dir.mkdir(parents=True, exist_ok=True)
+                        # Note: Fold deletion already handled above before the resume check
                         
                         try:
                             # Create baseline model with hyperparameters
@@ -1595,8 +1599,19 @@ def stage5_train_models(
             logger.info(f"\nFinal Training - {model_type} - Fold {fold_idx + 1}/{n_splits} (full dataset)")
             _flush_logs()
             
-            # Check if fold is already complete (resume mode)
+            # Delete existing fold if delete_existing is True (do this BEFORE checking if complete)
             fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
+            if delete_existing and fold_output_dir.exists():
+                try:
+                    import shutil
+                    shutil.rmtree(fold_output_dir)
+                    logger.info(f"Deleted existing final training fold {fold_idx + 1} directory (clean mode)")
+                    _flush_logs()
+                except (OSError, PermissionError, FileNotFoundError) as e:
+                    logger.warning(f"Could not delete {fold_output_dir}: {e}")
+                    _flush_logs()
+            
+            # Check if fold is already complete (resume mode) - only if not deleting
             if resume and not delete_existing and _is_fold_complete(fold_output_dir, model_type):
                 logger.info(f"Final training fold {fold_idx + 1} already trained (found existing model). Skipping.")
                 logger.info(f"To retrain this fold, use --delete-existing flag")
@@ -1683,15 +1698,7 @@ def stage5_train_models(
                     fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
                     fold_output_dir.mkdir(parents=True, exist_ok=True)
                     
-                    # Delete existing fold if delete_existing is True
-                    if delete_existing and fold_output_dir.exists():
-                        try:
-                            import shutil
-                            shutil.rmtree(fold_output_dir)
-                            logger.info(f"Deleted existing final training fold {fold_idx + 1} directory (clean mode)")
-                        except (OSError, PermissionError, FileNotFoundError) as e:
-                            logger.warning(f"Could not delete {fold_output_dir}: {e}")
-                        fold_output_dir.mkdir(parents=True, exist_ok=True)
+                    # Note: Fold deletion already handled above before the resume check
                     
                     if use_tracking:
                         tracker = ExperimentTracker(str(fold_output_dir))
@@ -1772,15 +1779,7 @@ def stage5_train_models(
                     fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
                     fold_output_dir.mkdir(parents=True, exist_ok=True)
                     
-                    # Delete existing fold if delete_existing is True
-                    if delete_existing and fold_output_dir.exists():
-                        try:
-                            import shutil
-                            shutil.rmtree(fold_output_dir)
-                            logger.info(f"Deleted existing final training fold {fold_idx + 1} directory (clean mode)")
-                        except (OSError, PermissionError, FileNotFoundError) as e:
-                            logger.warning(f"Could not delete {fold_output_dir}: {e}")
-                        fold_output_dir.mkdir(parents=True, exist_ok=True)
+                    # Note: Fold deletion already handled above before the resume check
                     
                     xgb_config = model_config.copy()
                     if best_params:
@@ -1833,15 +1832,7 @@ def stage5_train_models(
                     fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
                     fold_output_dir.mkdir(parents=True, exist_ok=True)
                     
-                    # Delete existing fold if delete_existing is True
-                    if delete_existing and fold_output_dir.exists():
-                        try:
-                            import shutil
-                            shutil.rmtree(fold_output_dir)
-                            logger.info(f"Deleted existing final training fold {fold_idx + 1} directory (clean mode)")
-                        except (OSError, PermissionError, FileNotFoundError) as e:
-                            logger.warning(f"Could not delete {fold_output_dir}: {e}")
-                        fold_output_dir.mkdir(parents=True, exist_ok=True)
+                    # Note: Fold deletion already handled above before the resume check
                     
                     baseline_config = model_config.copy()
                     if best_params:

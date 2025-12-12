@@ -280,7 +280,7 @@ mkdir -p "$(dirname "$LOG_FILE")"
 cd "$ORIG_DIR" || exit 1
 
 # Ensure we're using the correct Python from venv
-PYTHON_CMD=$(which python || echo "python")
+PYTHON_CMD=$(which python3 2>/dev/null || which python 2>/dev/null || echo "python3")
 # Use unbuffered Python for immediate output
 PYTHON_CMD="$PYTHON_CMD -u"
 

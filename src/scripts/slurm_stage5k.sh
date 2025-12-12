@@ -18,6 +18,7 @@
 #SBATCH --error=logs/stage5/stage5k-%j.err
 #SBATCH --mail-user=santoshd@umich.edu,urvim@umich.edu,suzanef@umich.edu
 #SBATCH --mail-type=FAIL,TIME_LIMIT,NODE_FAIL
+#SBATCH --export=ALL
 
 set -euo pipefail
 set -o errtrace
@@ -78,11 +79,14 @@ export VIRTUAL_ENV_DISABLE_PROMPT=1
 # Environment Variables
 # ============================================================================
 
+export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 export PYTORCH_ALLOC_CONF="expandable_segments:true,max_split_size_mb:512"
 export TOKENIZERS_PARALLELISM=false
 export PYTHONUNBUFFERED=1
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-4}"
 export MKL_NUM_THREADS="${SLURM_CPUS_PER_TASK:-4}"
+export CUDA_LAUNCH_BLOCKING=0
+export CUDA_DEVICE_ORDER=PCI_BUS_ID
 
 # ============================================================================
 # System Information
@@ -95,8 +99,8 @@ log "Host:        $(hostname)"
 log "Date:        $(date -Is)"
 log "SLURM_JOBID: ${SLURM_JOB_ID:-none}"
 log "Working directory: $(pwd)"
-log "Python:      $(which python 2>/dev/null || echo 'not found')"
-log "Python version: $(python --version 2>&1 || echo 'unknown')"
+log "Python:      $(which python3 2>/dev/null || which python 2>/dev/null || echo 'not found')"
+log "Python version: $(python3 --version 2>&1 || python --version 2>&1 || echo 'unknown')"
 log "=========================================="
 
 # ============================================================================
@@ -114,14 +118,14 @@ MISSING_PACKAGES=()
 for pkg in "${PREREQ_PACKAGES[@]}"; do
     case "$pkg" in
         "opencv-python")
-            if ! python -c "import cv2" 2>/dev/null; then
+            if ! python3 -c "import cv2" 2>/dev/null; then
                 MISSING_PACKAGES+=("$pkg")
             else
                 log "✓ $pkg (cv2) found"
             fi
             ;;
         "scikit-learn")
-            if ! python -c "import sklearn" 2>/dev/null; then
+            if ! python3 -c "import sklearn" 2>/dev/null; then
                 MISSING_PACKAGES+=("$pkg")
             else
                 log "✓ $pkg (sklearn) found"
@@ -134,14 +138,14 @@ for pkg in "${PREREQ_PACKAGES[@]}"; do
                 log "✓ $pkg found (installed via pip)"
             elif python -c "import pkg_resources; pkg_resources.get_distribution('$pkg')" 2>/dev/null; then
                 log "✓ $pkg found (installed via pkg_resources)"
-            elif timeout 10 python -c "import $pkg" 2>/dev/null; then
+            elif timeout 10 python3 -c "import $pkg" 2>/dev/null; then
                 log "✓ $pkg found (import successful)"
             else
                 MISSING_PACKAGES+=("$pkg")
             fi
             ;;
         *)
-            if ! python -c "import $pkg" 2>/dev/null; then
+            if ! python3 -c "import $pkg" 2>/dev/null; then
                 MISSING_PACKAGES+=("$pkg")
             else
                 log "✓ $pkg found"
@@ -239,9 +243,9 @@ LOG_FILE="$ORIG_DIR/logs/stage5/stage5k_${SLURM_JOB_ID:-$$}.log"
 mkdir -p "$(dirname "$LOG_FILE")"
 
 cd "$ORIG_DIR" || FEATURES_STAGE2="$ORIG_DIR/$FEATURES_STAGE2_DIR/features_metadata.arrow"  # Dummy path
-PYTHON_CMD=$(which python || echo "python")
+PYTHON_CMD=$(which python3 2>/dev/null || which python 2>/dev/null || echo "python3")
 # Use unbuffered Python for immediate output
-PYTHON_CMD="$PYTHON_CMD -u"
+# Note: -u flag will be added when calling $PYTHON_CMD
 
 # ============================================================================
 # Import Validation: Verify all imports work before expensive training
@@ -287,6 +291,9 @@ fi
 DELETE_FLAG=""
 if [ "$DELETE_EXISTING" = "1" ] || [ "$DELETE_EXISTING" = "true" ] || [ "$DELETE_EXISTING" = "yes" ]; then
     DELETE_FLAG="--delete-existing"
+    log "✓ Delete existing flag enabled: $DELETE_FLAG"
+else
+    log "⚠ Delete existing flag disabled (FVC_DELETE_EXISTING='${FVC_DELETE_EXISTING:-not set}', DELETE_EXISTING='$DELETE_EXISTING')"
 fi
 
 TRACKING_FLAG=""
@@ -296,8 +303,9 @@ fi
 
 log "Running Stage 5 training script for $MODEL_TYPE..."
 log "Log file: $LOG_FILE"
+log "Command flags: DELETE_FLAG='$DELETE_FLAG' TRACKING_FLAG='$TRACKING_FLAG'"
 
-if "$PYTHON_CMD" "$PYTHON_SCRIPT" \
+if "$PYTHON_CMD" -u "$PYTHON_SCRIPT" \
     --project-root "$ORIG_DIR" \
     --scaled-metadata "$SCALED_METADATA" \
     --features-stage2 "$FEATURES_STAGE2" \
@@ -319,6 +327,14 @@ else
     STAGE5_DURATION=$((STAGE5_END - STAGE5_START))
     log "✗ ERROR: Stage 5 ($MODEL_TYPE) failed after ${STAGE5_DURATION}s"
     log "Check log file: $LOG_FILE"
+    
+    # Check for specific error types
+    if grep -q "CUDA out of memory\|OutOfMemoryError\|OOM" "$LOG_FILE" 2>/dev/null; then
+        log "✗ ERROR: CUDA Out of Memory detected"
+        log "  Model: $MODEL_TYPE, Frames: ${NUM_FRAMES:-unknown}"
+        log "  Try reducing FVC_NUM_FRAMES (current: ${NUM_FRAMES:-unknown})"
+        log "  Example: FVC_NUM_FRAMES=250 sbatch src/scripts/$(basename $0)"
+    fi
     FEATURES_STAGE2="$ORIG_DIR/$FEATURES_STAGE2_DIR/features_metadata.arrow"  # Dummy path
 fi
 

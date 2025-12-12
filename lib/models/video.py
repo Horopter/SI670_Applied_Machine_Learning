@@ -137,6 +137,10 @@ class VideoConfig:
     
     For memory efficiency, use fixed_size for consistent batch dimensions (recommended),
     or max_size for variable aspect ratios (requires padding in collate function).
+    
+    For OOM prevention, use chunk_size to process frames in chunks (e.g., 200 frames per chunk).
+    When chunk_size is set, frames are loaded and processed in chunks, then concatenated.
+    This reduces peak memory usage while ensuring num_frames total frames per video.
     """
 
     num_frames: int = 1000
@@ -155,6 +159,10 @@ class VideoConfig:
     rolling_window: bool = False  # If True, use rolling windows instead of uniform sampling
     window_size: Optional[int] = None  # Size of rolling window (defaults to num_frames)
     window_stride: Optional[int] = None  # Stride between windows (defaults to window_size // 2)
+    # Chunked frame loading for OOM prevention (e.g., chunk_size=200 for 1000 total frames = 5 chunks)
+    # When set, frames are loaded and processed in chunks, then concatenated to get num_frames total
+    # This reduces peak memory usage by processing frames incrementally
+    chunk_size: Optional[int] = None  # If set, process frames in chunks of this size
     # Augmentation configuration (DEPRECATED: Augmentation done in Stage 1, not Stage 5)
     # These are kept for backward compatibility but ignored when use_scaled_videos=True
     augmentation_config: Optional[dict] = None  # Spatial augmentation parameters (not used in Stage 5)
@@ -477,44 +485,124 @@ class VideoDataset(Dataset):
         
         total_frames = video.shape[0]
 
-        # Support both uniform sampling and rolling windows
-        if self.config.rolling_window:
-            window_size = self.config.window_size or self.config.num_frames
-            stride = self.config.window_stride
-            windows = rolling_window_indices(total_frames, window_size, stride)
+        # Support chunked frame loading for OOM prevention
+        chunk_size = getattr(self.config, 'chunk_size', None)
+        use_chunked_loading = chunk_size is not None and chunk_size > 0
+        
+        if use_chunked_loading:
+            # Chunked loading: process frames in chunks to reduce peak memory
+            # Calculate number of chunks needed (e.g., 1000 frames / 200 chunk_size = 5 chunks)
+            num_chunks = (self.config.num_frames + chunk_size - 1) // chunk_size  # Ceiling division
+            frames_per_chunk = self.config.num_frames // num_chunks
+            remainder = self.config.num_frames % num_chunks
             
-            if not windows:
+            logger.debug(
+                f"Chunked loading: {self.config.num_frames} frames in {num_chunks} chunks "
+                f"(chunk_size={chunk_size}, frames_per_chunk={frames_per_chunk}, remainder={remainder})"
+            )
+            
+            all_frames: List[torch.Tensor] = []
+            use_scaled_videos = getattr(self.config, 'use_scaled_videos', False)
+            
+            # Process each chunk sequentially to minimize peak memory
+            for chunk_idx in range(num_chunks):
+                # Calculate frames for this chunk (distribute remainder across first chunks)
+                chunk_frames = frames_per_chunk + (1 if chunk_idx < remainder else 0)
+                
+                # Uniformly sample indices for this chunk from the video
+                # Each chunk samples from the entire video to ensure good coverage
+                chunk_indices = uniform_sample_indices(total_frames, chunk_frames)
+                
+                # Load and process frames for this chunk
+                chunk_frame_tensors: List[torch.Tensor] = []
+                for i in chunk_indices:
+                    frame = video[i].numpy().astype(np.uint8)  # (H, W, C)
+                    frame_tensor = self._frame_transform(frame)  # (C, H, W)
+                    
+                    # Apply post-tensor augmentations if available (only normalization for scaled videos)
+                    if self._post_tensor_transform is not None:
+                        frame_tensor = self._post_tensor_transform(frame_tensor)
+                    
+                    chunk_frame_tensors.append(frame_tensor)
+                
+                # Add chunk frames to all_frames
+                all_frames.extend(chunk_frame_tensors)
+                
+                # Clear chunk data to free memory immediately after processing
+                del chunk_frame_tensors, chunk_indices
+                import gc
+                gc.collect()
+                
+                # Clear CUDA cache if available (helps with GPU memory)
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+            
+            frames = all_frames
+            # Ensure we have exactly num_frames (critical for training consistency)
+            if len(frames) > self.config.num_frames:
+                frames = frames[:self.config.num_frames]
+                logger.debug(f"Trimmed frames from {len(all_frames)} to {self.config.num_frames}")
+            elif len(frames) < self.config.num_frames:
+                # Repeat frames if we're short (shouldn't happen with correct chunk calculation)
+                logger.warning(
+                    f"Only got {len(frames)} frames, expected {self.config.num_frames}. "
+                    f"Repeating last frame to reach target."
+                )
+                while len(frames) < self.config.num_frames:
+                    frames.append(frames[-1] if frames else frames[0])
+            
+            # Final verification
+            if len(frames) != self.config.num_frames:
                 raise RuntimeError(
-                    f"No windows generated from video at index {idx}: {video_path}"
+                    f"Chunked loading failed: got {len(frames)} frames, expected {self.config.num_frames}"
                 )
             
-            # For training, randomly select one window; for inference, use first window
-            # (Inference can aggregate multiple windows later)
-            if self.train:
-                import random
-                selected_window = random.choice(windows)
-            else:
-                selected_window = windows[0]  # Use first window for deterministic inference
-            
-            indices = selected_window
+            # Clear video tensor to free memory (chunks already processed)
+            del video
+            import gc
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
         else:
-            # Uniform sampling (default)
-            indices = uniform_sample_indices(total_frames, self.config.num_frames)
-        
-        frames: List[torch.Tensor] = []
-
-        # Check if using scaled videos - if so, skip all augmentations
-        use_scaled_videos = getattr(self.config, 'use_scaled_videos', False)
-
-        for i in indices:
-            frame = video[i].numpy().astype(np.uint8)  # (H, W, C)
-            frame_tensor = self._frame_transform(frame)  # (C, H, W)
+            # Original non-chunked loading
+            # Support both uniform sampling and rolling windows
+            if self.config.rolling_window:
+                window_size = self.config.window_size or self.config.num_frames
+                stride = self.config.window_stride
+                windows = rolling_window_indices(total_frames, window_size, stride)
+                
+                if not windows:
+                    raise RuntimeError(
+                        f"No windows generated from video at index {idx}: {video_path}"
+                    )
+                
+                # For training, randomly select one window; for inference, use first window
+                # (Inference can aggregate multiple windows later)
+                if self.train:
+                    import random
+                    selected_window = random.choice(windows)
+                else:
+                    selected_window = windows[0]  # Use first window for deterministic inference
+                
+                indices = selected_window
+            else:
+                # Uniform sampling (default)
+                indices = uniform_sample_indices(total_frames, self.config.num_frames)
             
-            # Apply post-tensor augmentations if available (only normalization for scaled videos)
-            if self._post_tensor_transform is not None:
-                frame_tensor = self._post_tensor_transform(frame_tensor)
-            
-            frames.append(frame_tensor)
+            frames: List[torch.Tensor] = []
+
+            # Check if using scaled videos - if so, skip all augmentations
+            use_scaled_videos = getattr(self.config, 'use_scaled_videos', False)
+
+            for i in indices:
+                frame = video[i].numpy().astype(np.uint8)  # (H, W, C)
+                frame_tensor = self._frame_transform(frame)  # (C, H, W)
+                
+                # Apply post-tensor augmentations if available (only normalization for scaled videos)
+                if self._post_tensor_transform is not None:
+                    frame_tensor = self._post_tensor_transform(frame_tensor)
+                
+                frames.append(frame_tensor)
         
         # No temporal augmentations when using scaled videos (augmentation done in Stage 1)
         # Temporal augmentations are only applied if NOT using scaled videos
@@ -560,7 +648,18 @@ class VideoDataset(Dataset):
                 f"No frames extracted from video at index {idx}: {video_path}"
             )
 
+        # Stack frames into clip tensor
+        # For chunked loading, this happens after all chunks are processed
         clip = torch.stack(frames, dim=0)  # (T, C, H, W)
+        
+        # Clear frames list to free memory (clip tensor now holds the data)
+        del frames
+        if not use_chunked_loading:
+            # For non-chunked loading, also clear video tensor here
+            del video
+        import gc
+        gc.collect()
+        
         label = torch.tensor(label_idx, dtype=torch.long)
         return clip, label
 
