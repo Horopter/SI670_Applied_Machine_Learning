@@ -683,14 +683,14 @@ class XGBoostPretrainedBaseline:
         
         # Train XGBoost with class weights and early stopping
         logger.info("Training XGBoost with improved architecture (multi-layer + temporal pooling + class weights + early stopping)...")
-        self.model = xgb.XGBClassifier(**fit_params)
         
-        # Use early stopping to prevent overfitting
-        # Monitor validation loss and stop if no improvement for 20 rounds
         # CRITICAL: XGBoost API varies by version - handle all cases robustly
+        # XGBoost 2.0+ requires callbacks in CONSTRUCTOR, not fit()
+        # XGBoost < 2.0 uses early_stopping_rounds in fit()
         try:
             if USE_FIT_EARLY_STOPPING:
                 # XGBoost < 2.0: early_stopping_rounds is a parameter to fit()
+                self.model = xgb.XGBClassifier(**fit_params)
                 self.model.fit(
                     X_train, y_train,
                     eval_set=[(X_val, y_val)],
@@ -698,39 +698,51 @@ class XGBoostPretrainedBaseline:
                     verbose=False
                 )
             else:
-                # XGBoost >= 2.0: try callbacks in fit() first
+                # XGBoost >= 2.0: callbacks must be in CONSTRUCTOR, not fit()
+                # Try callbacks in constructor first (correct API for 2.0+)
                 try:
                     from xgboost.callback import EarlyStopping
                     callbacks = [EarlyStopping(rounds=20, save_best=True)]
+                    # CRITICAL: Remove any early_stopping_rounds from fit_params to avoid conflicts
+                    constructor_params = fit_params.copy()
+                    constructor_params.pop('early_stopping_rounds', None)
+                    self.model = xgb.XGBClassifier(**constructor_params, callbacks=callbacks)
                     self.model.fit(
                         X_train, y_train,
                         eval_set=[(X_val, y_val)],
-                        callbacks=callbacks,
                         verbose=False
                     )
                 except (ImportError, AttributeError, TypeError) as e:
-                    # callbacks not available or not supported in fit() - try constructor
-                    logger.warning(f"Callbacks in fit() not supported: {e}. Trying constructor or fallback.")
+                    # Callbacks not available - try early_stopping_rounds in constructor
+                    logger.warning(f"Callbacks in constructor not supported: {e}. Trying early_stopping_rounds in constructor.")
                     try:
-                        # Try setting early_stopping_rounds in constructor
-                        self.model = xgb.XGBClassifier(**fit_params, early_stopping_rounds=20)
+                        # Remove any existing early_stopping_rounds to avoid duplicates
+                        constructor_params = fit_params.copy()
+                        constructor_params.pop('early_stopping_rounds', None)
+                        self.model = xgb.XGBClassifier(**constructor_params, early_stopping_rounds=20)
                         self.model.fit(
                             X_train, y_train,
                             eval_set=[(X_val, y_val)],
                             verbose=False
                         )
-                    except (TypeError, AttributeError):
+                    except (TypeError, AttributeError) as e2:
                         # Final fallback: train without early stopping
-                        logger.warning("Early stopping not available in this XGBoost version, training without it")
+                        logger.warning(f"Early stopping not available: {e2}. Training without early stopping.")
+                        self.model = xgb.XGBClassifier(**fit_params)
                         self.model.fit(
                             X_train, y_train,
                             eval_set=[(X_val, y_val)],
                             verbose=False
                         )
         except TypeError as e:
-            # Catch any TypeError from fit() and fall back to no early stopping
-            if "callbacks" in str(e) or "early_stopping" in str(e).lower():
+            # Catch any remaining TypeError from fit() and fall back to no early stopping
+            if "callbacks" in str(e) or "early_stopping" in str(e).lower() or "unexpected keyword" in str(e).lower():
                 logger.warning(f"Early stopping API not supported: {e}. Training without early stopping.")
+                # Ensure model is created without early stopping parameters
+                constructor_params = fit_params.copy()
+                constructor_params.pop('early_stopping_rounds', None)
+                constructor_params.pop('callbacks', None)
+                self.model = xgb.XGBClassifier(**constructor_params)
                 self.model.fit(
                     X_train, y_train,
                     eval_set=[(X_val, y_val)],
