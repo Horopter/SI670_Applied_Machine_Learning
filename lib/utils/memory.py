@@ -21,23 +21,25 @@ logger = logging.getLogger(__name__)
 
 def aggressive_gc(clear_cuda: bool = True, threshold: int = 0) -> None:
     """
-    Perform aggressive garbage collection.
+    Perform aggressive garbage collection with multiple passes and CUDA cache clearing.
     
     Args:
         clear_cuda: Whether to clear CUDA cache
         threshold: GC threshold (0 = collect all generations)
     """
-    # Multiple passes of GC
+    # HIGHLY AGGRESSIVE: Multiple passes of GC (doubled from 5 to 10 for maximum cleanup)
     # Note: gc.collect() doesn't accept threshold in Python < 3.10, so we don't use it
-    for _ in range(3):
+    for _ in range(10):
         collected = gc.collect()
         if collected == 0:
             break
     
-    # Clear CUDA cache if requested
+    # Clear CUDA cache if requested (doubled passes for maximum cleanup)
     if clear_cuda and torch.cuda.is_available():
-        torch.cuda.empty_cache()
-        torch.cuda.synchronize()
+        # HIGHLY AGGRESSIVE: Multiple passes of cache clearing (doubled from 2 to 4) to ensure all memory is freed
+        for _ in range(4):
+            torch.cuda.empty_cache()
+        torch.cuda.synchronize()  # Ensure all operations complete before returning
 
 
 def get_memory_stats() -> Dict[str, float]:

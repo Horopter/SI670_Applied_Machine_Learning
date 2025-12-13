@@ -135,9 +135,25 @@ def train_video_model(
         # Fallback: server version doesn't have use_scaled_videos parameter
         logger.warning(
             "VideoConfig on server doesn't support 'use_scaled_videos' parameter. "
-            "Using default VideoConfig (videos should already be scaled from Stage 3)."
+            "Using default VideoConfig and setting use_scaled_videos=True manually (videos should already be scaled from Stage 3)."
         )
         video_config = VideoConfig(num_frames=num_frames)
+        # CRITICAL: Set use_scaled_videos=True even if constructor doesn't support it
+        # Stage 5 ALWAYS uses scaled videos from Stage 3
+        video_config.use_scaled_videos = True
+        logger.info("Manually set use_scaled_videos=True on VideoConfig (server version fallback)")
+    
+    # CRITICAL: Verify use_scaled_videos is True (Stage 5 ALWAYS uses scaled videos from Stage 3)
+    # This ensures it's set correctly even if the constructor supports it but something went wrong
+    if not getattr(video_config, 'use_scaled_videos', False):
+        logger.warning(
+            "CRITICAL: use_scaled_videos is False in VideoConfig for Stage 5! "
+            "This should NEVER happen - Stage 5 always uses scaled videos from Stage 3. "
+            "Forcing use_scaled_videos=True."
+        )
+        video_config.use_scaled_videos = True
+        logger.info("Forced use_scaled_videos=True on VideoConfig (Stage 5 requirement)")
+    
     use_variable_ar = (model_type == "variable_ar_cnn")
     
     # Get model memory config for batch size and gradient accumulation

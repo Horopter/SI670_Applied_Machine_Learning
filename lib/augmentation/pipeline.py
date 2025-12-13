@@ -793,7 +793,7 @@ def stage1_augment_videos(
                     original_already_in_metadata = False
                     if existing_metadata is not None:
                         for row in existing_metadata.iter_rows(named=True):
-                            if row.get("original_video") == video_rel and row.get("is_original") == True:
+                            if row.get("original_video") == video_rel and row.get("is_original") is True:
                                 original_already_in_metadata = True
                                 break
                     
@@ -822,7 +822,7 @@ def stage1_augment_videos(
             original_already_in_metadata = False
             if existing_metadata is not None:
                 for row in existing_metadata.iter_rows(named=True):
-                    if row.get("original_video") == video_rel and row.get("is_original") == True:
+                    if row.get("original_video") == video_rel and row.get("is_original") is True:
                         original_already_in_metadata = True
                         break
             

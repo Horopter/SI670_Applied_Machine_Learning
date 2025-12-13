@@ -66,6 +66,42 @@ class R2Plus1DModel(nn.Module):
         Returns:
             Logits (N, 1)
         """
+        # CRITICAL: Handle small spatial dimensions like X3D, SlowFast, and I3D
+        # R(2+1)D also requires minimum spatial dimensions for proper processing
+        if x.dim() == 5:
+            N, C, T, H, W = x.shape
+            min_spatial_size = 32  # Minimum required for R(2+1)D
+            
+            if H < min_spatial_size or W < min_spatial_size:
+                import torch.nn.functional as F
+                
+                if H <= 0 or W <= 0:
+                    new_h = min_spatial_size
+                    new_w = min_spatial_size
+                else:
+                    if H < W:
+                        scale_factor = min_spatial_size / max(H, 1.0)
+                        new_h = min_spatial_size
+                        new_w = max(min_spatial_size, int(W * scale_factor))
+                    else:
+                        scale_factor = min_spatial_size / max(W, 1.0)
+                        new_w = min_spatial_size
+                        new_h = max(min_spatial_size, int(H * scale_factor))
+                
+                new_h = max(new_h, min_spatial_size)
+                new_w = max(new_w, min_spatial_size)
+                
+                x_reshaped = x.permute(0, 2, 1, 3, 4).contiguous()  # (N, T, C, H, W)
+                x_reshaped = x_reshaped.view(N * T, C, H, W)  # (N*T, C, H, W)
+                x_resized = F.interpolate(
+                    x_reshaped, 
+                    size=(new_h, new_w), 
+                    mode='bilinear', 
+                    align_corners=False
+                )  # (N*T, C, H', W')
+                x_resized = x_resized.view(N, T, C, new_h, new_w)  # (N, T, C, H', W')
+                x = x_resized.permute(0, 2, 1, 3, 4).contiguous()  # (N, C, T, H', W')
+        
         return self.backbone(x)
 
 

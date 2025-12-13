@@ -200,9 +200,23 @@ def get_predictions_from_model(
         
         return np.vstack(all_probs)
     else:
-        # Sklearn model
+        # Sklearn model - extract video paths from dataset's DataFrame
+        # VideoDataset stores the DataFrame internally, extract video_path column
+        if hasattr(dataset, 'df_pl') and dataset.df_pl is not None:
+            # Polars DataFrame
+            video_paths = dataset.df_pl["video_path"].to_list()
+        elif hasattr(dataset, 'df_pd') and dataset.df_pd is not None:
+            # Pandas DataFrame
+            video_paths = dataset.df_pd["video_path"].tolist()
+        else:
+            # Fallback: extract from dataset by iterating
+            video_paths = []
+            for i in range(len(dataset)):
+                row = dataset._get_row(i)
+                video_paths.append(row["video_path"])
+        
         df = pl.DataFrame({
-            "video_path": [dataset.video_paths[i] for i in range(len(dataset))]
+            "video_path": video_paths
         })
         probs = model.predict(df, project_root)
         return probs
@@ -304,16 +318,34 @@ def train_ensemble_model(
     # Create video config
     # Lazy import to avoid circular dependency
     from lib.models import VideoConfig
-    # Handle both old and new VideoConfig versions (some servers may not have fixed_size parameter)
+    # CRITICAL: Ensemble training is called from Stage 5, which ALWAYS uses scaled videos from Stage 3
+    # Handle both old and new VideoConfig versions (some servers may not have fixed_size or use_scaled_videos parameter)
     try:
-        video_config = VideoConfig(num_frames=num_frames, fixed_size=256)
+        video_config = VideoConfig(
+            num_frames=num_frames,
+            fixed_size=256,
+            use_scaled_videos=True  # Stage 5 always uses scaled videos
+        )
     except TypeError:
-        # Fallback: server version doesn't have fixed_size parameter
+        # Fallback: server version doesn't support these parameters
         logger.warning(
-            "VideoConfig on server doesn't support 'fixed_size' parameter. "
-            "Using default VideoConfig."
+            "VideoConfig on server doesn't support 'fixed_size' or 'use_scaled_videos' parameters. "
+            "Using default VideoConfig and setting manually."
         )
         video_config = VideoConfig(num_frames=num_frames)
+        # CRITICAL: Set use_scaled_videos=True even if constructor doesn't support it
+        # Stage 5 ALWAYS uses scaled videos from Stage 3
+        video_config.use_scaled_videos = True
+        logger.info("Manually set use_scaled_videos=True on VideoConfig (server version fallback)")
+    
+    # CRITICAL: Verify use_scaled_videos is True (Stage 5 requirement)
+    if not getattr(video_config, 'use_scaled_videos', False):
+        logger.warning(
+            "CRITICAL: use_scaled_videos is False in VideoConfig for ensemble training! "
+            "Stage 5 ALWAYS uses scaled videos from Stage 3. Forcing use_scaled_videos=True."
+        )
+        video_config.use_scaled_videos = True
+        logger.info("Forced use_scaled_videos=True on VideoConfig (Stage 5 requirement)")
     
     # Get all folds
     all_folds = stratified_kfold(scaled_df, n_splits=n_splits, random_state=42)

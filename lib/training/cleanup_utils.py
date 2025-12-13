@@ -23,16 +23,13 @@ def cleanup_model_and_memory(
         device: PyTorch device (optional, for CUDA cache clearing)
         clear_cuda: Whether to clear CUDA cache if available
     """
-    # Delete model if provided or check locals
+    # Delete model if provided
+    # NOTE: Cannot use locals() to delete variables - it doesn't work in Python
+    # The caller should pass the model explicitly if they want it deleted
     if model is not None:
         try:
             del model
         except (AttributeError, RuntimeError):
-            pass
-    elif 'model' in locals():
-        try:
-            del locals()['model']
-        except (AttributeError, RuntimeError, KeyError):
             pass
     
     # Clear GPU cache if using CUDA

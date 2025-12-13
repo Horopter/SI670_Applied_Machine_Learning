@@ -36,6 +36,22 @@ from .video_cache import (
     clear_cache,
 )
 
+# Frame cache (disk-based, memory-efficient)
+try:
+    from .frame_cache import (
+        get_video_cache_key,
+        get_frame_cache_path,
+        cache_frames,
+        load_cached_frames,
+        is_frame_cached,
+        clear_frame_cache,
+        get_cache_size_mb,
+    )
+    FRAME_CACHE_AVAILABLE = True
+except ImportError:
+    # Frame cache not available (missing dependencies)
+    FRAME_CACHE_AVAILABLE = False
+
 # Metrics utilities
 from .metrics import (
     collect_logits_and_labels,
@@ -112,5 +128,19 @@ __all__ = [
     "validate_directory",
     # Data integrity
     "DataIntegrityChecker",
+    # Frame cache (if available)
+    "FRAME_CACHE_AVAILABLE",
 ]
+
+# Conditionally add frame cache exports if available
+if FRAME_CACHE_AVAILABLE:
+    __all__.extend([
+        "get_video_cache_key",
+        "get_frame_cache_path",
+        "cache_frames",
+        "load_cached_frames",
+        "is_frame_cached",
+        "clear_frame_cache",
+        "get_cache_size_mb",
+    ])
 

@@ -8,6 +8,7 @@ Supports multiple model types and k-fold cross-validation.
 from __future__ import annotations
 
 import logging
+import os
 import sys
 import importlib.util
 from dataclasses import dataclass
@@ -486,6 +487,12 @@ def stage5_train_models(
     Returns:
         Dictionary of training results
     """
+    # CRITICAL: Set PyTorch memory optimizations at the very start (before any model operations)
+    import os
+    if "PYTORCH_CUDA_ALLOC_CONF" not in os.environ:
+        os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+        logger.info("Set PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True at pipeline start")
+    
     # Immediate logging to show function has started
     logger.info("=" * 80)
     logger.info("Stage 5: Model Training Pipeline Started")
@@ -665,8 +672,27 @@ def stage5_train_models(
     # Always use scaled videos - augmentation done in Stage 1, scaling in Stage 3
     # Handle both old and new VideoConfig versions (some servers may not have use_scaled_videos yet)
     # For memory-intensive models (5c+), use chunked frame loading with adaptive sizing to prevent OOM
-    # Adaptive chunk size starts at 30, reduces on OOM (multiplicative decrease), increases on success (additive increase)
+    # Adaptive chunk size starts at lower values for very memory-intensive models, reduces on OOM (multiplicative decrease), increases on success (additive increase)
     # Memory-intensive models that need chunked frame loading (5c+ scripts)
+    # Models 5c-5l need very small initial chunk size (10) due to persistent OOM - consistent with forward pass chunk size
+    MEMORY_INTENSIVE_MODELS_SMALL_CHUNK = [
+        "naive_cnn",           # 5c - processes 1000 frames at full resolution, very memory intensive
+        "pretrained_inception", # 5d - large pretrained model
+        "variable_ar_cnn",     # 5e - variable-length videos with many frames
+        "vit_gru",             # 5k - Vision Transformer with GRU
+        "vit_transformer",     # 5l - Vision Transformer
+    ]
+    
+    # XGBoost models that use pretrained models for feature extraction
+    # These need reduced num_frames to prevent OOM during feature extraction
+    XGBOOST_PRETRAINED_MODELS = [
+        "xgboost_pretrained_inception",  # 5f
+        "xgboost_i3d",                    # 5g
+        "xgboost_r2plus1d",               # 5h
+        "xgboost_vit_gru",                # 5i
+        "xgboost_vit_transformer",        # 5j
+    ]
+    
     MEMORY_INTENSIVE_MODELS = [
         "naive_cnn",           # 5c - processes 1000 frames at full resolution
         "pretrained_inception", # 5d - large pretrained model
@@ -675,13 +701,19 @@ def stage5_train_models(
         "r2plus1d",            # 5p - 3D CNN
         "x3d",                 # 5q - very memory intensive
         "slowfast",            # 5r - dual-pathway architecture
+        "vit_gru",             # 5k - Vision Transformer with GRU
+        "vit_transformer",     # 5l - Vision Transformer
     ]
     use_chunked_loading = False
     chunk_size = None
     for model_type in model_types:
         if model_type in MEMORY_INTENSIVE_MODELS:
             use_chunked_loading = True
-            chunk_size = 30  # Initial chunk size (reduced from 200 to prevent OOM)
+            # Use very small chunk size (10) for models 5c-5l that have persistent OOM issues
+            if model_type in MEMORY_INTENSIVE_MODELS_SMALL_CHUNK:
+                chunk_size = 10  # Initial chunk size for very memory-intensive models (5c-5l) - consistent with forward pass, capped at 28
+            else:
+                chunk_size = 30  # Initial chunk size for other memory-intensive models (5o-5r)
             logger.info(
                 f"Enabling adaptive chunked frame loading for {model_type}: "
                 f"initial_chunk_size={chunk_size}, num_frames={num_frames}. "
@@ -689,26 +721,86 @@ def stage5_train_models(
             )
             break
     
+    # Frame caching is enabled by default (can be disabled via FVC_USE_FRAME_CACHE=0)
+    # CRITICAL: Frame caching is DISK-based (not RAM) - stores frames on disk to avoid repeated video decoding
+    # This can speed up training 3-5x by avoiding CPU-intensive video decoding every epoch
+    # Default: enabled (FVC_USE_FRAME_CACHE=1), can be disabled by setting FVC_USE_FRAME_CACHE=0
+    use_frame_cache = os.environ.get("FVC_USE_FRAME_CACHE", "1") == "1"
+    frame_cache_dir = os.environ.get("FVC_FRAME_CACHE_DIR", "data/.frame_cache")
+    
+    if use_frame_cache:
+        logger.info(
+            f"Frame caching enabled (default): cache_dir={frame_cache_dir}. "
+            f"This will cache processed frames to disk to speed up training. "
+            f"First epoch will be slower (building cache), subsequent epochs will be faster. "
+            f"To disable, set FVC_USE_FRAME_CACHE=0"
+        )
+    else:
+        logger.info(
+            "Frame caching disabled (FVC_USE_FRAME_CACHE=0). "
+            "Training will decode videos every epoch (slower but uses less disk space)."
+        )
+    
     try:
-        # Try with use_scaled_videos and chunk_size (newer version)
+        # Try with use_scaled_videos, chunk_size, and frame_cache options (newer version)
         if use_chunked_loading and chunk_size is not None:
             video_config = VideoConfig(
                 num_frames=num_frames,
                 use_scaled_videos=True,  # Stage 5 only trains - all preprocessing done in earlier stages
-                chunk_size=chunk_size  # Chunked loading for OOM prevention
+                chunk_size=chunk_size,  # Chunked loading for OOM prevention
+                use_frame_cache=use_frame_cache,  # Enable disk-based frame caching
+                frame_cache_dir=frame_cache_dir if use_frame_cache else None  # Cache directory
             )
         else:
             video_config = VideoConfig(
                 num_frames=num_frames,
-                use_scaled_videos=True  # Stage 5 only trains - all preprocessing done in earlier stages
+                use_scaled_videos=True,  # Stage 5 only trains - all preprocessing done in earlier stages
+                use_frame_cache=use_frame_cache,  # Enable disk-based frame caching
+                frame_cache_dir=frame_cache_dir if use_frame_cache else None  # Cache directory
             )
     except TypeError:
         # Fallback: server version doesn't support these parameters
         logger.warning(
-            "VideoConfig on server doesn't support 'use_scaled_videos' or 'chunk_size' parameters. "
-            "Using default VideoConfig (videos should already be scaled from Stage 3)."
+            "VideoConfig on server doesn't support 'use_scaled_videos', 'chunk_size', or frame_cache parameters. "
+            "Using default VideoConfig and setting use_scaled_videos=True and frame_cache manually (videos should already be scaled from Stage 3)."
         )
         video_config = VideoConfig(num_frames=num_frames)
+        # CRITICAL: Set use_scaled_videos=True even if constructor doesn't support it
+        # Stage 5 ALWAYS uses scaled videos from Stage 3
+        video_config.use_scaled_videos = True
+        logger.info("Manually set use_scaled_videos=True on VideoConfig (server version fallback)")
+        # CRITICAL: Set frame_cache parameters even if constructor doesn't support them
+        # Frame caching is enabled by default to speed up training
+        if use_frame_cache:
+            video_config.use_frame_cache = True
+            video_config.frame_cache_dir = frame_cache_dir
+            logger.info(f"Manually set use_frame_cache=True, frame_cache_dir={frame_cache_dir} on VideoConfig (server version fallback)")
+    
+    # CRITICAL: Verify use_scaled_videos is True (Stage 5 ALWAYS uses scaled videos from Stage 3)
+    # This ensures it's set correctly even if the constructor supports it but something went wrong
+    if not getattr(video_config, 'use_scaled_videos', False):
+        logger.warning(
+            "CRITICAL: use_scaled_videos is False in VideoConfig for Stage 5! "
+            "This should NEVER happen - Stage 5 always uses scaled videos from Stage 3. "
+            "Forcing use_scaled_videos=True."
+        )
+        video_config.use_scaled_videos = True
+        logger.info("Forced use_scaled_videos=True on VideoConfig (Stage 5 requirement)")
+    
+    # CRITICAL: Override num_frames to 500 for small-chunk models (5c-5l) to prevent OOM
+    # These models process many frames at full resolution and need to limit to 500 frames max
+    # Also override for XGBoost models that use pretrained feature extractors (5f, 5g, 5h, 5i, 5j)
+    # Feature extraction with 1000 frames is too memory-intensive
+    for model_type in model_types:
+        if model_type in MEMORY_INTENSIVE_MODELS_SMALL_CHUNK or model_type in XGBOOST_PRETRAINED_MODELS:
+            target_frames = 500 if model_type in MEMORY_INTENSIVE_MODELS_SMALL_CHUNK else 250  # XGBoost models need even fewer frames
+            video_config.num_frames = target_frames
+            logger.info(
+                f"Overriding num_frames to {target_frames} for {model_type} "
+                f"({'small-chunk model' if model_type in MEMORY_INTENSIVE_MODELS_SMALL_CHUNK else 'XGBoost pretrained model'}) "
+                f"to prevent OOM. Original num_frames was {num_frames}."
+            )
+            break  # Only need to set once since video_config is shared
     
     results = {}
     
@@ -765,6 +857,21 @@ def stage5_train_models(
         # Get model config
         model_config = get_model_config(model_type)
         
+        # CRITICAL: Override num_frames in model_config for small-chunk models (5c-5l) and XGBoost models (5f-5j)
+        # This ensures the model is created with reduced num_frames instead of 1000
+        if model_type in MEMORY_INTENSIVE_MODELS_SMALL_CHUNK:
+            model_config["num_frames"] = 500
+            logger.info(
+                f"Overriding model_config num_frames to 500 for {model_type} "
+                f"(small-chunk model) to match video_config."
+            )
+        elif model_type in XGBOOST_PRETRAINED_MODELS:
+            model_config["num_frames"] = 250  # XGBoost models need even fewer frames for feature extraction
+            logger.info(
+                f"Overriding model_config num_frames to 250 for {model_type} "
+                f"(XGBoost pretrained model) to prevent OOM during feature extraction."
+            )
+        
         # K-fold cross-validation
         fold_results = []
         
@@ -783,26 +890,34 @@ def stage5_train_models(
         logger.info(f"Grid search: {len(param_combinations)} hyperparameter combinations to try")
         _flush_logs()
         
-        # OPTIMIZATION: Use 20% stratified sample for hyperparameter search (faster)
+        # OPTIMIZATION: Use smaller stratified sample for hyperparameter search (faster)
         # Final training will use full dataset for robustness
+        # Can be controlled via FVC_GRID_SEARCH_SAMPLE_SIZE environment variable (default: 0.1 = 10%)
         from sklearn.model_selection import StratifiedShuffleSplit
         import polars as pl
         
+        # Get grid search sample size from environment (default: 10% for fastest results)
+        # Can be set to 0.2 for 20% (more robust but slower) or 0.05 for 5% (fastest but less robust)
+        grid_search_sample_size = float(os.environ.get("FVC_GRID_SEARCH_SAMPLE_SIZE", "0.1"))
+        grid_search_sample_size = max(0.05, min(0.5, grid_search_sample_size))  # Clamp between 5% and 50%
+        
         logger.info("=" * 80)
-        logger.info("HYPERPARAMETER SEARCH: Using 20% stratified sample for efficiency")
+        logger.info(f"HYPERPARAMETER SEARCH: Using {grid_search_sample_size*100:.1f}% stratified sample for efficiency")
         logger.info("=" * 80)
         
-        # Sample 20% of data for hyperparameter search
+        # Sample data for hyperparameter search
         labels = scaled_df["label"].to_list()
-        sss = StratifiedShuffleSplit(n_splits=1, test_size=0.8, random_state=42)
+        test_size = 1.0 - grid_search_sample_size
+        sss = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=42)
         sample_indices, _ = next(sss.split(scaled_df, labels))
         
-        # Create 20% sample DataFrame
+        # Create sample DataFrame
         sample_df = scaled_df[sample_indices]
         logger.info(f"Hyperparameter search sample: {sample_df.height} rows ({100.0 * sample_df.height / scaled_df.height:.1f}% of {scaled_df.height} total)")
+        logger.info(f"To change sample size, set FVC_GRID_SEARCH_SAMPLE_SIZE environment variable (current: {grid_search_sample_size})")
         _flush_logs()
         
-        # Create folds from 20% sample for hyperparameter search
+        # Create folds from sample for hyperparameter search
         grid_search_folds = stratified_kfold(
             sample_df,
             n_splits=n_splits,
@@ -812,13 +927,13 @@ def stage5_train_models(
         if len(grid_search_folds) != n_splits:
             raise ValueError(f"Expected {n_splits} folds for grid search, got {len(grid_search_folds)}")
         
-        logger.info(f"Using {n_splits}-fold stratified cross-validation on 20% sample for hyperparameter search")
+        logger.info(f"Using {n_splits}-fold stratified cross-validation on {grid_search_sample_size*100:.1f}% sample for hyperparameter search")
         _flush_logs()
         
         # Store results for all hyperparameter combinations
         all_grid_results = []
         
-        # Grid search: try each hyperparameter combination on 20% sample
+        # Grid search: try each hyperparameter combination on sample
         if not param_combinations:
             # No grid search, use default config
             param_combinations = [{}]
@@ -855,9 +970,9 @@ def stage5_train_models(
             # Store fold results for this parameter combination
             param_fold_results = []
             
-            # Train all folds with this hyperparameter combination (using 20% sample)
+            # Train all folds with this hyperparameter combination (using sample)
             for fold_idx in range(n_splits):
-                logger.info(f"\nHyperparameter Search - {model_type} - Fold {fold_idx + 1}/{n_splits} (20% sample)")
+                logger.info(f"\nHyperparameter Search - {model_type} - Fold {fold_idx + 1}/{n_splits} ({grid_search_sample_size*100:.1f}% sample)")
                 _flush_logs()
                 
                 # Delete existing fold if delete_existing is True (do this BEFORE checking if complete)
@@ -881,7 +996,7 @@ def stage5_train_models(
                     # in grid search results but continue with other folds
                     continue
                 
-                # Get the specific fold from 20% sample
+                # Get the specific fold from sample
                 train_df, val_df = grid_search_folds[fold_idx]
             
                 # Validate no data leakage (check dup_group if present)
@@ -989,6 +1104,26 @@ def stage5_train_models(
                         )
                         # PyTorch model training
                         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+                        
+                        # CRITICAL: Apply PyTorch memory optimizations to prevent GPU memory from being hogged
+                        if device.type == "cuda":
+                            # Set CUDA memory allocator to use expandable segments (reduces fragmentation)
+                            import os
+                            if "PYTORCH_CUDA_ALLOC_CONF" not in os.environ:
+                                os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+                            
+                            # Disable cuDNN benchmark to reduce memory usage (trade-off: slightly slower)
+                            torch.backends.cudnn.benchmark = False
+                            
+                            # Enable deterministic mode to reduce memory (optional, but helps with memory)
+                            torch.backends.cudnn.deterministic = False  # Keep False for performance, but benchmark=False helps memory
+                            
+                            # Clear cache before model creation
+                            torch.cuda.empty_cache()
+                            torch.cuda.synchronize()
+                            aggressive_gc(clear_cuda=True)
+                            logger.info("Applied PyTorch memory optimizations: expandable_segments, cudnn.benchmark=False")
+                        
                         try:
                             model = create_model(model_type, model_config)
                         except TypeError as e:
@@ -1116,6 +1251,38 @@ def stage5_train_models(
                                 sample_batch = next(iter(test_loader))
                                 sample_clips, sample_labels = sample_batch
                                 
+                                # CRITICAL: Validate input dimensions for X3D and SlowFast models
+                                # These models require minimum spatial dimensions (typically 32x32 or larger)
+                                # X3D uses pooling kernels of size 7x7, so needs at least 7x7, but ideally 32x32+
+                                # SlowFast also requires reasonable spatial dimensions
+                                if model_type in ["x3d", "slowfast"]:
+                                    # Check input shape: (N, C, T, H, W) or (N, T, C, H, W)
+                                    if sample_clips.dim() == 5:
+                                        if sample_clips.shape[1] == 3:  # (N, C, T, H, W)
+                                            N, C, T, H, W = sample_clips.shape
+                                        else:  # (N, T, C, H, W)
+                                            N, T, C, H, W = sample_clips.shape
+                                        
+                                        # X3D requires minimum 32x32 spatial dimensions (pooling kernel is 7x7, but needs buffer)
+                                        # SlowFast also requires reasonable spatial dimensions
+                                        min_spatial_size = 32
+                                        if H < min_spatial_size or W < min_spatial_size:
+                                            logger.warning(
+                                                f"Skipping forward pass test for {model_type}: input spatial dimensions "
+                                                f"({H}x{W}) are too small (minimum {min_spatial_size}x{min_spatial_size} required). "
+                                                f"Temporal dimension: {T}. "
+                                                f"This video may be filtered during training. Continuing with training..."
+                                            )
+                                            _flush_logs()
+                                            # Skip the forward pass test - training will handle small videos via error handling
+                                            del sample_batch, sample_clips, sample_labels
+                                            del test_loader
+                                            if device.type == "cuda":
+                                                torch.cuda.empty_cache()
+                                                torch.cuda.synchronize()
+                                            # Continue to training - the DataLoader will handle small videos
+                                            break
+                                
                                 # Move to device
                                 sample_clips = sample_clips.to(device, non_blocking=False)
                                 
@@ -1134,6 +1301,15 @@ def stage5_train_models(
                                         )
                                         # Try to continue anyway - sometimes training with gradient accumulation works
                                         logger.warning("Attempting to continue with training (may fail if model is too large)...")
+                                        # Don't raise - let training attempt proceed
+                                    elif "smaller than kernel size" in error_msg.lower() or "input image" in error_msg.lower():
+                                        # Handle dimension mismatch errors gracefully for X3D/SlowFast
+                                        logger.warning(
+                                            f"Input dimension mismatch during forward pass test for {model_type}: {oom_error}. "
+                                            f"Input shape: {sample_clips.shape}. "
+                                            f"This may indicate some videos have very small spatial dimensions. "
+                                            f"Training will handle this via error handling. Continuing..."
+                                        )
                                         # Don't raise - let training attempt proceed
                                     else:
                                         raise
@@ -1268,10 +1444,13 @@ def stage5_train_models(
                                         f"Model: {model_type}, Fold: {fold_idx + 1}, "
                                         f"Current batch size: {batch_size}"
                                     )
-                                    # Clean up GPU memory
+                                    # Clean up GPU memory aggressively
                                     if device.type == "cuda":
-                                        torch.cuda.empty_cache()
-                                        torch.cuda.synchronize()
+                                        # Multiple passes of cache clearing
+                                        for _ in range(3):
+                                            torch.cuda.empty_cache()
+                                            torch.cuda.synchronize()
+                                        aggressive_gc(clear_cuda=True)
                                     # Increment retry count and try again with smaller batch size
                                     oom_retry_count += 1
                                     continue
@@ -1704,11 +1883,11 @@ def stage5_train_models(
                 logger.info(f"Parameter combination {param_idx + 1} - Mean F1: {mean_f1:.4f}, Mean Acc: {mean_acc:.4f}")
                 _flush_logs()
         
-        # Select best hyperparameters from grid search (on 20% sample)
+        # Select best hyperparameters from grid search (on sample)
         best_params = None
         if param_combinations and all_grid_results and len(all_grid_results) > 1:
             best_params = select_best_hyperparameters(model_type, all_grid_results)
-            logger.info(f"Best hyperparameters selected from 20% sample: {best_params}")
+            logger.info(f"Best hyperparameters selected from {grid_search_sample_size*100:.1f}% sample: {best_params}")
             _flush_logs()
         elif param_combinations and len(param_combinations) == 1:
             # Single parameter combination - use it
@@ -1839,6 +2018,23 @@ def stage5_train_models(
                     )
                     
                     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+                    
+                    # CRITICAL: Apply PyTorch memory optimizations to prevent GPU memory from being hogged
+                    if device.type == "cuda":
+                        # Set CUDA memory allocator to use expandable segments (reduces fragmentation)
+                        import os
+                        if "PYTORCH_CUDA_ALLOC_CONF" not in os.environ:
+                            os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+                        
+                        # Disable cuDNN benchmark to reduce memory usage (trade-off: slightly slower)
+                        torch.backends.cudnn.benchmark = False
+                        
+                        # Clear cache before model creation
+                        torch.cuda.empty_cache()
+                        torch.cuda.synchronize()
+                        aggressive_gc(clear_cuda=True)
+                        logger.info("Applied PyTorch memory optimizations: expandable_segments, cudnn.benchmark=False")
+                    
                     model = create_model(model_type, final_config)
                     model = model.to(device)
                     

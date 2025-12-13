@@ -115,9 +115,9 @@ class NaiveCNNBaseline(nn.Module):
             if x.shape[2] < 8 or x.shape[3] < 8:
                 raise ValueError(f"Input spatial dimensions too small: {x.shape[2]}x{x.shape[3]}, minimum 8x8 required")
             
-            # Process frames in chunks to avoid OOM when processing many frames (e.g., 1000)
-            # Chunk size: process up to 100 frames at a time to limit memory usage
-            chunk_size = 100
+            # Process frames in chunks to avoid OOM when processing many frames (max 500 for small-chunk models)
+            # Chunk size: process up to 10 frames at a time to limit memory usage (consistent with data loading chunk size)
+            chunk_size = 10
             total_frames = x.size(0)
             num_chunks = (total_frames + chunk_size - 1) // chunk_size
             

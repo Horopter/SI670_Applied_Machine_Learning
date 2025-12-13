@@ -16,6 +16,7 @@ from __future__ import annotations
 import os
 import logging
 from dataclasses import dataclass
+from pathlib import Path
 from typing import List, Sequence, Tuple, Optional, Dict, Any, Union
 
 import numpy as np
@@ -170,6 +171,12 @@ class VideoConfig:
     # If True, videos are already scaled/processed in Stage 3 - skip all transforms, only apply normalization
     # Stage 5 should ALWAYS use scaled videos (use_scaled_videos=True)
     use_scaled_videos: bool = False
+    # Frame caching: If True, cache sampled frames to disk to avoid repeated video decoding
+    # CRITICAL: This is a DISK cache (not RAM cache) - frames are stored on disk and loaded lazily
+    # Set frame_cache_dir to enable caching (None = disabled)
+    use_frame_cache: bool = False  # Enable/disable frame caching
+    frame_cache_dir: Optional[str] = None  # Directory for frame cache (e.g., "data/.frame_cache")
+    frame_cache_seed: Optional[int] = None  # Seed for deterministic frame sampling (None = use video hash)
 
 
 def uniform_sample_indices(total_frames: int, num_frames: int) -> List[int]:
@@ -343,14 +350,27 @@ class AdaptiveChunkSizeManager:
         
         Args:
             video_path: Optional video path for per-video tracking
-            base_chunk_size: Base chunk size from config (if provided, use as starting point)
+            base_chunk_size: Base chunk size from config (if provided, use as starting point and minimum)
         
         Returns:
             Current chunk size to use
         """
-        # Use base_chunk_size if provided, otherwise use cached or initial
+        # If base_chunk_size is provided, use it as the starting point
+        # Use cached value only if it's less than or equal to base (adaptive decreases are OK, but don't use stale increases)
         if base_chunk_size is not None:
-            current_size = base_chunk_size
+            # Check if there's a cached value that's smaller (from previous OOM reductions)
+            cached_size = None
+            if video_path and video_path in self._video_chunk_sizes:
+                cached_size = self._video_chunk_sizes[video_path]
+            elif self._global_chunk_size is not None:
+                cached_size = self._global_chunk_size
+            
+            # Use cached value only if it's smaller than base (from previous OOM reductions)
+            # Otherwise use base_chunk_size to ensure we start from the configured value
+            if cached_size is not None and cached_size < base_chunk_size:
+                current_size = cached_size
+            else:
+                current_size = base_chunk_size
         elif video_path and video_path in self._video_chunk_sizes:
             current_size = self._video_chunk_sizes[video_path]
         elif self._global_chunk_size is not None:
@@ -358,20 +378,28 @@ class AdaptiveChunkSizeManager:
         else:
             current_size = self.initial_chunk_size
         
+        # Model-specific max chunk size for 5c-5l (base_chunk_size=10 indicates these models)
+        # These models need stricter limits: max_chunk_size=28
+        if base_chunk_size == 10:
+            model_max_chunk_size = 28
+        else:
+            model_max_chunk_size = self.max_chunk_size
+        
         # Ensure within bounds
-        return max(self.min_chunk_size, min(self.max_chunk_size, current_size))
+        return max(self.min_chunk_size, min(model_max_chunk_size, current_size))
     
-    def on_oom(self, video_path: Optional[str] = None) -> int:
+    def on_oom(self, video_path: Optional[str] = None, base_chunk_size: Optional[int] = None) -> int:
         """
         Handle OOM error by reducing chunk size (multiplicative decrease).
         
         Args:
             video_path: Optional video path for per-video tracking
+            base_chunk_size: Base chunk size from config (if provided, use as reference)
         
         Returns:
             New reduced chunk size
         """
-        current_size = self.get_chunk_size(video_path)
+        current_size = self.get_chunk_size(video_path, base_chunk_size=base_chunk_size)
         new_size = max(self.min_chunk_size, int(current_size * self.decrease_factor))
         
         # Update cache
@@ -390,22 +418,39 @@ class AdaptiveChunkSizeManager:
         
         return new_size
     
-    def on_success(self, video_path: Optional[str] = None) -> int:
+    def on_success(self, video_path: Optional[str] = None, base_chunk_size: Optional[int] = None) -> int:
         """
         Handle successful processing by gradually increasing chunk size (additive increase).
         
         Args:
             video_path: Optional video path for per-video tracking
+            base_chunk_size: Base chunk size from config (if provided, use as reference)
         
         Returns:
             Current chunk size (may be increased if threshold met)
         """
         self._success_count += 1
-        current_size = self.get_chunk_size(video_path)
+        current_size = self.get_chunk_size(video_path, base_chunk_size=base_chunk_size)
+        
+        # CRITICAL: Freeze chunk size at 10 for ALL models when base_chunk_size == 10
+        # When base_chunk_size == 10, never increase chunk size (prevents OOM)
+        # Always return exactly 10 to ensure it stays frozen, regardless of cached values
+        if base_chunk_size == 10:
+            # Force return 10 to ensure chunk size stays frozen at 10 across all models
+            # Update cache to ensure consistency
+            if video_path:
+                self._video_chunk_sizes[video_path] = 10
+            else:
+                self._global_chunk_size = 10
+            return 10
+        
+        # Model-specific limits for other memory-intensive models
+        model_max_chunk_size = self.max_chunk_size
+        model_increase_increment = self.increase_increment
         
         # Only increase after success_threshold consecutive successes
         if self._success_count >= self.success_threshold:
-            new_size = min(self.max_chunk_size, current_size + self.increase_increment)
+            new_size = min(model_max_chunk_size, current_size + model_increase_increment)
             
             if new_size > current_size:
                 # Update cache
@@ -416,7 +461,7 @@ class AdaptiveChunkSizeManager:
                 
                 logger.info(
                     f"Chunk size increased from {current_size} to {new_size} "
-                    f"(after {self._success_count} successes, increment: {self.increase_increment})"
+                    f"(after {self._success_count} successes, increment: {model_increase_increment})"
                 )
                 # Reset success count after increase
                 self._success_count = 0
@@ -500,18 +545,45 @@ class VideoDataset(Dataset):
         if use_scaled_videos:
             # Scaled videos are already processed in Stage 3 - only apply normalization
             # No resizing, no augmentation (augmentation done in Stage 1, scaling done in Stage 3)
+            # CRITICAL: Scaled videos should be ~256px on one side - we should NOT resize them
             logger.debug("Using scaled videos: skipping all transforms, applying normalization only")
             self._frame_transform = transforms.Compose([
-                transforms.functional.to_pil_image,
-                transforms.ToTensor(),
+                transforms.functional.to_pil_image,  # Converts numpy array to PIL Image (preserves dimensions)
+                transforms.ToTensor(),  # Converts PIL Image to tensor (preserves dimensions)
             ])
+            # NOTE: No Resize() transform here - we preserve original dimensions from scaled videos
             self._post_tensor_transform = transforms.Compose([
-                transforms.Normalize(mean=IMG_MEAN, std=IMG_STD)
+                transforms.Normalize(mean=IMG_MEAN, std=IMG_STD)  # Only normalization, no resizing
             ])
         else:
             # Legacy path: Use comprehensive augmentations if available, otherwise fallback to basic
             # This path should not be used in Stage 5 (all videos should be scaled)
-            logger.warning("Not using scaled videos - this should not happen in Stage 5. Augmentation should be done in Stage 1.")
+            # CRITICAL: Check if we're in Stage 5 context - if so, this is an error that needs fixing
+            # Stage 5 ALWAYS uses scaled videos from Stage 3, so use_scaled_videos should ALWAYS be True
+            import traceback
+            stack_trace = ''.join(traceback.format_stack())
+            is_stage5 = 'stage5' in stack_trace.lower() or 'pipeline.py' in stack_trace
+            if is_stage5:
+                logger.error(
+                    "CRITICAL ERROR: use_scaled_videos=False in Stage 5! "
+                    "Stage 5 ALWAYS uses scaled videos from Stage 3. "
+                    "This indicates a configuration error - use_scaled_videos should be True. "
+                    "Falling back to scaled video mode (normalization only)."
+                )
+                # Force scaled video mode even if config says otherwise
+                use_scaled_videos = True
+                logger.debug("Using scaled videos: skipping all transforms, applying normalization only (forced)")
+                self._frame_transform = transforms.Compose([
+                    transforms.functional.to_pil_image,  # Converts numpy array to PIL Image (preserves dimensions)
+                    transforms.ToTensor(),  # Converts PIL Image to tensor (preserves dimensions)
+                ])
+                # NOTE: No Resize() transform here - we preserve original dimensions from scaled videos
+                self._post_tensor_transform = transforms.Compose([
+                    transforms.Normalize(mean=IMG_MEAN, std=IMG_STD)  # Only normalization, no resizing
+                ])
+            else:
+                # Not Stage 5 - this is acceptable (e.g., testing, other pipelines)
+                logger.warning("Not using scaled videos - this should not happen in Stage 5. Augmentation should be done in Stage 1.")
             try:
                 from lib.augmentation.transforms import build_comprehensive_frame_transforms
                 self._frame_transform, self._post_tensor_transform = build_comprehensive_frame_transforms(
@@ -545,6 +617,23 @@ class VideoDataset(Dataset):
     def _get_video_path(self, row: Dict[str, Any]) -> str:
         from lib.utils.paths import resolve_video_path
         video_rel = row["video_path"]
+        
+        # CRITICAL: If using scaled videos, check data/scaled_videos/ directory first
+        use_scaled_videos = getattr(self.config, 'use_scaled_videos', False)
+        if use_scaled_videos:
+            # Try scaled_videos directory first (Stage 3 output)
+            project_root_path = Path(self.project_root).resolve()
+            scaled_video_path = project_root_path / "data" / "scaled_videos" / video_rel
+            if scaled_video_path.exists() and scaled_video_path.is_file():
+                return str(scaled_video_path)
+            # If not found in scaled_videos, fall back to regular resolution
+            # (some videos might be in videos/ directory if scaling failed)
+            logger.debug(
+                f"Scaled video not found at {scaled_video_path}, "
+                f"falling back to regular video resolution for {video_rel}"
+            )
+        
+        # Regular video path resolution (checks videos/ directory and other locations)
         return resolve_video_path(video_rel, self.project_root)
     
     def _load_frames_chunked(
@@ -561,6 +650,9 @@ class VideoDataset(Dataset):
         This is separated from __getitem__ to enable retry logic with different chunk sizes.
         Raises RuntimeError on OOM to trigger adaptive chunk size reduction.
         """
+        # CRITICAL: Get use_scaled_videos flag early for validation - must be at method start
+        use_scaled_videos = getattr(self.config, 'use_scaled_videos', False)
+        
         # Chunked loading: process frames in chunks to reduce peak memory
         # Calculate number of chunks needed
         num_chunks = (self.config.num_frames + chunk_size - 1) // chunk_size  # Ceiling division
@@ -573,8 +665,6 @@ class VideoDataset(Dataset):
         )
         
         all_frames: List[torch.Tensor] = []
-        # use_scaled_videos is passed from __getitem__ or defined here if called directly
-        # This is a local variable in _load_frames_chunked, not used in this method but kept for consistency
         
         # Process each chunk sequentially to minimize peak memory
         for chunk_idx in range(num_chunks):
@@ -589,12 +679,40 @@ class VideoDataset(Dataset):
                 # Load and process frames for this chunk
                 chunk_frame_tensors: List[torch.Tensor] = []
                 for i in chunk_indices:
-                    frame = video[i].numpy().astype(np.uint8)  # (H, W, C)
-                    frame_tensor = self._frame_transform(frame)  # (C, H, W)
+                    frame = video[i].numpy().astype(np.uint8)  # (H, W, C) from video tensor
+                    
+                    # CRITICAL: Validate frame dimensions before processing
+                    # Scaled videos should have reasonable dimensions (~256px on one side)
+                    H_frame, W_frame, C_frame = frame.shape
+                    # CRITICAL: use_scaled_videos is defined at method start, should be accessible here
+                    if use_scaled_videos and (H_frame < 32 or W_frame < 32):
+                        logger.error(
+                            f"CRITICAL: Frame {i} from video at index {idx} has suspiciously small dimensions: "
+                            f"H={H_frame}, W={W_frame} (expected ~256px for scaled videos). "
+                            f"Video path: {video_path}. This may indicate corrupted video or incorrect scaling."
+                        )
+                    
+                    frame_tensor = self._frame_transform(frame)  # (C, H, W) - should preserve H, W
+                    
+                    # Validate dimensions after transform (should be preserved)
+                    C_tensor, H_tensor, W_tensor = frame_tensor.shape
+                    if use_scaled_videos and (H_tensor != H_frame or W_tensor != W_frame):
+                        logger.error(
+                            f"CRITICAL: Frame transform changed dimensions! "
+                            f"Before: H={H_frame}, W={W_frame}, After: H={H_tensor}, W={W_tensor}. "
+                            f"This should NOT happen for scaled videos (no resizing). Video: {video_path}"
+                        )
                     
                     # Apply post-tensor augmentations if available (only normalization for scaled videos)
                     if self._post_tensor_transform is not None:
                         frame_tensor = self._post_tensor_transform(frame_tensor)
+                        # Normalization should not change dimensions
+                        if frame_tensor.shape[1] != H_tensor or frame_tensor.shape[2] != W_tensor:
+                            logger.error(
+                                f"CRITICAL: Normalization changed dimensions! "
+                                f"Before: H={H_tensor}, W={W_tensor}, After: H={frame_tensor.shape[1]}, W={frame_tensor.shape[2]}. "
+                                f"This should NOT happen. Video: {video_path}"
+                            )
                     
                     chunk_frame_tensors.append(frame_tensor)
                 
@@ -676,9 +794,94 @@ class VideoDataset(Dataset):
                 f"Video path is not a file at index {idx}: {video_path}"
             )
 
-        # Use unified video reading wrapper
+        # Get use_scaled_videos flag early for validation
+        use_scaled_videos = getattr(self.config, 'use_scaled_videos', False)
+        
+        # Check frame cache first (if enabled) - DISK cache, not RAM cache
+        # CRITICAL: This is a disk-based cache that loads frames lazily, minimizing RAM usage
+        use_frame_cache = getattr(self.config, 'use_frame_cache', False)
+        frame_cache_dir = getattr(self.config, 'frame_cache_dir', None)
+        cached_frames = None
+        
+        if use_frame_cache and frame_cache_dir:
+            try:
+                from lib.utils.frame_cache import load_cached_frames
+                from pathlib import Path
+                cache_dir = Path(self.project_root) / frame_cache_dir
+                frame_cache_seed = getattr(self.config, 'frame_cache_seed', None)
+                
+                # Try to load from cache (lazy disk load, minimal RAM)
+                # CRITICAL: load_cached_frames returns tensor on CPU, we'll process it like decoded video
+                cached_frames = load_cached_frames(
+                    video_path=video_path,
+                    num_frames=self.config.num_frames,
+                    cache_dir=cache_dir,
+                    seed=frame_cache_seed,
+                    device="cpu"  # Load to CPU first (minimal memory footprint)
+                )
+                
+                if cached_frames is not None:
+                    logger.debug(f"Loaded {self.config.num_frames} frames from cache for {video_path}")
+                    # Skip video decoding - use cached frames directly
+                    # cached_frames is (num_frames, C, H, W) - already processed frames
+                    # Convert to list format for compatibility with existing code
+                    frames_list: List[torch.Tensor] = []
+                    for i in range(cached_frames.shape[0]):
+                        frames_list.append(cached_frames[i])  # (C, H, W)
+                    
+                    # Clear cached_frames immediately to free memory
+                    del cached_frames
+                    import gc
+                    gc.collect()
+                    
+                    # Stack frames into clip tensor
+                    clip = torch.stack(frames_list, dim=0)  # (T, C, H, W)
+                    del frames_list
+                    gc.collect()
+                    
+                    label = torch.tensor(label_idx, dtype=torch.long)
+                    return clip, label
+                else:
+                    logger.debug(f"Cache miss for {video_path}, will decode from video")
+            except ImportError:
+                logger.debug("Frame cache module not available, falling back to video decoding")
+                cached_frames = None
+            except Exception as e:
+                logger.debug(f"Frame cache error for {video_path}: {e}, falling back to video decoding")
+                cached_frames = None
+        
+        # Use unified video reading wrapper (only if cache miss)
         try:
             video = _read_video_wrapper(video_path)
+            
+            # CRITICAL: Validate video dimensions - scaled videos should be ~256px on one side
+            # If we're getting very small dimensions (H < 32 or W < 32), something is wrong
+            # This could indicate:
+            # 1. Corrupted video files
+            # 2. Incorrect video paths (pointing to wrong files)
+            # 3. Stage 3 scaling issues (videos not properly scaled)
+            # 4. Video reading issues (wrong dimensions extracted)
+            if video.shape[0] > 0:  # Has frames
+                # video shape is (T, H, W, C) from _read_video_wrapper
+                T_video, H_video, W_video, C_video = video.shape
+                
+                # Check for suspiciously small dimensions
+                if H_video < 32 or W_video < 32:
+                    logger.error(
+                        f"CRITICAL: Video at index {idx} has suspiciously small spatial dimensions: "
+                        f"H={H_video}, W={W_video} (expected ~256px on one side for scaled videos). "
+                        f"Video path: {video_path}. "
+                        f"Total frames: {T_video}. "
+                        f"This may indicate a corrupted video file, incorrect video path, or scaling issue in Stage 3."
+                    )
+                    # Don't crash - let the model's resizing handle it, but log the issue
+                elif use_scaled_videos and (H_video < 128 or W_video < 128):
+                    # Scaled videos should be at least 128px (typically 256px)
+                    logger.warning(
+                        f"Video at index {idx} has smaller than expected dimensions for scaled video: "
+                        f"H={H_video}, W={W_video} (expected ~256px). Video path: {video_path}. "
+                        f"This may indicate an issue with Stage 3 scaling."
+                    )
         except Exception as e:
             error_msg = str(e).lower()
             # Handle corrupted videos (moov atom not found, etc.)
@@ -720,6 +923,32 @@ class VideoDataset(Dataset):
             )
             return dummy_clip, torch.tensor(label_idx, dtype=torch.long)
         
+        # Handle cached frames vs decoded video
+        if cached_frames is not None:
+            # Use cached frames directly - already sampled and processed
+            # cached_frames is (num_frames, C, H, W) - convert to list of tensors
+            frames_list: List[torch.Tensor] = []
+            for i in range(cached_frames.shape[0]):
+                frame_tensor = cached_frames[i]  # (C, H, W)
+                frames_list.append(frame_tensor)
+            
+            # Clear cached_frames immediately to free memory
+            del cached_frames
+            import gc
+            gc.collect()
+            
+            # Stack frames into clip tensor
+            clip = torch.stack(frames_list, dim=0)  # (T, C, H, W)
+            del frames_list
+            gc.collect()
+            
+            label = torch.tensor(label_idx, dtype=torch.long)
+            return clip, label
+        
+        # Continue with video decoding path (cache miss)
+        if video is None or video.shape[0] == 0:
+            raise RuntimeError(f"Video decoding failed and no cache available for {video_path}")
+        
         total_frames = video.shape[0]
 
         # Define use_scaled_videos early so it's available in both chunked and non-chunked paths
@@ -751,7 +980,7 @@ class VideoDataset(Dataset):
                     )
                     # Success: report to adaptive manager
                     if self.adaptive_chunk_size:
-                        _adaptive_chunk_manager.on_success(video_path=video_path)
+                        _adaptive_chunk_manager.on_success(video_path=video_path, base_chunk_size=base_chunk_size)
                     break
                 except (RuntimeError, torch.cuda.OutOfMemoryError) as e:
                     # Use utility function for better OOM detection
@@ -770,7 +999,7 @@ class VideoDataset(Dataset):
                     
                     if is_oom and self.adaptive_chunk_size and retry_count < max_retries:
                         # OOM detected: reduce chunk size and retry
-                        chunk_size = _adaptive_chunk_manager.on_oom(video_path=video_path)
+                        chunk_size = _adaptive_chunk_manager.on_oom(video_path=video_path, base_chunk_size=base_chunk_size)
                         retry_count += 1
                         
                         # Clear memory before retry
@@ -825,12 +1054,39 @@ class VideoDataset(Dataset):
             # use_scaled_videos already defined above, no need to redefine
 
             for i in indices:
-                frame = video[i].numpy().astype(np.uint8)  # (H, W, C)
-                frame_tensor = self._frame_transform(frame)  # (C, H, W)
+                frame = video[i].numpy().astype(np.uint8)  # (H, W, C) from video tensor
+                
+                # CRITICAL: Validate frame dimensions before processing
+                # Scaled videos should have reasonable dimensions (~256px on one side)
+                H_frame, W_frame, C_frame = frame.shape
+                if use_scaled_videos and (H_frame < 32 or W_frame < 32):
+                    logger.error(
+                        f"CRITICAL: Frame {i} from video at index {idx} has suspiciously small dimensions: "
+                        f"H={H_frame}, W={W_frame} (expected ~256px for scaled videos). "
+                        f"Video path: {video_path}. This may indicate corrupted video or incorrect scaling."
+                    )
+                
+                frame_tensor = self._frame_transform(frame)  # (C, H, W) - should preserve H, W
+                
+                # Validate dimensions after transform (should be preserved)
+                C_tensor, H_tensor, W_tensor = frame_tensor.shape
+                if use_scaled_videos and (H_tensor != H_frame or W_tensor != W_frame):
+                    logger.error(
+                        f"CRITICAL: Frame transform changed dimensions! "
+                        f"Before: H={H_frame}, W={W_frame}, After: H={H_tensor}, W={W_tensor}. "
+                        f"This should NOT happen for scaled videos (no resizing). Video: {video_path}"
+                    )
                 
                 # Apply post-tensor augmentations if available (only normalization for scaled videos)
                 if self._post_tensor_transform is not None:
                     frame_tensor = self._post_tensor_transform(frame_tensor)
+                    # Normalization should not change dimensions
+                    if frame_tensor.shape[1] != H_tensor or frame_tensor.shape[2] != W_tensor:
+                        logger.error(
+                            f"CRITICAL: Normalization changed dimensions! "
+                            f"Before: H={H_tensor}, W={W_tensor}, After: H={frame_tensor.shape[1]}, W={frame_tensor.shape[2]}. "
+                            f"This should NOT happen. Video: {video_path}"
+                        )
                 
                 frames.append(frame_tensor)
         
@@ -881,6 +1137,39 @@ class VideoDataset(Dataset):
         # Stack frames into clip tensor
         # For chunked loading, this happens after all chunks are processed
         clip = torch.stack(frames, dim=0)  # (T, C, H, W)
+        
+        # CRITICAL: Cache frames to disk if caching is enabled (AFTER processing, BEFORE clearing)
+        # This caches the processed frames (after transforms) to avoid re-processing
+        if use_frame_cache and frame_cache_dir and cached_frames is None:
+            try:
+                from lib.utils.frame_cache import cache_frames
+                from pathlib import Path
+                cache_dir = Path(self.project_root) / frame_cache_dir
+                frame_cache_seed = getattr(self.config, 'frame_cache_seed', None)
+                
+                # Cache processed frames (frames list contains processed tensors)
+                # CRITICAL: Clone tensors to CPU to avoid memory issues during caching
+                # cache_frames will process frames one at a time and free memory immediately
+                frames_for_cache = [f.clone().cpu() for f in frames]  # Clone to CPU (minimal memory footprint)
+                cache_success = cache_frames(
+                    frames=frames_for_cache,  # Pass cloned frames (cache_frames will free them)
+                    video_path=video_path,
+                    num_frames=self.config.num_frames,
+                    cache_dir=cache_dir,
+                    seed=frame_cache_seed,
+                    compression=True  # Use compression to save disk space
+                )
+                # Clear cloned frames immediately after caching
+                del frames_for_cache
+                import gc
+                gc.collect()
+                
+                if cache_success:
+                    logger.debug(f"Cached {self.config.num_frames} frames for {video_path}")
+            except ImportError:
+                logger.debug("Frame cache module not available, skipping cache write")
+            except Exception as e:
+                logger.debug(f"Failed to cache frames for {video_path}: {e}")
         
         # Clear frames list to free memory (clip tensor now holds the data)
         del frames

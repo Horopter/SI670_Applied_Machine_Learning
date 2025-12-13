@@ -62,119 +62,220 @@ def extract_features_from_pretrained_model(
     model.eval()
     model = model.to(device)
     
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+    # CRITICAL: Use variable_ar_collate to convert (N, T, C, H, W) to (N, C, T, H, W) for 3D CNNs
+    # VideoDataset returns clips as (T, C, H, W), which becomes (N, T, C, H, W) when batched
+    # 3D CNN models (I3D, R2+1D, PretrainedInception, X3D, SlowFast) expect (N, C, T, H, W)
+    try:
+        from lib.models.video import variable_ar_collate
+        use_collate = True
+    except ImportError:
+        logger.warning("variable_ar_collate not available, will manually permute clips")
+        use_collate = False
+    
+    # CRITICAL: Set PyTorch memory optimizations before feature extraction
+    device_obj = torch.device(device) if isinstance(device, str) else device
+    if device_obj.type == "cuda":
+        if "PYTORCH_CUDA_ALLOC_CONF" not in os.environ:
+            os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+        torch.backends.cudnn.benchmark = False
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+        aggressive_gc(clear_cuda=True)
+        logger.info("Applied PyTorch memory optimizations for feature extraction")
+    
+    loader = DataLoader(
+        dataset, 
+        batch_size=batch_size, 
+        shuffle=False, 
+        num_workers=0,
+        collate_fn=variable_ar_collate if use_collate else None
+    )
     
     all_features = []
     
     with torch.no_grad():
-        for clips, _ in loader:
+        for batch_idx, (clips, _) in enumerate(loader):
             clips = clips.to(device, non_blocking=True)
             
+            # CRITICAL: Handle input format conversion based on model type
+            # VideoDataset returns clips as (T, C, H, W), which becomes (N, T, C, H, W) when batched
+            # 3D CNN models (I3D, R2+1D, PretrainedInception, X3D, SlowFast) expect (N, C, T, H, W)
+            # ViT models expect (N, T, C, H, W) which is reshaped to (N*T, C, H, W)
+            if clips.dim() == 5:
+                # Determine current format
+                N, dim1, dim2, H, W = clips.shape
+                is_ncthw = (dim1 == 3)  # (N, C, T, H, W) if dim1 == 3
+                is_ntchw = (dim2 == 3 and dim1 != 3)  # (N, T, C, H, W) if dim2 == 3 and dim1 != 3
+                
+                if model_type in ["vit_gru", "vit_transformer"]:
+                    # ViT models need (N, T, C, H, W) format
+                    if is_ncthw:
+                        # Convert from (N, C, T, H, W) to (N, T, C, H, W)
+                        clips = clips.permute(0, 2, 1, 3, 4).contiguous()
+                        logger.debug(f"Permuted clips from (N, C, T, H, W) to (N, T, C, H, W) for {model_type}")
+                    elif not is_ntchw:
+                        logger.warning(
+                            f"Unexpected clip shape for {model_type}: {clips.shape}. "
+                            f"Expected (N, C, T, H, W) or (N, T, C, H, W). Attempting to proceed..."
+                        )
+                else:
+                    # 3D CNN models need (N, C, T, H, W) format
+                    if is_ntchw:
+                        # Convert from (N, T, C, H, W) to (N, C, T, H, W)
+                        clips = clips.permute(0, 2, 1, 3, 4).contiguous()
+                        logger.debug(f"Permuted clips from (N, T, C, H, W) to (N, C, T, H, W) for {model_type}")
+                    elif not is_ncthw:
+                        logger.warning(
+                            f"Unexpected clip shape for {model_type}: {clips.shape}. "
+                            f"Expected (N, C, T, H, W) or (N, T, C, H, W). Attempting to proceed..."
+                        )
+            
             # Extract features based on model type
-            if model_type in ["i3d", "r2plus1d", "pretrained_inception"]:
-                # For I3D, R2+1D, PretrainedInceptionVideoModel
-                # Extract features before final fc layer
-                if hasattr(model, 'backbone'):
-                    # I3D, R2+1D
-                    x = model.backbone.stem(clips)
-                    x = model.backbone.layer1(x)
-                    x = model.backbone.layer2(x)
-                    x = model.backbone.layer3(x)
-                    x = model.backbone.layer4(x)
-                    
-                    # Global average pooling
-                    if hasattr(model.backbone, 'avgpool'):
-                        x = model.backbone.avgpool(x)
+            # CRITICAL: Wrap in try-except to handle OOM errors gracefully
+            try:
+                if model_type in ["i3d", "r2plus1d", "pretrained_inception"]:
+                    # For I3D, R2+1D, PretrainedInceptionVideoModel
+                    # Extract features before final fc layer
+                    if hasattr(model, 'backbone'):
+                        # I3D, R2+1D
+                        x = model.backbone.stem(clips)
+                        x = model.backbone.layer1(x)
+                        x = model.backbone.layer2(x)
+                        x = model.backbone.layer3(x)
+                        x = model.backbone.layer4(x)
+                        
+                        # Global average pooling
+                        if hasattr(model.backbone, 'avgpool'):
+                            x = model.backbone.avgpool(x)
+                        else:
+                            # Adaptive pooling if no avgpool
+                            x = nn.AdaptiveAvgPool3d((1, 1, 1))(x)
+                        
+                        features = torch.flatten(x, 1)  # (N, feature_dim)
+                    elif hasattr(model, 'stem') and hasattr(model, 'layer4'):
+                        # PretrainedInceptionVideoModel
+                        x = model.stem(clips)
+                        x = model.layer1(x)
+                        x = model.layer2(x)
+                        x = model.layer3(x)
+                        x = model.layer4(x)
+                        x = model.incept(x)
+                        x = model.pool(x)  # AdaptiveAvgPool3d
+                        features = torch.flatten(x, 1)  # (N, feature_dim)
                     else:
-                        # Adaptive pooling if no avgpool
-                        x = nn.AdaptiveAvgPool3d((1, 1, 1))(x)
-                    
-                    features = torch.flatten(x, 1)  # (N, feature_dim)
-                elif hasattr(model, 'stem') and hasattr(model, 'layer4'):
-                    # PretrainedInceptionVideoModel
-                    x = model.stem(clips)
-                    x = model.layer1(x)
-                    x = model.layer2(x)
-                    x = model.layer3(x)
-                    x = model.layer4(x)
-                    x = model.incept(x)
-                    x = model.pool(x)  # AdaptiveAvgPool3d
-                    features = torch.flatten(x, 1)  # (N, feature_dim)
-                else:
-                    # Fallback: try to get features from model
-                    # Remove final layer and extract
-                    raise ValueError(f"Cannot extract features from {model_type}: unknown architecture")
-            
-            elif model_type in ["vit_gru", "vit_transformer"]:
-                # For ViT models, use forward_features
-                if hasattr(model, 'vit_backbone'):
-                    N, T, C, H, W = clips.shape if clips.dim() == 5 else (clips.shape[0], 1, clips.shape[1], clips.shape[2], clips.shape[3])
-                    
-                    # Handle input format
-                    if clips.dim() == 5 and clips.shape[1] == 3:  # (N, C, T, H, W)
-                        clips = clips.permute(0, 2, 1, 3, 4).contiguous()  # (N, T, C, H, W)
-                    
-                    if clips.dim() == 5:
-                        N, T, C, H, W = clips.shape
-                        clips = clips.view(N * T, C, H, W)
-                    
-                    # Extract features using ViT
-                    vit_output = model.vit_backbone.forward_features(clips)
-                    # vit_output shape: (N*T, num_patches+1, embed_dim)
-                    # Extract [CLS] token
-                    frame_features = vit_output[:, 0, :]  # (N*T, embed_dim)
-                    
-                    # Reshape back to (N, T, embed_dim) if temporal
-                    if T > 1:
-                        frame_features = frame_features.view(N, T, -1)
-                        # Mean pool over temporal dimension
-                        features = frame_features.mean(dim=1)  # (N, embed_dim)
+                        # Fallback: try to get features from model
+                        # Remove final layer and extract
+                        raise ValueError(f"Cannot extract features from {model_type}: unknown architecture")
+                
+                elif model_type in ["vit_gru", "vit_transformer"]:
+                    # For ViT models, use forward_features
+                    # CRITICAL: Clips should already be in (N, T, C, H, W) format from the shape conversion above
+                    if hasattr(model, 'vit_backbone'):
+                        if clips.dim() == 5:
+                            N, T, C, H, W = clips.shape
+                            # Reshape to (N*T, C, H, W) for ViT processing
+                            clips = clips.view(N * T, C, H, W)
+                        else:
+                            # Fallback for unexpected dimensions
+                            N = clips.shape[0]
+                            T = 1
+                            clips = clips.view(N * T, -1)
+                        
+                        # Extract features using ViT
+                        vit_output = model.vit_backbone.forward_features(clips)
+                        # vit_output shape: (N*T, num_patches+1, embed_dim)
+                        # Extract [CLS] token
+                        frame_features = vit_output[:, 0, :]  # (N*T, embed_dim)
+                        
+                        # Reshape back to (N, T, embed_dim) if temporal
+                        if T > 1:
+                            frame_features = frame_features.view(N, T, -1)
+                            # Mean pool over temporal dimension
+                            features = frame_features.mean(dim=1)  # (N, embed_dim)
+                        else:
+                            features = frame_features  # (N, embed_dim)
                     else:
-                        features = frame_features  # (N, embed_dim)
-                else:
-                    raise ValueError(f"Cannot extract features from {model_type}: no vit_backbone")
-            
-            elif model_type in ["slowfast", "x3d"]:
-                # For SlowFast, X3D - extract before final fc
-                if hasattr(model, 'backbone'):
-                    # Run through backbone but stop before final fc
-                    # Most torchvision video models have: stem -> layers -> avgpool -> fc
-                    # We need to extract after avgpool but before fc
-                    x = model.backbone.stem(clips)
-                    x = model.backbone.layer1(x)
-                    x = model.backbone.layer2(x)
-                    x = model.backbone.layer3(x)
-                    x = model.backbone.layer4(x)
-                    
-                    # Global average pooling
-                    if hasattr(model.backbone, 'avgpool'):
-                        x = model.backbone.avgpool(x)
+                        raise ValueError(f"Cannot extract features from {model_type}: no vit_backbone")
+                
+                elif model_type in ["slowfast", "x3d"]:
+                    # For SlowFast, X3D - extract before final fc
+                    # CRITICAL: These models expect (N, C, T, H, W) format
+                    # The shape conversion above should have already converted clips to correct format
+                    if hasattr(model, 'backbone'):
+                        # Run through backbone but stop before final fc
+                        # Most torchvision video models have: stem -> layers -> avgpool -> fc
+                        # We need to extract after avgpool but before fc
+                        x = model.backbone.stem(clips)
+                        x = model.backbone.layer1(x)
+                        x = model.backbone.layer2(x)
+                        x = model.backbone.layer3(x)
+                        x = model.backbone.layer4(x)
+                        
+                        # Global average pooling
+                        if hasattr(model.backbone, 'avgpool'):
+                            x = model.backbone.avgpool(x)
+                        else:
+                            x = nn.AdaptiveAvgPool3d((1, 1, 1))(x)
+                        
+                        features = torch.flatten(x, 1)  # (N, feature_dim)
                     else:
-                        x = nn.AdaptiveAvgPool3d((1, 1, 1))(x)
-                    
-                    features = torch.flatten(x, 1)  # (N, feature_dim)
+                        raise ValueError(f"Cannot extract features from {model_type}: no backbone")
+                
                 else:
-                    raise ValueError(f"Cannot extract features from {model_type}: no backbone")
-            
-            else:
-                # Generic: try to extract features by removing final layer
-                # This is a fallback and may not work for all models
-                logger.warning(f"Using generic feature extraction for {model_type}")
-                # Try to get features by running through model without final layer
-                # This is model-specific and may need customization
-                raise NotImplementedError(f"Feature extraction for {model_type} not implemented")
+                    # Generic: try to extract features by removing final layer
+                    # This is a fallback and may not work for all models
+                    logger.warning(f"Using generic feature extraction for {model_type}")
+                    # Try to get features by running through model without final layer
+                    # This is model-specific and may need customization
+                    raise NotImplementedError(f"Feature extraction for {model_type} not implemented")
+                
+            except RuntimeError as e:
+                error_msg = str(e)
+                if "out of memory" in error_msg.lower():
+                    logger.error(
+                        f"CUDA OOM during feature extraction (batch {batch_idx + 1}): {e}. "
+                        f"Model: {model_type}, Batch size: {batch_size}. "
+                        f"GPU memory may be insufficient. Try reducing batch_size or num_frames."
+                    )
+                    # Clear cache and raise
+                    if device_obj.type == "cuda":
+                        torch.cuda.empty_cache()
+                        torch.cuda.synchronize()
+                    aggressive_gc(clear_cuda=device_obj.type == "cuda")
+                    raise RuntimeError(
+                        f"CUDA OOM during feature extraction. "
+                        f"Try reducing batch_size (current: {batch_size}) or num_frames (current: {dataset.config.num_frames if hasattr(dataset, 'config') else 'unknown'})."
+                    ) from e
+                else:
+                    # Re-raise non-OOM errors
+                    raise
             
             # Convert to numpy and collect
             features_np = features.cpu().numpy()
             all_features.append(features_np)
             
-            # Aggressive GC after each batch
+            # CRITICAL: Aggressive memory cleanup after each batch to prevent OOM
             del clips, features, features_np
-            aggressive_gc(clear_cuda=False)
+            if device_obj.type == "cuda":
+                torch.cuda.empty_cache()
+                torch.cuda.synchronize()
+            aggressive_gc(clear_cuda=device_obj.type == "cuda")
+            
+            # Log progress every 10 batches
+            if (batch_idx + 1) % 10 == 0:
+                logger.debug(f"Processed {batch_idx + 1} batches for feature extraction")
+                if device_obj.type == "cuda":
+                    logger.debug(f"GPU memory allocated: {torch.cuda.memory_allocated() / 1024**3:.2f} GB")
     
     # Concatenate all features
     all_features = np.vstack(all_features)
     logger.info(f"Extracted features shape: {all_features.shape}")
+    
+    # Final memory cleanup
+    if device_obj.type == "cuda":
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+    aggressive_gc(clear_cuda=device_obj.type == "cuda")
     
     return all_features
 
@@ -270,7 +371,14 @@ class XGBoostPretrainedBaseline:
         """
         # Load or create base model
         if self.base_model is None:
-            logger.info(f"Loading pretrained model: {self.base_model_type}")
+            # CRITICAL: Clear GPU memory before loading model to prevent OOM
+            device_obj = torch.device(device) if isinstance(device, str) else device
+            if device_obj.type == "cuda":
+                torch.cuda.empty_cache()
+                torch.cuda.synchronize()
+                aggressive_gc(clear_cuda=True)
+            
+            logger.info(f"Loading pretrained model: {self.base_model_type} (num_frames={self.num_frames})")
             model_config = get_model_config(self.base_model_type)
             model_config["num_frames"] = self.num_frames
             self.base_model = create_model(self.base_model_type, model_config)
@@ -279,6 +387,13 @@ class XGBoostPretrainedBaseline:
             for param in self.base_model.parameters():
                 param.requires_grad = False
             self.base_model.eval()
+            
+            # CRITICAL: Move model to device and clear cache after loading
+            if device_obj.type == "cuda":
+                self.base_model = self.base_model.to(device_obj)
+                torch.cuda.empty_cache()
+                torch.cuda.synchronize()
+                logger.info(f"Loaded {self.base_model_type} model to GPU, cleared cache")
         
         # Create dataset - lazy import to avoid circular dependency
         from lib.models import VideoConfig, VideoDataset
@@ -289,19 +404,44 @@ class XGBoostPretrainedBaseline:
         })
         
         # Handle both old and new VideoConfig versions (some servers may not have fixed_size parameter)
+        # CRITICAL: Stage 5 ALWAYS uses scaled videos from Stage 3, so use_scaled_videos must be True
         try:
-            video_config = VideoConfig(num_frames=self.num_frames, fixed_size=256)
+            video_config = VideoConfig(
+                num_frames=self.num_frames,
+                fixed_size=256,
+                use_scaled_videos=True  # Stage 5 always uses scaled videos
+            )
         except TypeError:
-            # Fallback: server version doesn't have fixed_size parameter
+            # Fallback: server version doesn't support these parameters
             logger.warning(
-                "VideoConfig on server doesn't support 'fixed_size' parameter. "
-                "Using default VideoConfig."
+                "VideoConfig on server doesn't support 'fixed_size' or 'use_scaled_videos' parameters. "
+                "Using default VideoConfig and setting manually."
             )
             video_config = VideoConfig(num_frames=self.num_frames)
+            # CRITICAL: Set use_scaled_videos=True even if constructor doesn't support it
+            video_config.use_scaled_videos = True
+            logger.info("Manually set use_scaled_videos=True on VideoConfig (server version fallback)")
+        
+        # CRITICAL: Verify use_scaled_videos is True (Stage 5 requirement)
+        if not getattr(video_config, 'use_scaled_videos', False):
+            logger.warning(
+                "CRITICAL: use_scaled_videos is False in VideoConfig for XGBoost feature extraction! "
+                "Stage 5 ALWAYS uses scaled videos from Stage 3. Forcing use_scaled_videos=True."
+            )
+            video_config.use_scaled_videos = True
+            logger.info("Forced use_scaled_videos=True on VideoConfig (Stage 5 requirement)")
+        
         dataset = VideoDataset(df, project_root=project_root, config=video_config, train=False)
         
+        # CRITICAL: Clear GPU memory before feature extraction
+        device_obj = torch.device(device) if isinstance(device, str) else device
+        if device_obj.type == "cuda":
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+            aggressive_gc(clear_cuda=True)
+        
         # Extract features
-        logger.info(f"Extracting features using {self.base_model_type}...")
+        logger.info(f"Extracting features using {self.base_model_type} (num_frames={self.num_frames})...")
         features = extract_features_from_pretrained_model(
             self.base_model,
             self.base_model_type,
@@ -310,6 +450,16 @@ class XGBoostPretrainedBaseline:
             batch_size=1,  # Conservative for memory
             project_root=project_root
         )
+        
+        # CRITICAL: Clear base model from GPU after feature extraction to free memory
+        if device_obj.type == "cuda" and self.base_model is not None:
+            self.base_model = self.base_model.cpu()
+            del self.base_model
+            self.base_model = None  # Force reload next time if needed
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+            aggressive_gc(clear_cuda=True)
+            logger.info(f"Cleared {self.base_model_type} model from GPU after feature extraction")
         
         labels_array = np.array(labels)
         

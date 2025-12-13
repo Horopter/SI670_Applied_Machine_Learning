@@ -42,6 +42,11 @@ class SlowFastModel(nn.Module):
         """
         super().__init__()
         
+        # Initialize flags
+        self.use_torchvision = False
+        self.use_pytorchvideo = False
+        self.use_r3d_fallback = False
+        
         # Try to use torchvision's SlowFast if available
         try:
             from torchvision.models.video import slowfast_r50, SlowFast_R50_Weights
@@ -57,6 +62,7 @@ class SlowFastModel(nn.Module):
             # Replace classification head for binary classification
             self.backbone.fc = nn.Linear(self.backbone.fc.in_features, 1)
             self.use_torchvision = True
+            self.use_pytorchvideo = False
             self.use_r3d_fallback = False
             
         except (ImportError, AttributeError):
@@ -88,7 +94,8 @@ class SlowFastModel(nn.Module):
                 else:
                     self.backbone.fc = nn.Linear(2048, 1)
                 
-                self.use_torchvision = True
+                self.use_torchvision = False  # PyTorchVideo models need list input
+                self.use_pytorchvideo = True
                 self.use_r3d_fallback = False
                 hub_loaded = True
                 logger.info("✓ Loaded SlowFast from PyTorch Hub (pytorchvideo)")
@@ -202,7 +209,8 @@ class SlowFastModel(nn.Module):
                                 feature_dim = 2048  # Common SlowFast feature dimension
                                 self.backbone.fc = nn.Linear(feature_dim, 1)
                             
-                            self.use_torchvision = True
+                            self.use_torchvision = False  # HuggingFace models may also need list input
+                            self.use_pytorchvideo = True  # Assume PyTorchVideo-based models need list
                             self.use_r3d_fallback = False
                             hf_loaded = True
                             logger.info(f"✓ Loaded SlowFast from {model_name}")
@@ -327,9 +335,93 @@ class SlowFastModel(nn.Module):
         Returns:
             Logits (N, 1)
         """
+        # CRITICAL: Handle small spatial dimensions like X3D
+        # SlowFast also requires minimum spatial dimensions for proper processing
+        # NOTE: We UPSCALE small inputs (e.g., 5x8 -> 32x51), NOT downscale large inputs
+        # This INCREASES memory usage per sample, so batch size should remain conservative
+        if x.dim() == 5:
+            N, C, T, H, W = x.shape
+            min_spatial_size = 32  # Minimum required for SlowFast (similar to X3D)
+            
+            # Resize if spatial dimensions are too small (UPSCALE to meet minimum)
+            if H < min_spatial_size or W < min_spatial_size:
+                import torch.nn.functional as F
+                
+                # Calculate target size maintaining aspect ratio
+                if H <= 0 or W <= 0:
+                    new_h = min_spatial_size
+                    new_w = min_spatial_size
+                else:
+                    if H < W:
+                        scale_factor = min_spatial_size / max(H, 1.0)
+                        new_h = min_spatial_size
+                        new_w = max(min_spatial_size, int(W * scale_factor))
+                    else:
+                        scale_factor = min_spatial_size / max(W, 1.0)
+                        new_w = min_spatial_size
+                        new_h = max(min_spatial_size, int(H * scale_factor))
+                
+                new_h = max(new_h, min_spatial_size)
+                new_w = max(new_w, min_spatial_size)
+                
+                # Resize: (N, C, T, H, W) -> (N*T, C, H, W) -> resize -> (N, C, T, H', W')
+                x_reshaped = x.permute(0, 2, 1, 3, 4).contiguous()  # (N, T, C, H, W)
+                x_reshaped = x_reshaped.view(N * T, C, H, W)  # (N*T, C, H, W)
+                x_resized = F.interpolate(
+                    x_reshaped, 
+                    size=(new_h, new_w), 
+                    mode='bilinear', 
+                    align_corners=False
+                )  # (N*T, C, H', W')
+                x_resized = x_resized.view(N, T, C, new_h, new_w)  # (N, T, C, H', W')
+                x = x_resized.permute(0, 2, 1, 3, 4).contiguous()  # (N, C, T, H', W')
+                
+                if H < 16 or W < 16:
+                    logger.debug(
+                        f"SlowFast: Resized input from {H}x{W} to {new_h}x{new_w} "
+                        f"(temporal: {T} frames) to meet minimum spatial dimension requirements"
+                    )
+        
         if self.use_torchvision:
             # Use torchvision's SlowFast
             return self.backbone(x)
+        
+        # PyTorchVideo SlowFast expects list of tensors [slow_pathway, fast_pathway]
+        # CRITICAL: Ensure slow and fast pathways have compatible temporal dimensions
+        # The error "Expected size 63 but got size 125" suggests temporal mismatch
+        # We need to ensure proper frame sampling for slow pathway
+        if self.use_pytorchvideo:
+            N, C, T, H, W = x.shape
+            # Slow pathway: sample every alpha frames (ensures T_slow = ceil(T/alpha))
+            # Use proper indexing to ensure we get valid frame counts
+            slow_indices = torch.arange(0, T, self.alpha, device=x.device, dtype=torch.long)
+            # Ensure we don't exceed tensor bounds
+            slow_indices = slow_indices[slow_indices < T]
+            slow_x = x[:, :, slow_indices, :, :]  # (N, C, T_slow, H, W)
+            # Fast pathway: use all frames
+            fast_x = x  # (N, C, T, H, W)
+            
+            # CRITICAL: PyTorchVideo SlowFast expects both pathways to have compatible shapes
+            # The temporal dimensions will be processed differently, but spatial must match
+            # Ensure both have the same spatial dimensions (already handled above)
+            return self.backbone([slow_x, fast_x])
+        
+        # Fallback: try list input if tensor input fails (for models that weren't detected)
+        try:
+            return self.backbone(x)
+        except (AssertionError, TypeError, RuntimeError) as e:
+            error_msg = str(e).lower()
+            if "list" in error_msg or "multipathway" in error_msg or "sizes of tensors must match" in error_msg:
+                # Model needs list input - split into slow/fast pathways
+                # Also handle temporal dimension mismatch errors
+                N, C, T, H, W = x.shape
+                # Use proper indexing to ensure valid frame counts
+                slow_indices = torch.arange(0, T, self.alpha, device=x.device, dtype=torch.long)
+                slow_indices = slow_indices[slow_indices < T]
+                slow_x = x[:, :, slow_indices, :, :]
+                fast_x = x
+                return self.backbone([slow_x, fast_x])
+            raise
         
         # Simplified SlowFast
         N, C, T, H, W = x.shape

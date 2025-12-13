@@ -173,6 +173,72 @@ class X3DModel(nn.Module):
         Returns:
             Logits (N, 1)
         """
+        # CRITICAL: X3D requires minimum spatial dimensions (32x32) for pooling kernels
+        # The error "input image (T: 500 H: 5 W: 8) smaller than kernel size (kT: 16 kH: 7 kW: 7)"
+        # indicates some videos have extremely small spatial dimensions after scaling
+        # We MUST resize these BEFORE passing to backbone to prevent crashes
+        # 
+        # NOTE: We are UPSCALING small inputs (e.g., 5x8 -> 32x51), NOT downscaling large inputs
+        # This INCREASES memory usage per sample, so batch size should remain conservative
+        if x.dim() == 5:
+            N, C, T, H, W = x.shape
+            min_spatial_size = 32  # Minimum required for X3D (kernel size is 7x7, but needs buffer for pooling)
+            
+            # CRITICAL: Always resize if spatial dimensions are too small
+            # This handles cases where videos have H < 32 or W < 32 (e.g., H=5, W=8)
+            # We UPSCALE these to meet minimum requirements (increases memory usage)
+            if H < min_spatial_size or W < min_spatial_size:
+                import torch.nn.functional as F
+                
+                # Calculate target size maintaining aspect ratio
+                # For very small inputs, we need to scale up significantly
+                if H <= 0 or W <= 0:
+                    # Invalid dimensions - use default minimum size
+                    new_h = min_spatial_size
+                    new_w = min_spatial_size
+                else:
+                    # Maintain aspect ratio while ensuring minimum size
+                    # Scale the smaller dimension to min_spatial_size, then scale the larger proportionally
+                    if H < W:
+                        # Height is smaller - scale height to min_spatial_size
+                        scale_factor = min_spatial_size / max(H, 1.0)
+                        new_h = min_spatial_size
+                        new_w = max(min_spatial_size, int(W * scale_factor))
+                    else:
+                        # Width is smaller - scale width to min_spatial_size
+                        scale_factor = min_spatial_size / max(W, 1.0)
+                        new_w = min_spatial_size
+                        new_h = max(min_spatial_size, int(H * scale_factor))
+                
+                # Safety check: ensure both dimensions are at least min_spatial_size
+                new_h = max(new_h, min_spatial_size)
+                new_w = max(new_w, min_spatial_size)
+                
+                # Resize: (N, C, T, H, W) -> (N*T, C, H, W) -> resize -> (N, C, T, H', W')
+                # This preserves temporal dimension while resizing spatial dimensions
+                x_reshaped = x.permute(0, 2, 1, 3, 4).contiguous()  # (N, T, C, H, W)
+                x_reshaped = x_reshaped.view(N * T, C, H, W)  # (N*T, C, H, W)
+                
+                # Use bilinear interpolation for smooth resizing
+                # This handles even very small inputs (e.g., 5x8 -> 32x51)
+                x_resized = F.interpolate(
+                    x_reshaped, 
+                    size=(new_h, new_w), 
+                    mode='bilinear', 
+                    align_corners=False
+                )  # (N*T, C, H', W')
+                
+                # Reshape back to (N, C, T, H', W')
+                x_resized = x_resized.view(N, T, C, new_h, new_w)  # (N, T, C, H', W')
+                x = x_resized.permute(0, 2, 1, 3, 4).contiguous()  # (N, C, T, H', W')
+                
+                # Log resize operation for debugging (only for very small inputs to avoid spam)
+                if H < 16 or W < 16:
+                    logger.debug(
+                        f"X3D: Resized input from {H}x{W} to {new_h}x{new_w} "
+                        f"(temporal: {T} frames) to meet minimum spatial dimension requirements"
+                    )
+        
         return self.backbone(x)
 
 
