@@ -708,16 +708,32 @@ class VideoDataset(Dataset):
                             f"Video path: {video_path}. This may indicate corrupted video or incorrect scaling."
                         )
                     
-                    frame_tensor = self._frame_transform(frame)  # (C, H, W) - should preserve H, W
+                    frame_tensor = self._frame_transform(frame)  # (C, H, W) - should preserve H, W unless fixed_size is set
                     
-                    # Validate dimensions after transform (should be preserved)
+                    # Validate dimensions after transform
+                    # Note: Resizing is allowed when fixed_size is set (for models requiring exact dimensions)
                     C_tensor, H_tensor, W_tensor = frame_tensor.shape
+                    fixed_size = getattr(self.config, 'fixed_size', None)
                     if use_scaled_videos and (H_tensor != H_frame or W_tensor != W_frame):
-                        logger.error(
-                            f"CRITICAL: Frame transform changed dimensions! "
-                            f"Before: H={H_frame}, W={W_frame}, After: H={H_tensor}, W={W_tensor}. "
-                            f"This should NOT happen for scaled videos (no resizing). Video: {video_path}"
-                        )
+                        if fixed_size is not None:
+                            # Resizing is intentional when fixed_size is set (e.g., for ViT models)
+                            # Only log if the resize doesn't match the expected fixed_size
+                            if H_tensor != fixed_size or W_tensor != fixed_size:
+                                logger.warning(
+                                    f"Frame transform resized to unexpected dimensions. "
+                                    f"Before: H={H_frame}, W={W_frame}, After: H={H_tensor}, W={W_tensor}, "
+                                    f"Expected: {fixed_size}x{fixed_size} (fixed_size={fixed_size}). "
+                                    f"Video: {video_path}"
+                                )
+                            # Otherwise, this is expected behavior - no error
+                        else:
+                            # No fixed_size set, so resizing should not happen
+                            logger.error(
+                                f"CRITICAL: Frame transform changed dimensions! "
+                                f"Before: H={H_frame}, W={W_frame}, After: H={H_tensor}, W={W_tensor}. "
+                                f"This should NOT happen for scaled videos when fixed_size is not set. "
+                                f"Video: {video_path}"
+                            )
                     
                     # Apply post-tensor augmentations if available (only normalization for scaled videos)
                     if self._post_tensor_transform is not None:
@@ -1082,16 +1098,32 @@ class VideoDataset(Dataset):
                         f"Video path: {video_path}. This may indicate corrupted video or incorrect scaling."
                     )
                 
-                frame_tensor = self._frame_transform(frame)  # (C, H, W) - should preserve H, W
+                frame_tensor = self._frame_transform(frame)  # (C, H, W) - should preserve H, W unless fixed_size is set
                 
-                # Validate dimensions after transform (should be preserved)
+                # Validate dimensions after transform
+                # Note: Resizing is allowed when fixed_size is set (for models requiring exact dimensions)
                 C_tensor, H_tensor, W_tensor = frame_tensor.shape
+                fixed_size = getattr(self.config, 'fixed_size', None)
                 if use_scaled_videos and (H_tensor != H_frame or W_tensor != W_frame):
-                    logger.error(
-                        f"CRITICAL: Frame transform changed dimensions! "
-                        f"Before: H={H_frame}, W={W_frame}, After: H={H_tensor}, W={W_tensor}. "
-                        f"This should NOT happen for scaled videos (no resizing). Video: {video_path}"
-                    )
+                    if fixed_size is not None:
+                        # Resizing is intentional when fixed_size is set (e.g., for ViT models)
+                        # Only log if the resize doesn't match the expected fixed_size
+                        if H_tensor != fixed_size or W_tensor != fixed_size:
+                            logger.warning(
+                                f"Frame transform resized to unexpected dimensions. "
+                                f"Before: H={H_frame}, W={W_frame}, After: H={H_tensor}, W={W_tensor}, "
+                                f"Expected: {fixed_size}x{fixed_size} (fixed_size={fixed_size}). "
+                                f"Video: {video_path}"
+                            )
+                        # Otherwise, this is expected behavior - no error
+                    else:
+                        # No fixed_size set, so resizing should not happen
+                        logger.error(
+                            f"CRITICAL: Frame transform changed dimensions! "
+                            f"Before: H={H_frame}, W={W_frame}, After: H={H_tensor}, W={W_tensor}. "
+                            f"This should NOT happen for scaled videos when fixed_size is not set. "
+                            f"Video: {video_path}"
+                        )
                 
                 # Apply post-tensor augmentations if available (only normalization for scaled videos)
                 if self._post_tensor_transform is not None:

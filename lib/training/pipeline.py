@@ -57,9 +57,6 @@ BASELINE_MODELS = {
     "svm_stage2_stage4"
 }
 
-# STAGE2_MODELS is identical to BASELINE_MODELS - use BASELINE_MODELS instead
-STAGE2_MODELS = BASELINE_MODELS
-
 STAGE4_MODELS = {
     "logistic_regression_stage2_stage4",
     "svm_stage2_stage4"
@@ -317,7 +314,7 @@ def _validate_stage5_prerequisites(
             missing.append("Stage 3 (scaled videos)")
         
         # Stage 2 models require Stage 2
-        if model_type in STAGE2_MODELS and not results["stage2_available"]:
+        if model_type in BASELINE_MODELS and not results["stage2_available"]:
             missing.append("Stage 2 (features)")
         
         # Stage 2+4 models require Stage 4
@@ -369,7 +366,7 @@ def _validate_stage5_prerequisites(
     
     # Check if Stage 2 was expected but missing
     # All baseline models require Stage 2 features
-    stage2_required_models = [m for m in model_types if m in STAGE2_MODELS]
+    stage2_required_models = [m for m in model_types if m in BASELINE_MODELS]
     if stage2_required_models and not results["stage2_available"]:
         failures_detected = True
         failure_lines.append("STAGE 2 FAILURE DETECTED")
@@ -446,6 +443,366 @@ def _validate_stage5_prerequisites(
             logger.warning(f"Failed to write failure report: {e}")
     
     return results
+
+
+def _train_xgboost_model_fold(
+    model_type: str,
+    model_config: Dict[str, Any],
+    train_df: Any,
+    val_df: Any,
+    project_root_str: str,
+    fold_idx: int,
+    model_output_dir: Path,
+    hyperparams: Optional[Dict[str, Any]] = None,
+    is_grid_search: bool = False,
+    param_fold_results: Optional[List[Dict[str, Any]]] = None,
+    fold_results: Optional[List[Dict[str, Any]]] = None
+) -> Dict[str, Any]:
+    """
+    Train an XGBoost model on a single fold.
+    
+    Args:
+        model_type: Type of model to train
+        model_config: Base model configuration
+        train_df: Training dataframe
+        val_df: Validation dataframe
+        project_root_str: Project root as string
+        fold_idx: Fold index (0-based)
+        model_output_dir: Output directory for models
+        hyperparams: Optional hyperparameters to apply (for grid search or final training)
+        is_grid_search: Whether this is grid search (affects error handling and result storage)
+        param_fold_results: Optional list to append grid search results to
+        fold_results: Optional list to append results to
+    
+    Returns:
+        Dictionary with validation metrics
+    """
+    logger.info(f"Training XGBoost model {model_type} on fold {fold_idx + 1}...")
+    _flush_logs()
+    
+    fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
+    fold_output_dir.mkdir(parents=True, exist_ok=True)
+    
+    result = None
+    model = None
+    
+    try:
+        # Create XGBoost model with hyperparameters
+        xgb_config = model_config.copy()
+        if hyperparams:
+            xgb_config.update(hyperparams)
+        model = create_model(model_type, xgb_config)
+        
+        # Train XGBoost (handles feature extraction internally)
+        model.fit(train_df, project_root=project_root_str)
+        
+        # Evaluate on validation set
+        val_probs = model.predict(val_df, project_root=project_root_str)
+        val_preds = np.argmax(val_probs, axis=1)
+        val_labels = val_df["label"].to_list()
+        label_map = {label: idx for idx, label in enumerate(sorted(set(val_labels)))}
+        val_y = np.array([label_map[label] for label in val_labels])
+        
+        # Compute comprehensive metrics using shared utility
+        metrics = compute_classification_metrics(
+            y_true=val_y,
+            y_pred=val_preds,
+            y_probs=val_probs
+        )
+        
+        # Store results
+        result = {
+            "fold": fold_idx + 1,
+            "val_loss": metrics["val_loss"],
+            "val_acc": metrics["val_acc"],
+            "val_f1": metrics["val_f1"],
+            "val_precision": metrics["val_precision"],
+            "val_recall": metrics["val_recall"],
+            "val_f1_class0": metrics["val_f1_class0"],
+            "val_precision_class0": metrics["val_precision_class0"],
+            "val_recall_class0": metrics["val_recall_class0"],
+            "val_f1_class1": metrics["val_f1_class1"],
+            "val_precision_class1": metrics["val_precision_class1"],
+            "val_recall_class1": metrics["val_recall_class1"],
+        }
+        if hyperparams:
+            result.update(hyperparams)
+        
+        if is_grid_search and param_fold_results is not None:
+            param_fold_results.append(result)
+        if fold_results is not None:
+            fold_results.append(result)
+        
+        logger.info(
+            f"Fold {fold_idx + 1} - Val Loss: {metrics['val_loss']:.4f}, Val Acc: {metrics['val_acc']:.4f}, "
+            f"Val F1: {metrics['val_f1']:.4f}, Val Precision: {metrics['val_precision']:.4f}, Val Recall: {metrics['val_recall']:.4f}"
+        )
+        if is_grid_search:
+            logger.info(
+                f"  Class 0 - Precision: {metrics['val_precision_class0']:.4f}, "
+                f"Recall: {metrics['val_recall_class0']:.4f}, F1: {metrics['val_f1_class0']:.4f}"
+            )
+            logger.info(
+                f"  Class 1 - Precision: {metrics['val_precision_class1']:.4f}, "
+                f"Recall: {metrics['val_recall_class1']:.4f}, F1: {metrics['val_f1_class1']:.4f}"
+            )
+        
+        # Save model
+        model.save(str(fold_output_dir))
+        logger.info(f"Saved XGBoost model to {fold_output_dir}")
+    
+    except Exception as e:
+        logger.error(f"Error training XGBoost fold {fold_idx + 1}: {e}", exc_info=True)
+        result = {
+            "fold": fold_idx + 1,
+            "val_loss": float('nan'),
+            "val_acc": float('nan'),
+            "val_f1": float('nan'),
+            "val_precision": float('nan'),
+            "val_recall": float('nan'),
+            "val_f1_class0": float('nan'),
+            "val_precision_class0": float('nan'),
+            "val_recall_class0": float('nan'),
+            "val_f1_class1": float('nan'),
+            "val_precision_class1": float('nan'),
+            "val_recall_class1": float('nan'),
+        }
+        if hyperparams:
+            result.update(hyperparams)
+        if is_grid_search and param_fold_results is not None:
+            param_fold_results.append(result)
+        if fold_results is not None:
+            fold_results.append(result)
+    
+    finally:
+        # Always cleanup resources, even on error
+        cleanup_model_and_memory(model=model if model is not None else None, clear_cuda=is_grid_search)
+        aggressive_gc(clear_cuda=is_grid_search)
+    
+    return result if result is not None else {}
+
+
+def _train_baseline_model_fold(
+    model_type: str,
+    model_config: Dict[str, Any],
+    train_df: Any,
+    val_df: Any,
+    project_root_str: str,
+    fold_idx: int,
+    model_output_dir: Path,
+    features_stage2_path: str,
+    features_stage4_path: str,
+    hyperparams: Optional[Dict[str, Any]] = None,
+    is_grid_search: bool = False,
+    param_fold_results: Optional[List[Dict[str, Any]]] = None,
+    fold_results: Optional[List[Dict[str, Any]]] = None
+) -> Dict[str, Any]:
+    """
+    Train a baseline (sklearn) model on a single fold.
+    
+    Args:
+        model_type: Type of model to train
+        model_config: Base model configuration
+        train_df: Training dataframe
+        val_df: Validation dataframe
+        project_root_str: Project root as string
+        fold_idx: Fold index (0-based)
+        model_output_dir: Output directory for models
+        features_stage2_path: Path to Stage 2 features
+        features_stage4_path: Path to Stage 4 features
+        hyperparams: Optional hyperparameters to apply (for grid search or final training)
+        is_grid_search: Whether this is grid search (affects error handling and result storage)
+        param_fold_results: Optional list to append grid search results to
+        fold_results: Optional list to append results to
+    
+    Returns:
+        Dictionary with validation metrics
+    """
+    logger.info(f"Training baseline model {model_type} on fold {fold_idx + 1}...")
+    _flush_logs()
+    
+    fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
+    fold_output_dir.mkdir(parents=True, exist_ok=True)
+    
+    result = None
+    model = None
+    
+    try:
+        # Create baseline model with hyperparameters
+        baseline_config = model_config.copy()
+        if hyperparams:
+            baseline_config.update(hyperparams)
+        
+        # Add feature paths for baseline models
+        from lib.utils.paths import load_metadata_flexible
+        
+        # All baseline models require Stage 2 features
+        if model_type in BASELINE_MODELS:
+            stage2_df = load_metadata_flexible(features_stage2_path)
+            if stage2_df is not None and stage2_df.height > 0:
+                if "model_specific_config" not in baseline_config:
+                    baseline_config["model_specific_config"] = {}
+                baseline_config["model_specific_config"]["features_stage2_path"] = features_stage2_path
+                baseline_config["features_stage2_path"] = features_stage2_path
+                logger.debug(f"Passing Stage 2 features path to {model_type}: {features_stage2_path}")
+            else:
+                raise ValueError(
+                    f"Stage 2 features are REQUIRED for {model_type}. "
+                    f"Features must be pre-extracted in Stage 2. "
+                    f"Stage 2 metadata not found or empty at: {features_stage2_path}. "
+                    f"Please run Stage 2 feature extraction first."
+                )
+            
+            # For models that use Stage 4, check if it exists
+            if model_type in STAGE4_MODELS:
+                stage4_df = load_metadata_flexible(features_stage4_path)
+                if stage4_df is not None and stage4_df.height > 0:
+                    if "model_specific_config" not in baseline_config:
+                        baseline_config["model_specific_config"] = {}
+                    baseline_config["model_specific_config"]["features_stage4_path"] = features_stage4_path
+                    baseline_config["features_stage4_path"] = features_stage4_path
+                    logger.debug(f"Passing Stage 4 features path to {model_type}: {features_stage4_path}")
+                else:
+                    raise ValueError(
+                        f"Stage 4 features are REQUIRED for {model_type}. "
+                        f"Features must be pre-extracted in Stage 4. "
+                        f"Stage 4 metadata not found or empty at: {features_stage4_path}. "
+                        f"Please run Stage 4 scaled feature extraction first."
+                    )
+            else:
+                # For stage2_only models, explicitly set stage4_path to None
+                if "model_specific_config" not in baseline_config:
+                    baseline_config["model_specific_config"] = {}
+                baseline_config["model_specific_config"]["features_stage4_path"] = None
+                baseline_config["features_stage4_path"] = None
+        
+        model = create_model(model_type, baseline_config)
+        
+        # Train baseline (handles feature extraction internally)
+        logger.info(f"Starting model.fit() for {model_type} fold {fold_idx + 1}...")
+        logger.info(f"Training data: {train_df.height} rows")
+        _flush_logs()
+        
+        try:
+            model.fit(train_df, project_root=project_root_str)
+            logger.info(f"Model.fit() completed successfully for fold {fold_idx + 1}")
+            _flush_logs()
+        except MemoryError as e:
+            logger.error(f"Memory error during model.fit() for fold {fold_idx + 1}: {e}")
+            raise
+        except Exception as e:
+            error_msg = str(e)
+            if "core dump" in error_msg.lower() or "segmentation fault" in error_msg.lower() or "aborted" in error_msg.lower():
+                logger.critical(f"CRITICAL: Possible crash during model.fit() for fold {fold_idx + 1}: {e}")
+                logger.critical("This may indicate a memory issue, corrupted data, or library incompatibility")
+                logger.critical("Check log file for more details")
+            raise
+        
+        # Evaluate on validation set
+        logger.info(f"Starting model.predict() for {model_type} fold {fold_idx + 1}...")
+        logger.info(f"Validation data: {val_df.height} rows")
+        _flush_logs()
+        
+        try:
+            val_probs = model.predict(val_df, project_root=project_root_str)
+            logger.info(f"Model.predict() completed successfully for fold {fold_idx + 1}")
+            _flush_logs()
+        except MemoryError as e:
+            logger.error(f"Memory error during model.predict() for fold {fold_idx + 1}: {e}")
+            raise
+        except Exception as e:
+            error_msg = str(e)
+            if "core dump" in error_msg.lower() or "segmentation fault" in error_msg.lower() or "aborted" in error_msg.lower():
+                logger.critical(f"CRITICAL: Possible crash during model.predict() for fold {fold_idx + 1}: {e}")
+                logger.critical("This may indicate a memory issue, corrupted data, or library incompatibility")
+                logger.critical("Check log file for more details")
+            raise
+        
+        val_preds = np.argmax(val_probs, axis=1)
+        val_labels = val_df["label"].to_list()
+        label_map = {label: idx for idx, label in enumerate(sorted(set(val_labels)))}
+        val_y = np.array([label_map[label] for label in val_labels])
+        
+        # Compute comprehensive metrics using shared utility
+        metrics = compute_classification_metrics(
+            y_true=val_y,
+            y_pred=val_preds,
+            y_probs=val_probs
+        )
+        
+        # Store results
+        result = {
+            "fold": fold_idx + 1,
+            "val_loss": metrics["val_loss"],
+            "val_acc": metrics["val_acc"],
+            "val_f1": metrics["val_f1"],
+            "val_precision": metrics["val_precision"],
+            "val_recall": metrics["val_recall"],
+            "val_f1_class0": metrics["val_f1_class0"],
+            "val_precision_class0": metrics["val_precision_class0"],
+            "val_recall_class0": metrics["val_recall_class0"],
+            "val_f1_class1": metrics["val_f1_class1"],
+            "val_precision_class1": metrics["val_precision_class1"],
+            "val_recall_class1": metrics["val_recall_class1"],
+        }
+        if hyperparams:
+            result.update(hyperparams)
+        
+        if is_grid_search and param_fold_results is not None:
+            param_fold_results.append(result)
+        if fold_results is not None:
+            fold_results.append(result)
+        
+        logger.info(
+            f"Fold {fold_idx + 1} - Val Loss: {metrics['val_loss']:.4f}, Val Acc: {metrics['val_acc']:.4f}, "
+            f"Val F1: {metrics['val_f1']:.4f}, Val Precision: {metrics['val_precision']:.4f}, Val Recall: {metrics['val_recall']:.4f}"
+        )
+        if is_grid_search:
+            logger.info(
+                f"  Class 0 - Precision: {metrics['val_precision_class0']:.4f}, "
+                f"Recall: {metrics['val_recall_class0']:.4f}, F1: {metrics['val_f1_class0']:.4f}"
+            )
+            logger.info(
+                f"  Class 1 - Precision: {metrics['val_precision_class1']:.4f}, "
+                f"Recall: {metrics['val_recall_class1']:.4f}, F1: {metrics['val_f1_class1']:.4f}"
+            )
+        
+        # Save model
+        model.save(str(fold_output_dir))
+        logger.info(f"Saved baseline model to {fold_output_dir}")
+    
+    except Exception as e:
+        logger.error(
+            f"Error training baseline fold {fold_idx + 1}: {e}",
+            exc_info=True
+        )
+        result = {
+            "fold": fold_idx + 1,
+            "val_loss": float('nan'),
+            "val_acc": float('nan'),
+            "val_f1": float('nan'),
+            "val_precision": float('nan'),
+            "val_recall": float('nan'),
+            "val_f1_class0": float('nan'),
+            "val_precision_class0": float('nan'),
+            "val_recall_class0": float('nan'),
+            "val_f1_class1": float('nan'),
+            "val_precision_class1": float('nan'),
+            "val_recall_class1": float('nan'),
+        }
+        if hyperparams:
+            result.update(hyperparams)
+        if is_grid_search and param_fold_results is not None:
+            param_fold_results.append(result)
+        if fold_results is not None:
+            fold_results.append(result)
+    
+    finally:
+        # Always clear model and aggressively free memory, even on error
+        cleanup_model_and_memory(model=model if model is not None else None, clear_cuda=False)
+        aggressive_gc(clear_cuda=False)
+    
+    return result if result is not None else {}
 
 
 def stage5_train_models(
@@ -566,7 +923,7 @@ def stage5_train_models(
         )
         if not validation_results["stage3_available"]:
             error_msg += "  - Stage 3 (scaled videos): REQUIRED for all models\n"
-        if any(m in STAGE2_MODELS for m in model_types) and not validation_results["stage2_available"]:
+        if any(m in BASELINE_MODELS for m in model_types) and not validation_results["stage2_available"]:
             error_msg += "  - Stage 2 (features): REQUIRED for all baseline models (svm, logistic_regression and variants)\n"
         if any("stage2_stage4" in m for m in model_types) and not validation_results["stage4_available"]:
             error_msg += "  - Stage 4 (scaled features): REQUIRED for *_stage2_stage4 models\n"
@@ -1140,7 +1497,6 @@ def stage5_train_models(
                         # CRITICAL: Apply PyTorch memory optimizations to prevent GPU memory from being hogged
                         if device.type == "cuda":
                             # Set CUDA memory allocator to use expandable segments (reduces fragmentation)
-                            import os
                             if "PYTORCH_CUDA_ALLOC_CONF" not in os.environ:
                                 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
                             
@@ -1315,8 +1671,52 @@ def stage5_train_models(
                                             # Continue to training - the DataLoader will handle small videos
                                             break
                                 
-                                # Move to device
+                                # CRITICAL: Convert to float and normalize BEFORE moving to device
+                                # VideoDataset should already do this, but ensure it's done for forward pass test
+                                # Check for uint8 (ByteTensor) or any non-float type
+                                original_dtype = sample_clips.dtype
+                                if sample_clips.dtype != torch.float32:
+                                    logger.debug(
+                                        f"Forward pass test: Converting sample_clips from {original_dtype} to float32. "
+                                        f"Shape: {sample_clips.shape}, Device: {sample_clips.device}"
+                                    )
+                                    # Convert to float32 - handle both uint8 [0, 255] and already normalized [0.0, 1.0]
+                                    if sample_clips.dtype == torch.uint8:
+                                        # Convert uint8 [0, 255] to float32 [0.0, 1.0]
+                                        sample_clips = sample_clips.float() / 255.0
+                                    else:
+                                        # Already in [0.0, 1.0] range but wrong dtype, just convert
+                                        sample_clips = sample_clips.float()
+                                    
+                                    # Apply normalization (ImageNet mean/std - matching video.py)
+                                    IMG_MEAN = [0.485, 0.456, 0.406]
+                                    IMG_STD = [0.229, 0.224, 0.225]
+                                    # Normalize: (x - mean) / std
+                                    # sample_clips is (N, C, T, H, W) or (N, T, C, H, W)
+                                    if sample_clips.dim() == 5:
+                                        if sample_clips.shape[1] == 3:  # (N, C, T, H, W)
+                                            mean = torch.tensor(IMG_MEAN, device=sample_clips.device, dtype=torch.float32).view(1, 3, 1, 1, 1)
+                                            std = torch.tensor(IMG_STD, device=sample_clips.device, dtype=torch.float32).view(1, 3, 1, 1, 1)
+                                        else:  # (N, T, C, H, W)
+                                            mean = torch.tensor(IMG_MEAN, device=sample_clips.device, dtype=torch.float32).view(1, 1, 3, 1, 1)
+                                            std = torch.tensor(IMG_STD, device=sample_clips.device, dtype=torch.float32).view(1, 1, 3, 1, 1)
+                                        sample_clips = (sample_clips - mean) / std
+                                    
+                                    logger.debug(
+                                        f"Forward pass test: Converted sample_clips from {original_dtype} to {sample_clips.dtype}. "
+                                        f"Shape: {sample_clips.shape}, Min: {sample_clips.min().item():.3f}, Max: {sample_clips.max().item():.3f}"
+                                    )
+                                
+                                # Move to device AFTER conversion (ensures float32 on device)
                                 sample_clips = sample_clips.to(device, non_blocking=False)
+                                
+                                # Final safety check: ensure it's float32
+                                if sample_clips.dtype != torch.float32:
+                                    logger.warning(
+                                        f"Forward pass test: sample_clips is still {sample_clips.dtype} after conversion. "
+                                        f"Forcing to float32. Shape: {sample_clips.shape}"
+                                    )
+                                    sample_clips = sample_clips.float()
                                 
                                 # Test forward pass
                                 try:
@@ -1590,282 +1990,37 @@ def stage5_train_models(
                     
                     elif is_xgboost_model(model_type):
                         # XGBoost model training (uses pretrained models for feature extraction)
-                        logger.info(f"Training XGBoost model {model_type} on fold {fold_idx + 1}...")
-                        _flush_logs()
-                        
-                        fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
-                        fold_output_dir.mkdir(parents=True, exist_ok=True)
-                        
-                        # Note: Fold deletion already handled above before the resume check
-                        
-                        try:
-                            # Create XGBoost model with hyperparameters
-                            xgb_config = model_config.copy()
-                            xgb_config.update(params)  # Apply grid search hyperparameters
-                            model = create_model(model_type, xgb_config)
-                            
-                            # Train XGBoost (handles feature extraction internally)
-                            model.fit(train_df, project_root=project_root_str)
-                            
-                            # Evaluate on validation set
-                            val_probs = model.predict(val_df, project_root=project_root_str)
-                            val_preds = np.argmax(val_probs, axis=1)
-                            val_labels = val_df["label"].to_list()
-                            label_map = {label: idx for idx, label in enumerate(sorted(set(val_labels)))}
-                            val_y = np.array([label_map[label] for label in val_labels])
-                            
-                            # Compute comprehensive metrics using shared utility
-                            metrics = compute_classification_metrics(
-                                y_true=val_y,
-                                y_pred=val_preds,
-                                y_probs=val_probs
-                            )
-                            
-                            # Store results with hyperparameters
-                            result = {
-                                "fold": fold_idx + 1,
-                                "val_loss": metrics["val_loss"],
-                                "val_acc": metrics["val_acc"],
-                                "val_f1": metrics["val_f1"],
-                                "val_precision": metrics["val_precision"],
-                                "val_recall": metrics["val_recall"],
-                                "val_f1_class0": metrics["val_f1_class0"],
-                                "val_precision_class0": metrics["val_precision_class0"],
-                                "val_recall_class0": metrics["val_recall_class0"],
-                                "val_f1_class1": metrics["val_f1_class1"],
-                                "val_precision_class1": metrics["val_precision_class1"],
-                                "val_recall_class1": metrics["val_recall_class1"],
-                            }
-                            result.update(params)  # Add hyperparameters
-                            param_fold_results.append(result)
-                            fold_results.append(result)
-                            
-                            logger.info(
-                                f"Fold {fold_idx + 1} - Val Loss: {metrics['val_loss']:.4f}, Val Acc: {metrics['val_acc']:.4f}, "
-                                f"Val F1: {metrics['val_f1']:.4f}, Val Precision: {metrics['val_precision']:.4f}, Val Recall: {metrics['val_recall']:.4f}"
-                            )
-                            logger.info(
-                                f"  Class 0 - Precision: {metrics['val_precision_class0']:.4f}, "
-                                f"Recall: {metrics['val_recall_class0']:.4f}, F1: {metrics['val_f1_class0']:.4f}"
-                            )
-                            logger.info(
-                                f"  Class 1 - Precision: {metrics['val_precision_class1']:.4f}, "
-                                f"Recall: {metrics['val_recall_class1']:.4f}, F1: {metrics['val_f1_class1']:.4f}"
-                            )
-                            
-                            # Save model
-                            model.save(str(fold_output_dir))
-                            logger.info(f"Saved XGBoost model to {fold_output_dir}")
-                        
-                        except Exception as e:
-                            logger.error(f"Error training XGBoost fold {fold_idx + 1}: {e}", exc_info=True)
-                            result = {
-                                "fold": fold_idx + 1,
-                                "val_loss": float('nan'),
-                                "val_acc": float('nan'),
-                                "val_f1": float('nan'),
-                                "val_precision": float('nan'),
-                                "val_recall": float('nan'),
-                                "val_f1_class0": float('nan'),
-                                "val_precision_class0": float('nan'),
-                                "val_recall_class0": float('nan'),
-                                "val_f1_class1": float('nan'),
-                                "val_precision_class1": float('nan'),
-                                "val_recall_class1": float('nan'),
-                            }
-                            result.update(params)
-                            param_fold_results.append(result)
-                            fold_results.append(result)
-                        
-                        finally:
-                            # Always cleanup resources, even on error
-                            cleanup_model_and_memory(model=model if 'model' in locals() else None, clear_cuda=True)
-                            aggressive_gc(clear_cuda=True)
+                        _train_xgboost_model_fold(
+                            model_type=model_type,
+                            model_config=model_config,
+                            train_df=train_df,
+                            val_df=val_df,
+                            project_root_str=project_root_str,
+                            fold_idx=fold_idx,
+                            model_output_dir=model_output_dir,
+                            hyperparams=params,
+                            is_grid_search=True,
+                            param_fold_results=param_fold_results,
+                            fold_results=fold_results
+                        )
                     
                     else:
                         # Baseline model training (sklearn)
-                        logger.info(f"Training baseline model {model_type} on fold {fold_idx + 1}...")
-                        _flush_logs()
-                        
-                        fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
-                        fold_output_dir.mkdir(parents=True, exist_ok=True)
-                        
-                        # Note: Fold deletion already handled above before the resume check
-                        
-                        try:
-                            # Create baseline model with hyperparameters
-                            baseline_config = model_config.copy()
-                            baseline_config.update(params)  # Apply grid search hyperparameters
-                            
-                            # Add feature paths for baseline models
-                            # All baseline models (svm, logistic_regression and their variants) require Stage 2 features
-                            # Stage 5 only trains - features must be pre-extracted in Stage 2/4
-                            from lib.utils.paths import load_metadata_flexible
-                            
-                            # All baseline models require Stage 2 features
-                            if model_type in BASELINE_MODELS:
-                                # Check if Stage 2 metadata exists and is not empty
-                                stage2_df = load_metadata_flexible(features_stage2_path)
-                                if stage2_df is not None and stage2_df.height > 0:
-                                    # CRITICAL: Set features_stage2_path in model_specific_config, not top level
-                                    # create_model() looks for it in model_specific_config dict
-                                    if "model_specific_config" not in baseline_config:
-                                        baseline_config["model_specific_config"] = {}
-                                    baseline_config["model_specific_config"]["features_stage2_path"] = features_stage2_path
-                                    # Also set at top level for backward compatibility
-                                    baseline_config["features_stage2_path"] = features_stage2_path
-                                    logger.debug(f"Passing Stage 2 features path to {model_type}: {features_stage2_path}")
-                                else:
-                                    # Stage 2 is required for all baseline models - fail early with clear error
-                                    raise ValueError(
-                                        f"Stage 2 features are REQUIRED for {model_type}. "
-                                        f"Features must be pre-extracted in Stage 2. "
-                                        f"Stage 2 metadata not found or empty at: {features_stage2_path}. "
-                                        f"Please run Stage 2 feature extraction first."
-                                    )
-                                
-                                # For models that use Stage 4, check if it exists
-                                if model_type in STAGE4_MODELS:
-                                    stage4_df = load_metadata_flexible(features_stage4_path)
-                                    if stage4_df is not None and stage4_df.height > 0:
-                                        # CRITICAL: Set features_stage4_path in model_specific_config
-                                        if "model_specific_config" not in baseline_config:
-                                            baseline_config["model_specific_config"] = {}
-                                        baseline_config["model_specific_config"]["features_stage4_path"] = features_stage4_path
-                                        # Also set at top level for backward compatibility
-                                        baseline_config["features_stage4_path"] = features_stage4_path
-                                        logger.debug(f"Passing Stage 4 features path to {model_type}: {features_stage4_path}")
-                                    else:
-                                        # Stage 4 is required for these models
-                                        raise ValueError(
-                                            f"Stage 4 features are REQUIRED for {model_type}. "
-                                            f"Features must be pre-extracted in Stage 4. "
-                                            f"Stage 4 metadata not found or empty at: {features_stage4_path}. "
-                                            f"Please run Stage 4 scaled feature extraction first."
-                                        )
-                                else:
-                                    # For stage2_only models, explicitly set stage4_path to None
-                                    if "model_specific_config" not in baseline_config:
-                                        baseline_config["model_specific_config"] = {}
-                                    baseline_config["model_specific_config"]["features_stage4_path"] = None
-                                    baseline_config["features_stage4_path"] = None
-                            
-                            model = create_model(model_type, baseline_config)
-                            
-                            # Train baseline (handles feature extraction internally)
-                            # Wrap in try-except to catch potential crashes
-                            logger.info(f"Starting model.fit() for {model_type} fold {fold_idx + 1}...")
-                            logger.info(f"Training data: {train_df.height} rows")
-                            _flush_logs()
-                            
-                            try:
-                                model.fit(train_df, project_root=project_root_str)
-                                logger.info(f"Model.fit() completed successfully for fold {fold_idx + 1}")
-                                _flush_logs()
-                            except MemoryError as e:
-                                logger.error(f"Memory error during model.fit() for fold {fold_idx + 1}: {e}")
-                                raise
-                            except Exception as e:
-                                error_msg = str(e)
-                                if "core dump" in error_msg.lower() or "segmentation fault" in error_msg.lower() or "aborted" in error_msg.lower():
-                                    logger.critical(f"CRITICAL: Possible crash during model.fit() for fold {fold_idx + 1}: {e}")
-                                    logger.critical("This may indicate a memory issue, corrupted data, or library incompatibility")
-                                    logger.critical("Check log file for more details")
-                                raise
-                            
-                            # Evaluate on validation set
-                            logger.info(f"Starting model.predict() for {model_type} fold {fold_idx + 1}...")
-                            logger.info(f"Validation data: {val_df.height} rows")
-                            _flush_logs()
-                            
-                            try:
-                                val_probs = model.predict(val_df, project_root=project_root_str)
-                                logger.info(f"Model.predict() completed successfully for fold {fold_idx + 1}")
-                                _flush_logs()
-                            except MemoryError as e:
-                                logger.error(f"Memory error during model.predict() for fold {fold_idx + 1}: {e}")
-                                raise
-                            except Exception as e:
-                                error_msg = str(e)
-                                if "core dump" in error_msg.lower() or "segmentation fault" in error_msg.lower() or "aborted" in error_msg.lower():
-                                    logger.critical(f"CRITICAL: Possible crash during model.predict() for fold {fold_idx + 1}: {e}")
-                                    logger.critical("This may indicate a memory issue, corrupted data, or library incompatibility")
-                                    logger.critical("Check log file for more details")
-                                raise
-                            val_preds = np.argmax(val_probs, axis=1)
-                            val_labels = val_df["label"].to_list()
-                            label_map = {label: idx for idx, label in enumerate(sorted(set(val_labels)))}
-                            val_y = np.array([label_map[label] for label in val_labels])
-                            
-                            # Compute comprehensive metrics using shared utility
-                            metrics = compute_classification_metrics(
-                                y_true=val_y,
-                                y_pred=val_preds,
-                                y_probs=val_probs
-                            )
-                            
-                            # Store results with hyperparameters
-                            result = {
-                                "fold": fold_idx + 1,
-                                "val_loss": metrics["val_loss"],
-                                "val_acc": metrics["val_acc"],
-                                "val_f1": metrics["val_f1"],
-                                "val_precision": metrics["val_precision"],
-                                "val_recall": metrics["val_recall"],
-                                "val_f1_class0": metrics["val_f1_class0"],
-                                "val_precision_class0": metrics["val_precision_class0"],
-                                "val_recall_class0": metrics["val_recall_class0"],
-                                "val_f1_class1": metrics["val_f1_class1"],
-                                "val_precision_class1": metrics["val_precision_class1"],
-                                "val_recall_class1": metrics["val_recall_class1"],
-                            }
-                            result.update(params)  # Add hyperparameters
-                            param_fold_results.append(result)
-                            fold_results.append(result)
-                            
-                            logger.info(
-                                f"Fold {fold_idx + 1} - Val Loss: {metrics['val_loss']:.4f}, Val Acc: {metrics['val_acc']:.4f}, "
-                                f"Val F1: {metrics['val_f1']:.4f}, Val Precision: {metrics['val_precision']:.4f}, Val Recall: {metrics['val_recall']:.4f}"
-                            )
-                            logger.info(
-                                f"  Class 0 - Precision: {metrics['val_precision_class0']:.4f}, "
-                                f"Recall: {metrics['val_recall_class0']:.4f}, F1: {metrics['val_f1_class0']:.4f}"
-                            )
-                            logger.info(
-                                f"  Class 1 - Precision: {metrics['val_precision_class1']:.4f}, "
-                                f"Recall: {metrics['val_recall_class1']:.4f}, F1: {metrics['val_f1_class1']:.4f}"
-                            )
-                            
-                            # Save model
-                            model.save(str(fold_output_dir))
-                            logger.info(f"Saved baseline model to {fold_output_dir}")
-                        
-                        except Exception as e:
-                            logger.error(
-                                f"Error training baseline fold {fold_idx + 1}: {e}",
-                                exc_info=True
-                            )
-                            result = {
-                                "fold": fold_idx + 1,
-                                "val_loss": float('nan'),
-                                "val_acc": float('nan'),
-                                "val_f1": float('nan'),
-                                "val_precision": float('nan'),
-                                "val_recall": float('nan'),
-                                "val_f1_class0": float('nan'),
-                                "val_precision_class0": float('nan'),
-                                "val_recall_class0": float('nan'),
-                                "val_f1_class1": float('nan'),
-                                "val_precision_class1": float('nan'),
-                                "val_recall_class1": float('nan'),
-                            }
-                            result.update(params)
-                            param_fold_results.append(result)
-                            fold_results.append(result)
-                        finally:
-                            # Always clear model and aggressively free memory, even on error
-                            cleanup_model_and_memory(model=model if 'model' in locals() else None, clear_cuda=False)
-                            aggressive_gc(clear_cuda=False)
+                        _train_baseline_model_fold(
+                            model_type=model_type,
+                            model_config=model_config,
+                            train_df=train_df,
+                            val_df=val_df,
+                            project_root_str=project_root_str,
+                            fold_idx=fold_idx,
+                            model_output_dir=model_output_dir,
+                            features_stage2_path=features_stage2_path,
+                            features_stage4_path=features_stage4_path,
+                            hyperparams=params,
+                            is_grid_search=True,
+                            param_fold_results=param_fold_results,
+                            fold_results=fold_results
+                        )
                     
                 except Exception as e:
                     logger.error(f"Error training fold {fold_idx + 1}: {e}", exc_info=True)
@@ -2046,7 +2201,6 @@ def stage5_train_models(
                     # CRITICAL: Apply PyTorch memory optimizations to prevent GPU memory from being hogged
                     if device.type == "cuda":
                         # Set CUDA memory allocator to use expandable segments (reduces fragmentation)
-                        import os
                         if "PYTORCH_CUDA_ALLOC_CONF" not in os.environ:
                             os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
                         
@@ -2191,135 +2345,35 @@ def stage5_train_models(
                     
                 elif is_xgboost_model(model_type):
                     # XGBoost model training with best hyperparameters
-                    fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
-                    fold_output_dir.mkdir(parents=True, exist_ok=True)
-                    
-                    # Note: Fold deletion already handled above before the resume check
-                    
-                    xgb_config = model_config.copy()
-                    if best_params:
-                        xgb_config.update(best_params)
-                    model = create_model(model_type, xgb_config)
-                    
-                    model.fit(train_df, project_root=project_root_str)
-                    val_probs = model.predict(val_df, project_root=project_root_str)
-                    val_preds = np.argmax(val_probs, axis=1)
-                    val_labels = val_df["label"].to_list()
-                    label_map = {label: idx for idx, label in enumerate(sorted(set(val_labels)))}
-                    val_y = np.array([label_map[label] for label in val_labels])
-                    
-                    # Compute comprehensive metrics using shared utility
-                    metrics = compute_classification_metrics(
-                        y_true=val_y,
-                        y_pred=val_preds,
-                        y_probs=val_probs
+                    _train_xgboost_model_fold(
+                        model_type=model_type,
+                        model_config=model_config,
+                        train_df=train_df,
+                        val_df=val_df,
+                        project_root_str=project_root_str,
+                        fold_idx=fold_idx,
+                        model_output_dir=model_output_dir,
+                        hyperparams=best_params,
+                        is_grid_search=False,
+                        fold_results=fold_results
                     )
-                    
-                    result = {
-                        "fold": fold_idx + 1,
-                        "val_loss": metrics["val_loss"],
-                        "val_acc": metrics["val_acc"],
-                        "val_f1": metrics["val_f1"],
-                        "val_precision": metrics["val_precision"],
-                        "val_recall": metrics["val_recall"],
-                        "val_f1_class0": metrics["val_f1_class0"],
-                        "val_precision_class0": metrics["val_precision_class0"],
-                        "val_recall_class0": metrics["val_recall_class0"],
-                        "val_f1_class1": metrics["val_f1_class1"],
-                        "val_precision_class1": metrics["val_precision_class1"],
-                        "val_recall_class1": metrics["val_recall_class1"],
-                    }
-                    if best_params:
-                        result.update(best_params)
-                    fold_results.append(result)
-                    
-                    logger.info(
-                        f"Fold {fold_idx + 1} - Val Loss: {metrics['val_loss']:.4f}, Val Acc: {metrics['val_acc']:.4f}, "
-                        f"Val F1: {metrics['val_f1']:.4f}, Val Precision: {metrics['val_precision']:.4f}, Val Recall: {metrics['val_recall']:.4f}"
-                    )
-                    
-                    model.save(str(fold_output_dir))
-                    cleanup_model_and_memory(model=model, clear_cuda=False)
-                    aggressive_gc(clear_cuda=False)
                     
                 else:
                     # Baseline model training with best hyperparameters
-                    fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
-                    fold_output_dir.mkdir(parents=True, exist_ok=True)
-                    
-                    # Note: Fold deletion already handled above before the resume check
-                    
-                    baseline_config = model_config.copy()
-                    if best_params:
-                        baseline_config.update(best_params)
-                    
-                    from lib.utils.paths import load_metadata_flexible
-                    if model_type in BASELINE_MODELS:
-                        stage2_df = load_metadata_flexible(features_stage2_path)
-                        if stage2_df is not None and stage2_df.height > 0:
-                            if "model_specific_config" not in baseline_config:
-                                baseline_config["model_specific_config"] = {}
-                            baseline_config["model_specific_config"]["features_stage2_path"] = features_stage2_path
-                            baseline_config["features_stage2_path"] = features_stage2_path
-                        else:
-                            raise ValueError(f"Stage 2 features required for {model_type}")
-                        
-                        if model_type in STAGE4_MODELS:
-                            stage4_df = load_metadata_flexible(features_stage4_path)
-                            if stage4_df is not None and stage4_df.height > 0:
-                                if "model_specific_config" not in baseline_config:
-                                    baseline_config["model_specific_config"] = {}
-                                baseline_config["model_specific_config"]["features_stage4_path"] = features_stage4_path
-                                baseline_config["features_stage4_path"] = features_stage4_path
-                            else:
-                                raise ValueError(f"Stage 4 features required for {model_type}")
-                        else:
-                            if "model_specific_config" not in baseline_config:
-                                baseline_config["model_specific_config"] = {}
-                            baseline_config["model_specific_config"]["features_stage4_path"] = None
-                            baseline_config["features_stage4_path"] = None
-                    
-                    model = create_model(model_type, baseline_config)
-                    model.fit(train_df, project_root=project_root_str)
-                    val_probs = model.predict(val_df, project_root=project_root_str)
-                    val_preds = np.argmax(val_probs, axis=1)
-                    val_labels = val_df["label"].to_list()
-                    label_map = {label: idx for idx, label in enumerate(sorted(set(val_labels)))}
-                    val_y = np.array([label_map[label] for label in val_labels])
-                    
-                    # Compute comprehensive metrics using shared utility
-                    metrics = compute_classification_metrics(
-                        y_true=val_y,
-                        y_pred=val_preds,
-                        y_probs=val_probs
+                    _train_baseline_model_fold(
+                        model_type=model_type,
+                        model_config=model_config,
+                        train_df=train_df,
+                        val_df=val_df,
+                        project_root_str=project_root_str,
+                        fold_idx=fold_idx,
+                        model_output_dir=model_output_dir,
+                        features_stage2_path=features_stage2_path,
+                        features_stage4_path=features_stage4_path,
+                        hyperparams=best_params,
+                        is_grid_search=False,
+                        fold_results=fold_results
                     )
-                    
-                    result = {
-                        "fold": fold_idx + 1,
-                        "val_loss": metrics["val_loss"],
-                        "val_acc": metrics["val_acc"],
-                        "val_f1": metrics["val_f1"],
-                        "val_precision": metrics["val_precision"],
-                        "val_recall": metrics["val_recall"],
-                        "val_f1_class0": metrics["val_f1_class0"],
-                        "val_precision_class0": metrics["val_precision_class0"],
-                        "val_recall_class0": metrics["val_recall_class0"],
-                        "val_f1_class1": metrics["val_f1_class1"],
-                        "val_precision_class1": metrics["val_precision_class1"],
-                        "val_recall_class1": metrics["val_recall_class1"],
-                    }
-                    if best_params:
-                        result.update(best_params)
-                    fold_results.append(result)
-                    
-                    logger.info(
-                        f"Fold {fold_idx + 1} - Val Loss: {metrics['val_loss']:.4f}, Val Acc: {metrics['val_acc']:.4f}, "
-                        f"Val F1: {metrics['val_f1']:.4f}, Val Precision: {metrics['val_precision']:.4f}, Val Recall: {metrics['val_recall']:.4f}"
-                    )
-                    
-                    model.save(str(fold_output_dir))
-                    cleanup_model_and_memory(model=model, clear_cuda=False)
-                    aggressive_gc(clear_cuda=False)
                     
             except Exception as e:
                 logger.error(f"Error training final fold {fold_idx + 1}: {e}", exc_info=True)

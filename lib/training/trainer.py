@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, Tuple, Iterable, Dict, List, Any
+from typing import Optional, Tuple, Iterable, Dict, Any
 import numpy as np
 import torch
 import torch.nn as nn
