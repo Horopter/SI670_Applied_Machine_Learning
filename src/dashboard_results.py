@@ -1,8 +1,8 @@
 """
-Streamlit Dashboard for FVC Training Results - Enhanced Edition
+Streamlit Dashboard for AURA Training Results - Enhanced Edition
 
 A comprehensive, publication-ready dashboard for visualizing and analyzing 
-training results from the 5-stage FVC pipeline. Includes advanced visualizations
+training results from the 5-stage AURA pipeline. Includes advanced visualizations
 suitable for IEEE paper submissions.
 """
 

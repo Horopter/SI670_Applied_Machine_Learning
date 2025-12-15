@@ -1,7 +1,7 @@
 """
-Airflow DAG for FVC pipeline orchestration.
+Airflow DAG for AURA pipeline orchestration.
 
-This DAG automates the execution of the 5-stage FVC pipeline:
+This DAG automates the execution of the 5-stage AURA pipeline:
 1. Video Augmentation
 2. Feature Extraction
 3. Video Scaling

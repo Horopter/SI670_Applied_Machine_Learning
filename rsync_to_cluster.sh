@@ -1,5 +1,5 @@
 #!/bin/bash
-# Safe rsync script to sync fvc project code to Great Lakes cluster
+# Safe rsync script to sync AURA project code to Great Lakes cluster
 # SAFETY: Only syncs lib/ and src/ directories, never deletes files
 # This script only adds/updates files, never deletes anything
 # Uses SSH connection sharing to avoid multiple password prompts
@@ -30,7 +30,7 @@ trap cleanup EXIT INT TERM
 # Ensure socket doesn't exist before we start (shouldn't with unique name, but be safe)
 rm -f "$SSH_CONTROL_SOCKET" 2>/dev/null || true
 
-echo "Syncing fvc project code to Great Lakes cluster..."
+echo "Syncing AURA project code to Great Lakes cluster..."
 echo "Source: $SOURCE_DIR"
 echo "Destination: $DEST_HOST:$DEST_PATH"
 echo ""
