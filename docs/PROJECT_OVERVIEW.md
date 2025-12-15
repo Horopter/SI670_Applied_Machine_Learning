@@ -1,8 +1,26 @@
-# FVC Binary Video Classifier - Project Overview
+# AURA - Authenticity Understanding of Real vs Artificial Shortform Videos - Project Overview
 
 ## Project Description
 
-This project implements a binary video classifier for the FVC (Fake Video Classification) dataset. The goal is to distinguish between real and fake videos using deep learning techniques, specifically 3D Convolutional Neural Networks (3D CNNs) with transfer learning.
+AURA (Authenticity Understanding of Real vs Artificial) is a comprehensive system for detecting fake videos in shortform content. This project implements multiple model architectures for binary video classification using the **Fake Video Corpus (FVC)** dataset. The goal is to distinguish between real and fake videos using deep learning techniques, specifically 3D Convolutional Neural Networks (3D CNNs) with transfer learning, handcrafted features, and ensemble methods.
+
+### Dataset
+
+This project uses the **Fake Video Corpus (FVC)** dataset from [MKLab-ITI](https://github.com/MKLab-ITI/fake-video-corpus), created by Olga Papadopoulou, Markos Zampoglou, Symeon Papadopoulos, and Ioannis Kompatsiaris. The dataset consists of 3957 videos annotated as fake and 2458 annotated as real, including near-duplicate versions collected from YouTube, Facebook, and Twitter.
+
+**Citation**:
+```bibtex
+@article{papadopoulou2018corpus,
+  author = "Papadopoulou, Olga and Zampoglou, Markos and Papadopoulos, Symeon and Kompatsiaris, Ioannis",
+  title = "A corpus of debunked and verified user-generated videos",
+  journal = "Online Information Review",
+  doi = "10.1108/OIR-03-2018-0101",
+  year={2018},
+  publisher={Emerald Publishing Limited}
+}
+```
+
+For questions about the dataset, please contact Olga Papadopoulou at olgapapa@iti.gr.
 
 ## Initial Approach
 

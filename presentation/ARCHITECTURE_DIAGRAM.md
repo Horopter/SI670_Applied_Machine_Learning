@@ -1,4 +1,4 @@
-# FVC Project Architecture Diagrams
+# AURA Project Architecture Diagrams
 
 This document provides detailed ASCII/text diagrams of the 5-stage pipeline architecture, data flow, and system components.
 

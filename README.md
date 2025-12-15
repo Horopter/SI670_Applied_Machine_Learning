@@ -1,10 +1,10 @@
-# FVC Binary Video Classifier
+# AURA - Authenticity Understanding of Real vs Artificial Shortform Videos
 
 A deep learning project for binary classification of videos (real vs. fake) using 3D Convolutional Neural Networks with transfer learning.
 
 ## Overview
 
-This project implements a binary video classifier for the FVC (Fake Video Classification) dataset. The model uses a pretrained 3D ResNet backbone (Kinetics-400 weights) with a custom Inception-like head for binary classification.
+AURA (Authenticity Understanding of Real vs Artificial) is a comprehensive system for detecting fake videos in shortform content. The project implements multiple model architectures for binary video classification using the Fake Video Corpus dataset. The system uses pretrained 3D ResNet backbones (Kinetics-400 weights) with custom classification heads, along with handcrafted feature extraction and ensemble methods.
 
 ## Key Features
 
@@ -19,7 +19,7 @@ This project implements a binary video classifier for the FVC (Fake Video Classi
 ## Project Structure
 
 ```
-fvc/
+aura/
 ├── archive/                    # Original dataset archives
 ├── data/                       # Processed metadata
 ├── docs/                       # Documentation
@@ -165,6 +165,28 @@ Results are saved in `runs/` directory with:
 - Metrics logs (`metrics.jsonl`)
 - Model checkpoints (`checkpoints/`)
 - System metadata (`metadata.json`)
+
+## Dataset Credits
+
+This project uses the **Fake Video Corpus (FVC)** dataset provided by [MKLab-ITI](https://github.com/MKLab-ITI/fake-video-corpus). We gratefully acknowledge:
+
+- **Dataset Source**: [fake-video-corpus](https://github.com/MKLab-ITI/fake-video-corpus)
+- **Dataset Authors**: Olga Papadopoulou, Markos Zampoglou, Symeon Papadopoulos, and Ioannis Kompatsiaris
+- **Citation**: 
+  ```bibtex
+  @article{papadopoulou2018corpus,
+    author = "Papadopoulou, Olga and Zampoglou, Markos and Papadopoulos, Symeon and Kompatsiaris, Ioannis",
+    title = "A corpus of debunked and verified user-generated videos",
+    journal = "Online Information Review",
+    doi = "10.1108/OIR-03-2018-0101",
+    year={2018},
+    publisher={Emerald Publishing Limited}
+  }
+  ```
+- **License**: Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)
+- **Funding**: Supported by the InVID project, funded by the European Commission under contract number 687786
+
+For questions about the dataset, please contact Olga Papadopoulou at olgapapa@iti.gr.
 
 ## License
 

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the FVC Binary Video Classifier project are documented in this file.
+All notable changes to the AURA (Authenticity Understanding of Real vs Artificial Shortform Videos) project are documented in this file.
 
 ## [Unreleased]
 

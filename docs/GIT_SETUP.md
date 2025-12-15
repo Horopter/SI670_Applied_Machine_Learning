@@ -12,7 +12,7 @@
 ```
 SI670_Applied_Machine_Learning/
 ├── README.md                    # Repository-level README
-└── Final_Project/               # FVC Binary Video Classifier project
+└── Final_Project/               # AURA - Authenticity Understanding of Real vs Artificial Shortform Videos
     ├── README.md                # Project README
     ├── .gitignore              # Git ignore rules
     ├── requirements.txt        # Python dependencies
@@ -32,7 +32,7 @@ SI670_Applied_Machine_Learning/
 ## Commits
 
 1. **Initial repository setup** - Created repository with basic README
-2. **Add Final_Project: FVC Binary Video Classifier** - Added all project files
+2. **Add Final_Project: AURA** - Added all project files
 3. **Add lib/ module files (fix .gitignore)** - Added library modules and fixed .gitignore
 
 ## Files Excluded from Git

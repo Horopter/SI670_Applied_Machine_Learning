@@ -1,4 +1,4 @@
-# FVC Unit Tests
+# AURA Unit Tests
 
 Comprehensive unit test suite for the FVC video classifier project.
 

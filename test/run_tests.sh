@@ -1,5 +1,5 @@
 #!/bin/bash
-# Test runner script for FVC project
+# Test runner script for AURA project
 
 set -e
 

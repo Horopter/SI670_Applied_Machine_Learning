@@ -1,4 +1,4 @@
-# FVC Deepfake Detection: Comprehensive Notebook Collection
+# AURA - Authenticity Understanding of Real vs Artificial: Comprehensive Notebook Collection
 
 This directory contains **presentation-quality notebooks** demonstrating the complete machine learning pipeline for deepfake video detection, from raw ZIP archives to production-ready models.
 
