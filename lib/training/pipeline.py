@@ -1617,7 +1617,7 @@ def stage5_train_models(
         "vit_transformer",     # 5l - Vision Transformer
     ]
     
-    # Ultra memory-intensive models that need even smaller chunk size (5) for maximum OOM resistance
+    # Ultra memory-intensive models that need even smaller chunk size (4) for maximum OOM resistance
     # X3D and SlowFast are extremely memory-intensive and need the smallest chunk size
     MEMORY_INTENSIVE_MODELS_ULTRA_SMALL_CHUNK = [
         "x3d",                 # 5q - extremely memory intensive, needs smallest chunk size
@@ -1650,9 +1650,9 @@ def stage5_train_models(
     for model_type in model_types:
         if model_type in MEMORY_INTENSIVE_MODELS:
             use_chunked_loading = True
-            # Use ultra-small chunk size (5) for X3D and SlowFast due to extreme memory requirements
+            # Use ultra-small chunk size (4) for X3D and SlowFast due to extreme memory requirements
             if model_type in MEMORY_INTENSIVE_MODELS_ULTRA_SMALL_CHUNK:
-                chunk_size = 5  # Ultra-small chunk size for maximum OOM resistance (5q, 5r)
+                chunk_size = 4  # Ultra-small chunk size for maximum OOM resistance (5q, 5r)
             # Use very small chunk size (10) for models 5c-5l that have persistent OOM issues
             elif model_type in MEMORY_INTENSIVE_MODELS_SMALL_CHUNK:
                 chunk_size = 10  # Initial chunk size for very memory-intensive models (5c-5l) - consistent with forward pass, capped at 28
