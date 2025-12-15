@@ -117,7 +117,7 @@ jupyter lab src/notebooks/
 To actually train models, use:
 ```bash
 # SLURM scripts
-sbatch src/scripts/slurm_stage5c.sh  # For model 5c, etc.
+sbatch scripts/slurm_jobs/slurm_stage5c.sh  # For model 5c, etc.
 
 # Or Python API (see commented code in notebooks)
 ```

@@ -283,7 +283,7 @@ class TestExtractAllFeatures:
         assert isinstance(features1, dict)
         assert len(features1) > 0
         assert isinstance(features2, dict)
-            assert len(features2) > 0
+        assert len(features2) > 0
     
     def test_different_num_frames(self):
         """Test with different frames (extract_all_features works on single frame)."""

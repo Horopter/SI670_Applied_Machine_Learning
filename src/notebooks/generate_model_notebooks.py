@@ -353,7 +353,7 @@ def generate_notebook(model_id: str, config: dict) -> dict:
             "### SLURM Script\n",
             "\n",
             "```bash\n",
-            f"# sbatch src/scripts/slurm_stage{model_id}.sh\n",
+            f"# sbatch scripts/slurm_jobs/slurm_stage{model_id}.sh\n",
             "```\n",
             "\n",
             "### Python API\n",

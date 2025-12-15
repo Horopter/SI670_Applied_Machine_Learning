@@ -32,22 +32,19 @@ logger = logging.getLogger(__name__)
 
 
 def _flush_logs():
-    """Flush all logging handlers and stdout/stderr to ensure immediate output."""
+    """Flush all logging handlers and stdout/stderr."""
     try:
         sys.stdout.flush()
         sys.stderr.flush()
-        # Flush all logging handlers
         for handler in logging.root.handlers:
             if hasattr(handler, 'stream') and hasattr(handler.stream, 'flush'):
                 handler.stream.flush()
             elif hasattr(handler, 'flush'):
                 handler.flush()
     except (OSError, AttributeError, RuntimeError) as e:
-        # Ignore errors during flush (non-critical)
-        logger.debug(f"Error flushing logs (non-critical): {e}")
+        logger.debug(f"Error flushing logs: {e}")
 
 
-# Constants for model type classification
 BASELINE_MODELS = {
     "logistic_regression",
     "logistic_regression_stage2",
@@ -62,7 +59,6 @@ STAGE4_MODELS = {
     "svm_stage2_stage4"
 }
 
-# Memory-intensive models and their batch size limits
 MEMORY_INTENSIVE_MODELS_BATCH_LIMITS = {
     "x3d": 1,  # Very memory intensive
     "naive_cnn": 1,  # Processes 1000 frames at full resolution - must use batch_size=1
@@ -70,7 +66,6 @@ MEMORY_INTENSIVE_MODELS_BATCH_LIMITS = {
     "pretrained_inception": 2,  # Large pretrained model processing many frames
 }
 
-# Model file extensions to copy
 MODEL_FILE_EXTENSIONS = ["*.pt", "*.joblib", "*.json"]
 
 
@@ -115,24 +110,15 @@ def _copy_model_files(source_dir: Path, dest_dir: Path, model_name: str = "") ->
 
 
 def _ensure_lib_models_exists(project_root_path: Path) -> None:
-    """
-    Ensure lib/models directory exists with minimal stub files.
-    
-    Creates the directory and essential files if they don't exist,
-    allowing imports to succeed even if the full lib/models wasn't synced.
-    """
+    """Create minimal stub files for lib/models if missing."""
     models_dir = project_root_path / 'lib' / 'models'
     models_init = models_dir / '__init__.py'
     video_py = models_dir / 'video.py'
     
-    # If directory already exists with both files, don't overwrite
     if models_dir.exists() and models_init.exists() and video_py.exists():
         return
     
-    # Create directory
     models_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Create minimal __init__.py if missing
     if not models_init.exists():
         try:
             models_init.write_text('''"""
@@ -151,7 +137,6 @@ __all__ = ["VideoConfig", "VideoDataset"]
             logger.error(f"Failed to create minimal __init__.py at {models_init}: {e}")
             raise
     
-    # Create minimal video.py if missing
     if not video_py.exists():
         try:
             video_py.write_text('''"""
@@ -262,7 +247,6 @@ def _validate_stage5_prerequisites(
     logger.info("STAGE 5 PREREQUISITE VALIDATION")
     logger.info("=" * 80)
     
-    # Check Stage 3 (REQUIRED for all models)
     logger.info("\n[1/3] Checking Stage 3 (scaled videos) - REQUIRED for all models...")
     scaled_df = load_metadata_flexible(scaled_metadata_path)
     if scaled_df is None or scaled_df.height == 0:
@@ -275,7 +259,6 @@ def _validate_stage5_prerequisites(
         logger.info(f"✓ Stage 3 metadata found: {scaled_df.height} scaled videos")
         logger.info(f"  Path: {scaled_metadata_path}")
     
-    # Check Stage 2 (REQUIRED for stage2 models)
     logger.info("\n[2/3] Checking Stage 2 (features) - REQUIRED for *_stage2 models...")
     features2_df = load_metadata_flexible(features_stage2_path)
     if features2_df is None or features2_df.height == 0:
@@ -287,7 +270,6 @@ def _validate_stage5_prerequisites(
         logger.info(f"✓ Stage 2 metadata found: {features2_df.height} feature rows")
         logger.info(f"  Path: {features_stage2_path}")
     
-    # Check Stage 4 (REQUIRED for stage2_stage4 models)
     logger.info("\n[3/3] Checking Stage 4 (scaled features) - REQUIRED for *_stage2_stage4 models...")
     features4_df = load_metadata_flexible(features_stage4_path)
     if features4_df is None or features4_df.height == 0:
@@ -299,25 +281,19 @@ def _validate_stage5_prerequisites(
         logger.info(f"✓ Stage 4 metadata found: {features4_df.height} feature rows")
         logger.info(f"  Path: {features_stage4_path}")
     
-    # Determine which models can be run
     logger.info("\n" + "=" * 80)
     logger.info("MODEL REQUIREMENTS CHECK")
     logger.info("=" * 80)
     
-    # All baseline models (svm, logistic_regression and their variants) require Stage 2 features
-    # Stage 5 only trains - features must be pre-extracted in Stage 2/4
     for model_type in model_types:
         missing = []
         
-        # All models require Stage 3
         if not results["stage3_available"]:
             missing.append("Stage 3 (scaled videos)")
         
-        # Stage 2 models require Stage 2
         if model_type in BASELINE_MODELS and not results["stage2_available"]:
             missing.append("Stage 2 (features)")
         
-        # Stage 2+4 models require Stage 4
         if model_type in STAGE4_MODELS and not results["stage4_available"]:
             missing.append("Stage 4 (scaled features)")
         
@@ -328,7 +304,6 @@ def _validate_stage5_prerequisites(
             results["runnable_models"].append(model_type)
             logger.info(f"✓ {model_type}: CAN RUN")
     
-    # Summary
     logger.info("\n" + "=" * 80)
     logger.info("VALIDATION SUMMARY")
     logger.info("=" * 80)
@@ -348,7 +323,6 @@ def _validate_stage5_prerequisites(
     
     logger.info("=" * 80)
     
-    # Write Stage 2/4 failure report to file if needed
     failure_report_path = project_root / "logs" / "stage5_prerequisite_failures.txt"
     failure_report_path.parent.mkdir(parents=True, exist_ok=True)
     
@@ -364,8 +338,6 @@ def _validate_stage5_prerequisites(
     failure_lines.append("=" * 80)
     failure_lines.append("")
     
-    # Check if Stage 2 was expected but missing
-    # All baseline models require Stage 2 features
     stage2_required_models = [m for m in model_types if m in BASELINE_MODELS]
     if stage2_required_models and not results["stage2_available"]:
         failures_detected = True
@@ -378,11 +350,10 @@ def _validate_stage5_prerequisites(
         failure_lines.append("")
         failure_lines.append("ACTION REQUIRED:")
         failure_lines.append("  - Run Stage 2 feature extraction:")
-        failure_lines.append("    sbatch src/scripts/slurm_stage2_features.sh")
+        failure_lines.append("    sbatch scripts/slurm_jobs/slurm_stage2_features.sh")
         failure_lines.append("  - Or check if Stage 2 output exists at a different location")
         failure_lines.append("")
     
-    # Check if Stage 4 was expected but missing
     stage4_required_models = [m for m in model_types if m in STAGE4_MODELS]
     if stage4_required_models and not results["stage4_available"]:
         failures_detected = True
@@ -394,11 +365,10 @@ def _validate_stage5_prerequisites(
         failure_lines.append("")
         failure_lines.append("ACTION REQUIRED:")
         failure_lines.append("  - Run Stage 4 scaled feature extraction:")
-        failure_lines.append("    sbatch src/scripts/slurm_stage4_scaled_features.sh")
+        failure_lines.append("    sbatch scripts/slurm_jobs/slurm_stage4_scaled_features.sh")
         failure_lines.append("  - Or check if Stage 4 output exists at a different location")
         failure_lines.append("")
     
-    # Check if Stage 3 was expected but missing (critical for all models)
     if not results["stage3_available"]:
         failures_detected = True
         failure_lines.append("STAGE 3 FAILURE DETECTED (CRITICAL)")
@@ -409,11 +379,10 @@ def _validate_stage5_prerequisites(
         failure_lines.append("")
         failure_lines.append("ACTION REQUIRED:")
         failure_lines.append("  - Run Stage 3 video scaling:")
-        failure_lines.append("    sbatch src/scripts/slurm_stage3_scaling.sh")
+        failure_lines.append("    sbatch scripts/slurm_jobs/slurm_stage3_scaling.sh")
         failure_lines.append("  - Or check if Stage 3 output exists at a different location")
         failure_lines.append("")
     
-    # Summary
     if failures_detected:
         failure_lines.append("=" * 80)
         failure_lines.append("SUMMARY")
@@ -434,7 +403,6 @@ def _validate_stage5_prerequisites(
         failure_lines.append("")
         failure_lines.append("=" * 80)
         
-        # Write to file
         try:
             with open(failure_report_path, 'w') as f:
                 f.write('\n'.join(failure_lines))
@@ -487,23 +455,19 @@ def _train_xgboost_model_fold(
     model = None
     
     try:
-        # Create XGBoost model with hyperparameters
         xgb_config = model_config.copy()
         if hyperparams:
             xgb_config.update(hyperparams)
         model = create_model(model_type, xgb_config)
         
-        # Train XGBoost (handles feature extraction internally)
         model.fit(train_df, project_root=project_root_str)
         
-        # Evaluate on validation set
         val_probs = model.predict(val_df, project_root=project_root_str)
         val_preds = np.argmax(val_probs, axis=1)
         val_labels = val_df["label"].to_list()
         label_map = {label: idx for idx, label in enumerate(sorted(set(val_labels)))}
         val_y = np.array([label_map[label] for label in val_labels])
         
-        # Compute comprehensive metrics using shared utility
         metrics = compute_classification_metrics(
             y_true=val_y,
             y_pred=val_preds,
@@ -575,7 +539,6 @@ def _train_xgboost_model_fold(
             fold_results.append(result)
     
     finally:
-        # Always cleanup resources, even on error
         cleanup_model_and_memory(model=model if model is not None else None, clear_cuda=is_grid_search)
         aggressive_gc(clear_cuda=is_grid_search)
     
@@ -634,11 +597,9 @@ def _train_pytorch_model_fold(
     fold_output_dir = model_output_dir / f"fold_{fold_idx + 1}"
     fold_output_dir.mkdir(parents=True, exist_ok=True)
     
-    # Create datasets
     train_dataset = VideoDataset(train_df, project_root=project_root_str, config=video_config)
     val_dataset = VideoDataset(val_df, project_root=project_root_str, config=video_config)
     
-    # Create data loaders
     use_cuda = torch.cuda.is_available()
     current_config = model_config.copy()
     if hyperparams:
@@ -669,11 +630,8 @@ def _train_pytorch_model_fold(
         f"Effective batch size: {effective_batch_size}"
     )
     
-    # Memory optimization: Disable pin_memory for memory-intensive models (saves ~100-200MB)
-    # pin_memory speeds up CPU->GPU transfer but uses extra GPU memory
     is_memory_intensive = model_type in ["x3d", "slowfast"]
     use_pin_memory = use_cuda and not is_memory_intensive
-    # Reduce prefetch for memory-intensive models
     prefetch_factor = 1 if (is_memory_intensive and num_workers > 0) else (2 if num_workers > 0 else None)
     
     train_loader = DataLoader(
@@ -699,13 +657,11 @@ def _train_pytorch_model_fold(
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
-    # Apply PyTorch memory optimizations
     if device.type == "cuda":
         if "PYTORCH_CUDA_ALLOC_CONF" not in os.environ:
             os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
         torch.backends.cudnn.benchmark = False
-        torch.backends.cudnn.deterministic = False  # Can save memory
-        # Disable cuDNN workspace caching for memory-intensive models
+        torch.backends.cudnn.deterministic = False
         if model_type in ["x3d", "slowfast"]:
             torch.backends.cudnn.enabled = True  # Keep enabled but optimize
         torch.cuda.empty_cache()
@@ -713,7 +669,6 @@ def _train_pytorch_model_fold(
         aggressive_gc(clear_cuda=True)
         logger.info("Applied PyTorch memory optimizations: expandable_segments, cudnn.benchmark=False")
     
-    # Create model
     try:
         model = create_model(model_type, model_config)
     except (TypeError, ValueError) as e:
@@ -749,7 +704,6 @@ def _train_pytorch_model_fold(
         "vit_gru", "vit_transformer"
     ]
     
-    # Create trackers
     tracker = None
     ckpt_manager = None
     mlflow_tracker = None
@@ -782,17 +736,14 @@ def _train_pytorch_model_fold(
         except (RuntimeError, ValueError, AttributeError) as e:
             logger.warning(f"Failed to create MLflow tracker: {e}")
     
-    # HYPER-AGGRESSIVE GC before training for X3D and SlowFast
     is_hyper_aggressive = model_type in ["x3d", "slowfast"]
     if device.type == "cuda" and is_hyper_aggressive:
-        logger.info(f"Performing HYPER-AGGRESSIVE GC before training {model_type}...")
-        # Clear all possible memory
+        logger.info(f"Performing hyper-aggressive GC before training {model_type}...")
         for _ in range(10):
             aggressive_gc(clear_cuda=True)
         for _ in range(10):
             torch.cuda.empty_cache()
         torch.cuda.synchronize()
-        # Reset peak memory stats to clear tracking overhead
         torch.cuda.reset_peak_memory_stats()
         torch.cuda.reset_accumulated_memory_stats()
         aggressive_gc(clear_cuda=True)
@@ -805,7 +756,6 @@ def _train_pytorch_model_fold(
     if len(val_dataset) == 0:
         raise ValueError(f"Validation dataset is empty for fold {fold_idx + 1}")
     
-    # Forward pass test (with error handling)
     try:
         if device.type == "cuda":
             torch.cuda.empty_cache()
@@ -825,7 +775,6 @@ def _train_pytorch_model_fold(
             sample_batch = next(iter(test_loader))
             sample_clips, sample_labels = sample_batch
             
-            # Validate input dimensions for X3D and SlowFast
             if model_type in ["x3d", "slowfast"]:
                 if sample_clips.dim() == 5:
                     if sample_clips.shape[1] == 3:
@@ -846,7 +795,6 @@ def _train_pytorch_model_fold(
                             torch.cuda.empty_cache()
                             torch.cuda.synchronize()
                     else:
-                        # Use helper function from trainer for conversion
                         from lib.training.trainer import _convert_and_normalize_clips
                         sample_clips = _convert_and_normalize_clips(sample_clips)
                         sample_clips = sample_clips.to(device, non_blocking=False)
@@ -901,9 +849,8 @@ def _train_pytorch_model_fold(
             raise ValueError(f"Model initialization failed: {e}") from e
     except (ValueError, RuntimeError) as e:
         logger.error(f"Model forward pass test failed: {e}", exc_info=True)
-        raise ValueError(f"Model initialization failed: {e}") from e
+            raise ValueError(f"Model initialization failed: {e}") from e
     
-    # Train with OOM recovery
     max_oom_retries = 3
     oom_retry_count = 0
     training_successful = False
@@ -911,7 +858,6 @@ def _train_pytorch_model_fold(
     
     while oom_retry_count <= max_oom_retries and not training_successful:
         try:
-            # Reduce batch size on retry
             if oom_retry_count > 0:
                 new_batch_size = max(1, batch_size // (2 ** oom_retry_count))
                 if new_batch_size < batch_size:
@@ -948,7 +894,6 @@ def _train_pytorch_model_fold(
                         torch.cuda.empty_cache()
                         torch.cuda.synchronize()
             
-            # Train model
             hyper_aggressive_gc = model_type in ["x3d", "slowfast"]
             model = fit(
                 model,
@@ -960,7 +905,6 @@ def _train_pytorch_model_fold(
                 hyper_aggressive_gc=hyper_aggressive_gc,
             )
             
-            # Evaluate
             if device.type == "cuda":
                 if is_hyper_aggressive:
                     for _ in range(10):
@@ -974,7 +918,6 @@ def _train_pytorch_model_fold(
             val_metrics = evaluate(model, val_loader, device=str(device), hyper_aggressive_gc=is_hyper_aggressive)
             training_successful = True
             
-            # HYPER-AGGRESSIVE GC after training
             if device.type == "cuda" and is_hyper_aggressive:
                 for _ in range(10):
                     aggressive_gc(clear_cuda=True)
@@ -1025,7 +968,6 @@ def _train_pytorch_model_fold(
                 torch.cuda.empty_cache()
             raise
     
-    # Extract metrics
     val_loss = val_metrics["loss"]
     val_acc = val_metrics["accuracy"]
     val_f1 = val_metrics["f1"]
@@ -1033,7 +975,6 @@ def _train_pytorch_model_fold(
     val_recall = val_metrics["recall"]
     per_class = val_metrics["per_class"]
     
-    # Save model
     try:
         model.eval()
         if device.type == "cuda" and is_hyper_aggressive:
@@ -1059,7 +1000,6 @@ def _train_pytorch_model_fold(
         logger.error(f"Failed to save model to {model_path}: {e}")
         raise IOError(f"Cannot save model to {model_path}") from e
     
-    # Log to MLflow
     if mlflow_tracker is not None:
         try:
             mlflow_metrics = {

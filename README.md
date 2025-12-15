@@ -112,12 +112,27 @@ See [Paper Figure Generation Guide](docs/PAPER_FIGURE_GENERATION.md) for details
 
 ## Documentation
 
-- [Project Overview](docs/PROJECT_OVERVIEW.md) - Comprehensive project documentation
-- [MLOps Optimizations](docs/MLOPS_OPTIMIZATIONS.md) - MLOps system design details
-- [OOM and K-Fold Optimizations](docs/OOM_AND_KFOLD_OPTIMIZATIONS.md) - Memory management and CV
-- [Dashboard Usage Guide](docs/DASHBOARD_USAGE.md) - Interactive results dashboard guide
-- [Paper Figure Generation](docs/PAPER_FIGURE_GENERATION.md) - Generate publication-ready figures
-- [Changelog](docs/CHANGELOG.md) - Version history
+### Core Documentation
+- [**End-to-End Workflow**](docs/WORKFLOW.md) - Complete pipeline from archive to notebook generation
+- [**Project Overview**](docs/PROJECT_OVERVIEW.md) - Comprehensive project documentation, architecture, and implementation details
+- [**ML Methodology**](docs/METHODOLOGY.md) - Critical ML methodology fixes, best practices, and validation checks
+- [**Optimizations**](docs/OPTIMIZATIONS.md) - Memory optimizations, MLOps improvements, and pipeline enhancements
+- [**Production Guardrails**](docs/PRODUCTION_GUARDRAILS.md) - Comprehensive guardrail system for production reliability
+
+### Feature Guides
+- [**Autoencoder Scaling**](docs/AUTOENCODER_SCALING.md) - Guide for using Hugging Face autoencoders for video scaling
+- [**Dashboard Usage**](docs/DASHBOARD_USAGE.md) - Interactive Streamlit results dashboard guide
+- [**Paper Figure Generation**](docs/PAPER_FIGURE_GENERATION.md) - Generate publication-ready figures for IEEE papers
+
+### Reference
+- [**Architecture Diagrams**](presentation/ARCHITECTURE_DIAGRAM.md) - ASCII diagrams of pipeline architecture and data flow
+- [**Changelog**](docs/CHANGELOG.md) - Project version history and notable changes
+- [**Git Setup**](docs/GIT_SETUP.md) - Git repository information and setup instructions
+
+### Component Documentation
+- [**Scripts README**](src/scripts/README.md) - Individual stage scripts and SLURM batch scripts
+- [**Notebooks README**](src/notebooks/README.md) - Jupyter notebook collection and usage
+- [**Test README**](test/README.md) - Unit test suite documentation
 
 ## Dependencies
 

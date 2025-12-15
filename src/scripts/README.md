@@ -20,11 +20,11 @@ This directory contains individual scripts to run each stage of the FVC pipeline
 - `validate_augmentations.py` - Validate augmented video file integrity
 
 ### SLURM Batch Scripts (Cluster)
-- `slurm_stage1_augmentation.sh` - Stage 1: Video Augmentation (SLURM)
-- `slurm_stage2_features.sh` - Stage 2: Feature Extraction (SLURM)
-- `slurm_stage3_scaling.sh` - Stage 3: Video Scaling (SLURM)
-- `slurm_stage4_scaled_features.sh` - Stage 4: Scaled Features (SLURM)
-- `slurm_stage5_training.sh` - Stage 5: Model Training (SLURM)
+- `scripts/slurm_jobs/slurm_stage1_augmentation.sh` - Stage 1: Video Augmentation (SLURM)
+- `scripts/slurm_jobs/slurm_stage2_features.sh` - Stage 2: Feature Extraction (SLURM)
+- `scripts/slurm_jobs/slurm_stage3_scaling.sh` - Stage 3: Video Scaling (SLURM)
+- `scripts/slurm_jobs/slurm_stage4_scaled_features.sh` - Stage 4: Scaled Features (SLURM)
+- `scripts/slurm_jobs/slurm_stage5_training.sh` - Stage 5: Model Training (SLURM)
 
 ## Available Scripts
 
@@ -194,19 +194,19 @@ python src/scripts/run_stage5_training.py
 
 ```bash
 # Submit Stage 1
-sbatch src/scripts/slurm_stage1_augmentation.sh
+sbatch scripts/slurm_jobs/slurm_stage1_augmentation.sh
 
 # After Stage 1 completes, submit Stage 2
-sbatch src/scripts/slurm_stage2_features.sh
+sbatch scripts/slurm_jobs/slurm_stage2_features.sh
 
 # After Stage 2 completes, submit Stage 3
-sbatch src/scripts/slurm_stage3_scaling.sh
+sbatch scripts/slurm_jobs/slurm_stage3_scaling.sh
 
 # After Stage 3 completes, submit Stage 4
-sbatch src/scripts/slurm_stage4_scaled_features.sh
+sbatch scripts/slurm_jobs/slurm_stage4_scaled_features.sh
 
 # After Stage 4 completes, submit Stage 5
-sbatch src/scripts/slurm_stage5_training.sh
+sbatch scripts/slurm_jobs/slurm_stage5_training.sh
 ```
 
 ### Using Full Pipeline Script
@@ -227,14 +227,14 @@ SLURM scripts support environment variables for customization:
 ```bash
 export FVC_NUM_AUGMENTATIONS=10  # Number of augmentations per video
 export FVC_STAGE1_OUTPUT_DIR="data/augmented_videos"  # Output directory
-sbatch src/scripts/slurm_stage1_augmentation.sh
+sbatch scripts/slurm_jobs/slurm_stage1_augmentation.sh
 ```
 
 ### Stage 2 (Features)
 ```bash
 export FVC_NUM_FRAMES=8  # Number of frames
 export FVC_STAGE2_OUTPUT_DIR="data/features_stage2"  # Output directory
-sbatch src/scripts/slurm_stage2_features.sh
+sbatch scripts/slurm_jobs/slurm_stage2_features.sh
 ```
 
 ### Stage 3 (Scaling)
@@ -242,14 +242,14 @@ sbatch src/scripts/slurm_stage2_features.sh
 export FVC_TARGET_SIZE=224  # Target size (224x224)
 export FVC_DOWNSCALE_METHOD="resolution"  # Method: resolution or autoencoder
 export FVC_STAGE3_OUTPUT_DIR="data/scaled_videos"  # Output directory
-sbatch src/scripts/slurm_stage3_scaling.sh
+sbatch scripts/slurm_jobs/slurm_stage3_scaling.sh
 ```
 
 ### Stage 4 (Scaled Features)
 ```bash
 export FVC_NUM_FRAMES=8  # Number of frames
 export FVC_STAGE4_OUTPUT_DIR="data/features_stage4"  # Output directory
-sbatch src/scripts/slurm_stage4_scaled_features.sh
+sbatch scripts/slurm_jobs/slurm_stage4_scaled_features.sh
 ```
 
 ### Stage 5 (Training)
@@ -259,25 +259,25 @@ export FVC_N_SPLITS=5  # K-fold splits
 export FVC_NUM_FRAMES=8  # Number of frames
 export FVC_USE_TRACKING="true"  # Enable experiment tracking
 export FVC_STAGE5_OUTPUT_DIR="data/training_results"  # Output directory
-sbatch src/scripts/slurm_stage5_training.sh
+sbatch scripts/slurm_jobs/slurm_stage5_training.sh
 ```
 
 ### Training All Models
 ```bash
 export FVC_MODELS="all"  # Train all available models
-sbatch src/scripts/slurm_stage5_training.sh
+sbatch scripts/slurm_jobs/slurm_stage5_training.sh
 ```
 
 ### Custom Resource Allocation
 ```bash
 # Request more time
-sbatch --time=24:00:00 src/scripts/slurm_stage5_training.sh
+sbatch --time=24:00:00 scripts/slurm_jobs/slurm_stage5_training.sh
 
 # Request more memory
-sbatch --mem=128G src/scripts/slurm_stage5_training.sh
+sbatch --mem=128G scripts/slurm_jobs/slurm_stage5_training.sh
 
 # Request more GPUs
-sbatch --gpus=2 src/scripts/slurm_stage5_training.sh
+sbatch --gpus=2 scripts/slurm_jobs/slurm_stage5_training.sh
 ```
 
 ## Logging
