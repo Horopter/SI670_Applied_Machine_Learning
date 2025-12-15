@@ -2,38 +2,37 @@
 
 ## Repository Information
 
-- **GitHub Repository**: [SI670_Applied_Machine_Learning](https://github.com/Horopter/SI670_Applied_Machine_Learning)
-- **Project Location**: `Final_Project/` folder within the repository
+- **GitHub Repository**: [AURA](https://github.com/Horopter/AURA)
+- **Project Location**: Root of the repository
 - **Branch**: `main`
 - **Author**: Horopter (santoshdesai12@hotmail.com)
 
 ## Repository Structure
 
 ```
-SI670_Applied_Machine_Learning/
-├── README.md                    # Repository-level README
-└── Final_Project/               # AURA - Authenticity Understanding of Real vs Artificial Shortform Videos
-    ├── README.md                # Project README
-    ├── .gitignore              # Git ignore rules
-    ├── requirements.txt        # Python dependencies
-    ├── archive/                # Original dataset archives
-    ├── data/                   # Processed metadata
-    ├── docs/                   # Project documentation
-    │   ├── PROJECT_OVERVIEW.md
-    │   ├── CHANGELOG.md
-    │   ├── MLOPS_OPTIMIZATIONS.md
-    │   ├── OOM_AND_KFOLD_OPTIMIZATIONS.md
-    │   └── GIT_SETUP.md
-    ├── lib/                    # Core library modules
-    ├── src/                    # Scripts and notebooks
-    └── ...
+AURA/
+├── README.md                    # Project README
+├── .gitignore                  # Git ignore rules
+├── requirements.txt            # Python dependencies
+├── archive/                    # Original dataset archives
+├── data/                      # Processed metadata
+├── docs/                      # Project documentation
+│   ├── PROJECT_OVERVIEW.md
+│   ├── CHANGELOG.md
+│   ├── WORKFLOW.md
+│   ├── METHODOLOGY.md
+│   ├── OPTIMIZATIONS.md
+│   └── GIT_SETUP.md
+├── lib/                        # Core library modules
+├── src/                        # Scripts and notebooks
+└── ...
 ```
 
 ## Commits
 
-1. **Initial repository setup** - Created repository with basic README
-2. **Add Final_Project: AURA** - Added all project files
-3. **Add lib/ module files (fix .gitignore)** - Added library modules and fixed .gitignore
+1. **Initial repository setup** - Created AURA repository
+2. **Project implementation** - Added all project files and modules
+3. **Code quality overhaul** - Batman tasks: documentation, PEP8, comments refactoring
 
 ## Files Excluded from Git
 
@@ -53,8 +52,8 @@ To clone and work with the project:
 
 ```bash
 # Clone the repository
-git clone https://github.com/Horopter/SI670_Applied_Machine_Learning.git
-cd SI670_Applied_Machine_Learning/Final_Project
+git clone https://github.com/Horopter/AURA.git
+cd AURA
 
 # Set up environment
 python3 -m venv venv
@@ -67,7 +66,7 @@ pip install -r requirements.txt
 To push updates to the repository:
 
 ```bash
-cd /path/to/SI670_Applied_Machine_Learning/Final_Project
+cd /path/to/AURA
 
 # Make changes, then:
 git add .

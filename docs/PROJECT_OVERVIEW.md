@@ -408,8 +408,8 @@ fvc/
 ├── src/                        # Scripts and notebooks
 │   ├── setup_fvc_dataset.py   # Dataset setup
 │   ├── teardown_fvc_dataset.py # Dataset cleanup
-│   ├── run_mlops_pipeline.py  # MLOps pipeline runner
-│   ├── fvc_binary_classifier.ipynb # Main training notebook
+│   ├── run_new_pipeline.py  # 5-stage pipeline runner
+│   ├── dashboard_results.py # Streamlit results dashboard
 │   └── scripts/
 │       └── run_fvc_training.sh # SLURM batch script
 ├── videos/                     # Extracted video files
@@ -426,18 +426,20 @@ fvc/
 python3 src/setup_fvc_dataset.py
 ```
 
-### 2. Run Training (Notebook)
+### 2. Run Training (5-Stage Pipeline)
 ```bash
-# On SLURM cluster
-sbatch src/scripts/run_fvc_training.sh
+# Using the unified pipeline runner
+python3 src/run_new_pipeline.py
 
-# Or locally
-jupyter notebook src/fvc_binary_classifier.ipynb
-```
+# Or run individual stages
+python3 src/scripts/run_stage1_augmentation.py
+python3 src/scripts/run_stage2_features.py
+python3 src/scripts/run_stage3_scaling.py
+python3 src/scripts/run_stage4_scaled_features.py
+python3 src/scripts/run_stage5_training.py
 
-### 3. Run Training (MLOps Pipeline)
-```bash
-python3 src/run_mlops_pipeline.py
+# Or using SLURM (cluster)
+sbatch scripts/slurm_jobs/slurm_stage5a.sh  # For specific models
 ```
 
 ### 4. Cleanup (Optional)
