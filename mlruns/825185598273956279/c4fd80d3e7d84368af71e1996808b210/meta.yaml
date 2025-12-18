@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/c4fd80d3e7d84368af71e1996808b210/artifacts
+end_time: 1765595547020
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: c4fd80d3e7d84368af71e1996808b210
+run_name: redolent-deer-699
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765595546343
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/a4705d9500d340b7ae9863bbf0724cfe/artifacts
+end_time: 1765609707720
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: a4705d9500d340b7ae9863bbf0724cfe
+run_name: carefree-fowl-882
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609707614
+status: 3
+tags: []
+user_id: santoshd

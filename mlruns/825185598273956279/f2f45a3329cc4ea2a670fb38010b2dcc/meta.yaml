@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/f2f45a3329cc4ea2a670fb38010b2dcc/artifacts
+end_time: 1765588803094
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: f2f45a3329cc4ea2a670fb38010b2dcc
+run_name: casual-tern-639
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588798288
+status: 3
+tags: []
+user_id: suzanef

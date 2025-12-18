@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/d99d1785efed4dbf880fe90171e5c8a2/artifacts
+end_time: 1765738101745
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: d99d1785efed4dbf880fe90171e5c8a2
+run_name: luxuriant-grub-802
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765738094004
+status: 3
+tags: []
+user_id: suzanef

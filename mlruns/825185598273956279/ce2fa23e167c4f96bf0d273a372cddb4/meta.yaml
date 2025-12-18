@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/ce2fa23e167c4f96bf0d273a372cddb4/artifacts
+end_time: 1765604646074
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: ce2fa23e167c4f96bf0d273a372cddb4
+run_name: lyrical-deer-221
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604645391
+status: 3
+tags: []
+user_id: suzanef

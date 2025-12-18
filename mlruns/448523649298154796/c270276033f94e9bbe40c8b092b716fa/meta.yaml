@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/c270276033f94e9bbe40c8b092b716fa/artifacts
+end_time: 1765609576506
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: c270276033f94e9bbe40c8b092b716fa
+run_name: skittish-shoat-140
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609575782
+status: 3
+tags: []
+user_id: santoshd

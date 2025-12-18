@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/dea0d70282e7412f8e51f7bee951b10d/artifacts
+end_time: 1765590201148
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: dea0d70282e7412f8e51f7bee951b10d
+run_name: merciful-donkey-549
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590189528
+status: 3
+tags: []
+user_id: urvim

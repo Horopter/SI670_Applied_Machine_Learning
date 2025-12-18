@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/019b3395be7f41fc91ef3969f07e3494/artifacts
+end_time: 1765602415817
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 019b3395be7f41fc91ef3969f07e3494
+run_name: rambunctious-koi-462
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602415146
+status: 3
+tags: []
+user_id: suzanef

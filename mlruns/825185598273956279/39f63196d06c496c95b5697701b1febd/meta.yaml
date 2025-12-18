@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/39f63196d06c496c95b5697701b1febd/artifacts
+end_time: 1765593470675
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 39f63196d06c496c95b5697701b1febd
+run_name: stylish-moth-97
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593465520
+status: 3
+tags: []
+user_id: suzanef

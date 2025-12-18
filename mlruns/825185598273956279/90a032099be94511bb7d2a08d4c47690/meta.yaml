@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/90a032099be94511bb7d2a08d4c47690/artifacts
+end_time: 1765603484637
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 90a032099be94511bb7d2a08d4c47690
+run_name: amusing-gnu-873
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603483961
+status: 3
+tags: []
+user_id: suzanef

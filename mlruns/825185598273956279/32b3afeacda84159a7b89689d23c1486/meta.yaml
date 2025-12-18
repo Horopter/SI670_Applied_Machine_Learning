@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/32b3afeacda84159a7b89689d23c1486/artifacts
+end_time: 1765602584201
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 32b3afeacda84159a7b89689d23c1486
+run_name: masked-shrike-922
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602583526
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/d3d85228dacc4a079158f16c4a5b8947/artifacts
+end_time: 1765604450465
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: d3d85228dacc4a079158f16c4a5b8947
+run_name: amusing-panda-433
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604449780
+status: 3
+tags: []
+user_id: suzanef

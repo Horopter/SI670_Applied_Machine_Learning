@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/fb1bbfcc3a3643aeaa706be85c597f05/artifacts
+end_time: 1765593683872
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: fb1bbfcc3a3643aeaa706be85c597f05
+run_name: efficient-bird-659
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593678706
+status: 3
+tags: []
+user_id: suzanef

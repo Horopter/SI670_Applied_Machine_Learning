@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/95a7faaabb2a4e17bf03bb59a7068d04/artifacts
+end_time: 1765744814409
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 95a7faaabb2a4e17bf03bb59a7068d04
+run_name: useful-worm-186
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765744813100
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/a8ab8c37fa534c3ea6254237d1496ea0/artifacts
+end_time: 1765585881250
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: a8ab8c37fa534c3ea6254237d1496ea0
+run_name: upbeat-shark-710
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585879495
+status: 3
+tags: []
+user_id: suzanef

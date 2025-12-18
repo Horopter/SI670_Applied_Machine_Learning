@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/83c5fc83a3df447a9dec514949a9d6b3/artifacts
+end_time: 1765609567778
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 83c5fc83a3df447a9dec514949a9d6b3
+run_name: serious-fish-26
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609567068
+status: 3
+tags: []
+user_id: santoshd

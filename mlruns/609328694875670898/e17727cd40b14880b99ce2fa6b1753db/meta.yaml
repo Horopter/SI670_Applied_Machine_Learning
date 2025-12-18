@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/e17727cd40b14880b99ce2fa6b1753db/artifacts
+end_time: 1765590388328
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: e17727cd40b14880b99ce2fa6b1753db
+run_name: upbeat-goat-128
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590378742
+status: 3
+tags: []
+user_id: urvim

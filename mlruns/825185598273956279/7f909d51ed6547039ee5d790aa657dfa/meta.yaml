@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/7f909d51ed6547039ee5d790aa657dfa/artifacts
+end_time: 1765603926111
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 7f909d51ed6547039ee5d790aa657dfa
+run_name: lyrical-elk-915
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603925433
+status: 3
+tags: []
+user_id: suzanef

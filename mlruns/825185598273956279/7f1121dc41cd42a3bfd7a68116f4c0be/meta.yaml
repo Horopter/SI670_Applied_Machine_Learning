@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/7f1121dc41cd42a3bfd7a68116f4c0be/artifacts
+end_time: 1765603584939
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 7f1121dc41cd42a3bfd7a68116f4c0be
+run_name: sassy-trout-444
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603584261
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/093a9ca2d2004609a804c901fcd359ee/artifacts
+end_time: 1765604684713
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 093a9ca2d2004609a804c901fcd359ee
+run_name: funny-bee-216
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604683843
+status: 3
+tags: []
+user_id: suzanef

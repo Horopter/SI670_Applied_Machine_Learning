@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/62421df38375495cbc2d72ed48bf7450/artifacts
+end_time: 1765609726349
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 62421df38375495cbc2d72ed48bf7450
+run_name: polite-gnu-702
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609724884
+status: 3
+tags: []
+user_id: santoshd

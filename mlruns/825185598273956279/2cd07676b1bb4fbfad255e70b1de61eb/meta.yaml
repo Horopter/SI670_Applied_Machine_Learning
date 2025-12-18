@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/2cd07676b1bb4fbfad255e70b1de61eb/artifacts
+end_time: 1765588295658
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 2cd07676b1bb4fbfad255e70b1de61eb
+run_name: bemused-zebra-157
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588290817
+status: 3
+tags: []
+user_id: suzanef

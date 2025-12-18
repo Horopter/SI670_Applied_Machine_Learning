@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/e893541041c24cb6954d660bc2fd64ec/artifacts
+end_time: 1765590356348
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: e893541041c24cb6954d660bc2fd64ec
+run_name: abrasive-mare-986
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590344394
+status: 3
+tags: []
+user_id: urvim

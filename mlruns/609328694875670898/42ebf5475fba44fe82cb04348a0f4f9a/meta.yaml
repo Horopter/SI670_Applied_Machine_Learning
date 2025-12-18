@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/42ebf5475fba44fe82cb04348a0f4f9a/artifacts
+end_time: 1765588894976
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 42ebf5475fba44fe82cb04348a0f4f9a
+run_name: sneaky-turtle-30
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588890133
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/c046342ba0b24be99e342ccb188bffa0/artifacts
+end_time: 1765586192665
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: c046342ba0b24be99e342ccb188bffa0
+run_name: gentle-zebra-429
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586191578
+status: 3
+tags: []
+user_id: suzanef

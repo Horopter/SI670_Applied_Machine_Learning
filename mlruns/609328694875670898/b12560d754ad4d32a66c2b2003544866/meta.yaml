@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/b12560d754ad4d32a66c2b2003544866/artifacts
+end_time: 1765586447685
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: b12560d754ad4d32a66c2b2003544866
+run_name: exultant-loon-41
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586427760
+status: 3
+tags: []
+user_id: urvim

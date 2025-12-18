@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/41081c3d635b44ffac4b7765382b579c/artifacts
+end_time: 1765585079459
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 41081c3d635b44ffac4b7765382b579c
+run_name: intelligent-doe-755
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585061192
+status: 3
+tags: []
+user_id: urvim

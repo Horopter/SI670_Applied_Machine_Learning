@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/949bd88949a443a7a61de1b0d9033bdd/artifacts
+end_time: 1765591732314
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 949bd88949a443a7a61de1b0d9033bdd
+run_name: zealous-sponge-514
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591727696
+status: 3
+tags: []
+user_id: suzanef

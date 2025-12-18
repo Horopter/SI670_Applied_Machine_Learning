@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/a4d5730fa941415fa77a9df541753559/artifacts
+end_time: 1765603887065
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: a4d5730fa941415fa77a9df541753559
+run_name: defiant-croc-915
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603886387
+status: 3
+tags: []
+user_id: suzanef

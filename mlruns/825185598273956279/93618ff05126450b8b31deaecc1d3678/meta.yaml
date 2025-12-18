@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/93618ff05126450b8b31deaecc1d3678/artifacts
+end_time: 1765594464647
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 93618ff05126450b8b31deaecc1d3678
+run_name: secretive-conch-853
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594464567
+status: 3
+tags: []
+user_id: suzanef

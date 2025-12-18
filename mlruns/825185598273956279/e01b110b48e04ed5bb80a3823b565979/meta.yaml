@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/e01b110b48e04ed5bb80a3823b565979/artifacts
+end_time: 1765594533129
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: e01b110b48e04ed5bb80a3823b565979
+run_name: inquisitive-wasp-547
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594532456
+status: 3
+tags: []
+user_id: suzanef

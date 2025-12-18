@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/3ee6911db95c4cebb5c313d5fc5e9e5d/artifacts
+end_time: 1765596483483
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 3ee6911db95c4cebb5c313d5fc5e9e5d
+run_name: zealous-smelt-706
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765596482810
+status: 3
+tags: []
+user_id: suzanef

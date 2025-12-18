@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/2891e56f1a33415db293f98275436dea/artifacts
+end_time: 1765584798553
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 2891e56f1a33415db293f98275436dea
+run_name: wise-colt-999
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584781556
+status: 3
+tags: []
+user_id: urvim

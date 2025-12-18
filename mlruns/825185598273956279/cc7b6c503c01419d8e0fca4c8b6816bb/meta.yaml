@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/cc7b6c503c01419d8e0fca4c8b6816bb/artifacts
+end_time: 1765597555087
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: cc7b6c503c01419d8e0fca4c8b6816bb
+run_name: beautiful-bass-656
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597554187
+status: 3
+tags: []
+user_id: suzanef

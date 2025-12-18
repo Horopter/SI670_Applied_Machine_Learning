@@ -26,7 +26,15 @@ from lib.training.trainer import OptimConfig, TrainConfig, fit
 from lib.training.model_factory import create_model, is_pytorch_model, is_xgboost_model, get_model_config
 from lib.training.metrics_utils import compute_classification_metrics
 from lib.training.cleanup_utils import cleanup_model_and_memory
+from lib.training.visualization import plot_learning_curves
 from lib.utils.memory import aggressive_gc
+
+# Optional integrations
+try:
+    from lib.utils.duckdb_analytics import DuckDBAnalytics, DUCKDB_AVAILABLE
+except ImportError:
+    DUCKDB_AVAILABLE = False
+    DuckDBAnalytics = None
 
 logger = logging.getLogger(__name__)
 
@@ -413,6 +421,136 @@ def _validate_stage5_prerequisites(
     return results
 
 
+def _save_metrics_to_duckdb(
+    metrics: Dict[str, Any],
+    model_type: str,
+    fold_idx: int,
+    project_root_str: str
+) -> None:
+    """
+    Save metrics to DuckDB database for analytics.
+    
+    Args:
+        metrics: Dictionary of metrics to save
+        model_type: Model type identifier
+        fold_idx: Fold index (0-based, or -1 for aggregated metrics)
+        project_root_str: Project root directory as string
+    """
+    if not DUCKDB_AVAILABLE:
+        logger.debug("DuckDB not available, skipping metrics save")
+        return
+    
+    try:
+        from lib.utils.duckdb_analytics import DuckDBAnalytics
+        import polars as pl
+        from datetime import datetime
+        
+        # Create DuckDB database path
+        db_path = Path(project_root_str) / "data" / "stage5_metrics.duckdb"
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Initialize DuckDB analytics
+        analytics = DuckDBAnalytics(str(db_path))
+        
+        # Prepare metrics DataFrame
+        metrics_dict = {
+            "model_type": [model_type],
+            "fold_idx": [fold_idx],
+            "timestamp": [datetime.now().isoformat()],
+        }
+        
+        # Add metric values
+        metric_keys = [
+            "val_loss", "val_acc", "val_f1", "val_precision", "val_recall",
+            "val_f1_class0", "val_precision_class0", "val_recall_class0",
+            "val_f1_class1", "val_precision_class1", "val_recall_class1",
+            "avg_val_loss", "avg_val_acc", "avg_val_f1", "avg_val_precision", "avg_val_recall",
+            "std_val_loss", "std_val_acc", "std_val_f1", "std_val_precision", "std_val_recall"
+        ]
+        
+        for key in metric_keys:
+            if key in metrics:
+                value = metrics[key]
+                # Handle NaN values
+                if isinstance(value, float) and (value != value):  # NaN check
+                    metrics_dict[key] = [None]
+                else:
+                    metrics_dict[key] = [value]
+        
+        # Create DataFrame
+        df = pl.DataFrame(metrics_dict)
+        
+        # Register DataFrame with DuckDB
+        table_name = "training_metrics"
+        analytics.register_dataframe("metrics_temp", df)
+        
+        # Create table if it doesn't exist, or insert into existing table
+        try:
+            # Check if table exists
+            result = analytics.conn.execute(
+                f"SELECT COUNT(*) FROM information_schema.tables WHERE table_name = '{table_name}'"
+            ).fetchone()
+            
+            if result and result[0] > 0:
+                # Table exists, insert
+                analytics.conn.execute(
+                    f"INSERT INTO {table_name} SELECT * FROM metrics_temp"
+                )
+            else:
+                # Table doesn't exist, create it
+                analytics.conn.execute(
+                    f"CREATE TABLE {table_name} AS SELECT * FROM metrics_temp"
+                )
+        except Exception as e:
+            # Fallback: try to create table directly
+            try:
+                analytics.conn.execute(
+                    f"CREATE TABLE IF NOT EXISTS {table_name} AS SELECT * FROM metrics_temp"
+                )
+            except Exception:
+                pass
+        
+        analytics.close()
+        logger.debug(f"Saved metrics to DuckDB for {model_type} fold {fold_idx}")
+    except Exception as e:
+        logger.debug(f"Failed to save metrics to DuckDB: {e}")
+        # Don't raise - DuckDB is optional
+
+
+def _check_airflow_status(
+    model_type: str,
+    project_root_str: str
+) -> Optional[Dict[str, Any]]:
+    """
+    Check Airflow DAG run status for the model.
+    
+    Args:
+        model_type: Model type identifier
+        project_root_str: Project root directory as string
+    
+    Returns:
+        Dictionary with Airflow status information, or None if unavailable
+    """
+    try:
+        # Check if Airflow is configured
+        airflow_dag_id = os.environ.get("AIRFLOW_DAG_ID")
+        if not airflow_dag_id:
+            return None
+        
+        # Try to query Airflow API or check status file
+        status_file = Path(project_root_str) / "logs" / "airflow_status.json"
+        if status_file.exists():
+            import json
+            with open(status_file, 'r') as f:
+                status_data = json.load(f)
+                return status_data.get(model_type)
+        
+        return None
+    except Exception as e:
+        logger.debug(f"Failed to check Airflow status: {e}")
+        return None
+
+
 def _train_xgboost_model_fold(
     model_type: str,
     model_config: Dict[str, Any],
@@ -461,6 +599,35 @@ def _train_xgboost_model_fold(
         model = create_model(model_type, xgb_config)
         
         model.fit(train_df, project_root=project_root_str)
+        
+        # Capture XGBoost training history for epoch-wise curves
+        try:
+            from lib.mlops.config import ExperimentTracker
+            # Check if model has evals_result (XGBoost training history)
+            if hasattr(model, 'model') and hasattr(model.model, 'evals_result_'):
+                evals_result = model.model.evals_result_
+                if evals_result:
+                    tracker = ExperimentTracker(fold_output_dir)
+                    
+                    # Extract metrics per boosting round
+                    # XGBoost stores metrics in evals_result_ as:
+                    # {'validation_0': {'logloss': [...]}, 'validation_1': {'logloss': [...]}}
+                    train_losses = evals_result.get('validation_0', {}).get('logloss', [])
+                    val_losses = evals_result.get('validation_1', {}).get('logloss', [])
+                    
+                    # If we have both train and val losses, log them
+                    if train_losses and val_losses:
+                        for round_idx, (train_loss, val_loss) in enumerate(zip(train_losses, val_losses)):
+                            tracker.log_epoch_metrics(round_idx + 1, {"loss": float(train_loss)}, phase="train")
+                            tracker.log_epoch_metrics(round_idx + 1, {"loss": float(val_loss)}, phase="val")
+                        logger.info(f"Logged {len(train_losses)} boosting rounds to metrics.jsonl")
+                    elif val_losses:
+                        # Only validation losses available
+                        for round_idx, val_loss in enumerate(val_losses):
+                            tracker.log_epoch_metrics(round_idx + 1, {"loss": float(val_loss)}, phase="val")
+                        logger.info(f"Logged {len(val_losses)} validation boosting rounds to metrics.jsonl")
+        except Exception as e:
+            logger.debug(f"Could not capture XGBoost training history: {e}")
         
         val_probs = model.predict(val_df, project_root=project_root_str)
         val_preds = np.argmax(val_probs, axis=1)
@@ -515,6 +682,14 @@ def _train_xgboost_model_fold(
         model.save(str(fold_output_dir))
         logger.info(f"Saved XGBoost model to {fold_output_dir}")
         
+        # Save metrics to DuckDB
+        _save_metrics_to_duckdb(result, model_type, fold_idx, project_root_str)
+        
+        # Check Airflow status
+        airflow_status = _check_airflow_status(model_type, project_root_str)
+        if airflow_status:
+            logger.debug(f"Airflow status: {airflow_status}")
+        
         # Generate plots for this fold
         try:
             from .visualization import plot_fold_metrics
@@ -532,6 +707,79 @@ def _train_xgboost_model_fold(
                 fold_num=fold_idx + 1,
                 model_type=model_type
             )
+            
+            # Generate comprehensive additional plots
+            from .visualization import (
+                plot_calibration_curve, plot_per_class_metrics, 
+                plot_error_analysis, plot_feature_importance
+            )
+            
+            # Calibration curve
+            try:
+                plot_calibration_curve(
+                    y_true=val_y,
+                    y_proba=val_probs,
+                    save_path=fold_output_dir / "calibration_curve.png",
+                    title=f"{model_type} - Fold {fold_idx + 1} - Calibration Curve"
+                )
+            except Exception as e:
+                logger.debug(f"Failed to generate calibration curve: {e}")
+            
+            # Per-class metrics breakdown
+            try:
+                metrics_per_class = {
+                    "Class 0": {
+                        "precision": metrics.get("val_precision_class0", 0),
+                        "recall": metrics.get("val_recall_class0", 0),
+                        "f1": metrics.get("val_f1_class0", 0)
+                    },
+                    "Class 1": {
+                        "precision": metrics.get("val_precision_class1", 0),
+                        "recall": metrics.get("val_recall_class1", 0),
+                        "f1": metrics.get("val_f1_class1", 0)
+                    }
+                }
+                plot_per_class_metrics(
+                    metrics_per_class=metrics_per_class,
+                    save_path=fold_output_dir / "per_class_metrics.png",
+                    title=f"{model_type} - Fold {fold_idx + 1} - Per-Class Metrics"
+                )
+            except Exception as e:
+                logger.debug(f"Failed to generate per-class metrics plot: {e}")
+            
+            # Error analysis
+            try:
+                plot_error_analysis(
+                    y_true=val_y,
+                    y_pred=val_preds,
+                    y_proba=val_probs,
+                    save_path=fold_output_dir / "error_analysis.png",
+                    title=f"{model_type} - Fold {fold_idx + 1} - Error Analysis"
+                )
+            except Exception as e:
+                logger.debug(f"Failed to generate error analysis plot: {e}")
+            
+            # Feature importance (for XGBoost models)
+            try:
+                if hasattr(model, 'model') and hasattr(model.model, 'feature_importances_'):
+                    feature_names = getattr(model, 'feature_names', None)
+                    if feature_names is None:
+                        # Try to get from model
+                        try:
+                            feature_names = [f"feature_{i}" for i in range(len(model.model.feature_importances_))]
+                        except:
+                            feature_names = None
+                    
+                    if feature_names:
+                        feature_importance_dict = dict(zip(feature_names, model.model.feature_importances_))
+                        plot_feature_importance(
+                            feature_importance=feature_importance_dict,
+                            save_path=fold_output_dir / "feature_importance.png",
+                            title=f"{model_type} - Fold {fold_idx + 1} - Feature Importance"
+                        )
+            except Exception as e:
+                logger.debug(f"Failed to generate feature importance plot: {e}")
+                
         except Exception as e:
             logger.warning(f"Failed to generate plots for XGBoost fold {fold_idx + 1}: {e}", exc_info=True)
     
@@ -1011,6 +1259,14 @@ def _train_pytorch_model_fold(
         torch.save(model.state_dict(), model_path)
         logger.info(f"Saved model to {model_path}")
         
+        # Save metrics to DuckDB
+        _save_metrics_to_duckdb(result, model_type, fold_idx, project_root_str)
+        
+        # Check Airflow status
+        airflow_status = _check_airflow_status(model_type, project_root_str)
+        if airflow_status:
+            logger.debug(f"Airflow status: {airflow_status}")
+        
         if device.type == "cuda" and is_hyper_aggressive:
             for _ in range(10):
                 aggressive_gc(clear_cuda=True)
@@ -1094,6 +1350,70 @@ def _train_pytorch_model_fold(
                 phase="val"
             )
             logger.debug(f"Saved final validation metrics to {tracker.metrics_file}")
+            
+            # Save training curves plot if metrics.jsonl has epoch data
+            try:
+                metrics_df = tracker.load_metrics()
+                if not metrics_df.is_empty():
+                    # Extract train/val losses and accuracies per epoch
+                    train_losses = []
+                    val_losses = []
+                    train_accs = []
+                    val_accs = []
+                    
+                    # Get unique epochs (excluding epoch 0 which is final eval)
+                    epochs = sorted([
+                        int(e) for e in metrics_df["epoch"].unique().to_list()
+                        if e > 0
+                    ])
+                    
+                    for epoch in epochs:
+                        epoch_data = metrics_df.filter(
+                            (pl.col("epoch") == epoch)
+                        )
+                        
+                        # Train metrics
+                        train_data = epoch_data.filter(pl.col("phase") == "train")
+                        if not train_data.is_empty():
+                            train_loss = train_data.filter(
+                                pl.col("metric") == "loss"
+                            )["value"].to_list()
+                            train_acc = train_data.filter(
+                                pl.col("metric") == "accuracy"
+                            )["value"].to_list()
+                            if train_loss:
+                                train_losses.append(train_loss[0])
+                            if train_acc:
+                                train_accs.append(train_acc[0])
+                        
+                        # Val metrics
+                        val_data = epoch_data.filter(pl.col("phase") == "val")
+                        if not val_data.is_empty():
+                            val_loss_list = val_data.filter(
+                                pl.col("metric") == "loss"
+                            )["value"].to_list()
+                            val_acc_list = val_data.filter(
+                                pl.col("metric") == "accuracy"
+                            )["value"].to_list()
+                            if val_loss_list:
+                                val_losses.append(val_loss_list[0])
+                            if val_acc_list:
+                                val_accs.append(val_acc_list[0])
+                    
+                    # Only plot if we have data
+                    if train_losses or val_losses:
+                        curve_path = fold_output_dir / "training_curves.png"
+                        plot_learning_curves(
+                            train_losses=train_losses if train_losses else [0.0] * len(val_losses),
+                            val_losses=val_losses if val_losses else [0.0] * len(train_losses),
+                            save_path=curve_path,
+                            train_accs=train_accs if train_accs else None,
+                            val_accs=val_accs if val_accs else None,
+                            title=f"{model_type} - Fold {fold_idx + 1} Training Curves"
+                        )
+                        logger.info(f"Saved training curves to {curve_path}")
+            except Exception as plot_error:
+                logger.debug(f"Failed to save training curves: {plot_error}")
         except Exception as e:
             logger.debug(f"Failed to save final validation metrics: {e}")
     
@@ -1106,6 +1426,14 @@ def _train_pytorch_model_fold(
             mlflow_tracker.end_run()
         except (RuntimeError, AttributeError, ValueError) as cleanup_error:
             logger.warning(f"Error ending MLflow run: {cleanup_error}")
+    
+    # Save metrics to DuckDB
+    _save_metrics_to_duckdb(result, model_type, fold_idx, project_root_str)
+    
+    # Check Airflow status
+    airflow_status = _check_airflow_status(model_type, project_root_str)
+    if airflow_status:
+        logger.debug(f"Airflow status: {airflow_status}")
     
     # Generate plots for this fold
     try:
@@ -1231,12 +1559,25 @@ def _train_baseline_model_fold(
         
         model = create_model(model_type, baseline_config)
         
+        # Create tracker for epoch-wise training metrics (if use_tracking is enabled)
+        tracker = None
+        if use_tracking:
+            try:
+                tracker = ExperimentTracker(fold_output_dir)
+                # Set tracker on model if it supports it (for epoch-wise training)
+                if hasattr(model, 'tracker'):
+                    model.tracker = tracker
+                    logger.info(f"Enabled epoch-wise training tracking for {model_type} fold {fold_idx + 1}")
+            except Exception as e:
+                logger.debug(f"Could not create tracker for {model_type} fold {fold_idx + 1}: {e}")
+        
         logger.info(f"Starting model.fit() for {model_type} fold {fold_idx + 1}...")
         logger.info(f"Training data: {train_df.height} rows")
         _flush_logs()
         
         try:
-            model.fit(train_df, project_root=project_root_str)
+            # Pass output_dir to fit() for epoch-wise training metrics
+            model.fit(train_df, project_root=project_root_str, output_dir=str(fold_output_dir))
             logger.info(f"Model.fit() completed successfully for fold {fold_idx + 1}")
             _flush_logs()
         except MemoryError as e:
@@ -1322,6 +1663,14 @@ def _train_baseline_model_fold(
         model.save(str(fold_output_dir))
         logger.info(f"Saved baseline model to {fold_output_dir}")
         
+        # Save metrics to DuckDB
+        _save_metrics_to_duckdb(result, model_type, fold_idx, project_root_str)
+        
+        # Check Airflow status
+        airflow_status = _check_airflow_status(model_type, project_root_str)
+        if airflow_status:
+            logger.debug(f"Airflow status: {airflow_status}")
+        
         # Generate plots for this fold
         try:
             from .visualization import plot_fold_metrics
@@ -1339,6 +1688,58 @@ def _train_baseline_model_fold(
                 fold_num=fold_idx + 1,
                 model_type=model_type
             )
+            
+            # Generate comprehensive additional plots
+            from .visualization import (
+                plot_calibration_curve, plot_per_class_metrics, 
+                plot_error_analysis
+            )
+            
+            # Calibration curve
+            try:
+                plot_calibration_curve(
+                    y_true=val_y,
+                    y_proba=val_probs,
+                    save_path=fold_output_dir / "calibration_curve.png",
+                    title=f"{model_type} - Fold {fold_idx + 1} - Calibration Curve"
+                )
+            except Exception as e:
+                logger.debug(f"Failed to generate calibration curve: {e}")
+            
+            # Per-class metrics breakdown
+            try:
+                metrics_per_class = {
+                    "Class 0": {
+                        "precision": metrics.get("val_precision_class0", 0),
+                        "recall": metrics.get("val_recall_class0", 0),
+                        "f1": metrics.get("val_f1_class0", 0)
+                    },
+                    "Class 1": {
+                        "precision": metrics.get("val_precision_class1", 0),
+                        "recall": metrics.get("val_recall_class1", 0),
+                        "f1": metrics.get("val_f1_class1", 0)
+                    }
+                }
+                plot_per_class_metrics(
+                    metrics_per_class=metrics_per_class,
+                    save_path=fold_output_dir / "per_class_metrics.png",
+                    title=f"{model_type} - Fold {fold_idx + 1} - Per-Class Metrics"
+                )
+            except Exception as e:
+                logger.debug(f"Failed to generate per-class metrics plot: {e}")
+            
+            # Error analysis
+            try:
+                plot_error_analysis(
+                    y_true=val_y,
+                    y_pred=val_preds,
+                    y_proba=val_probs,
+                    save_path=fold_output_dir / "error_analysis.png",
+                    title=f"{model_type} - Fold {fold_idx + 1} - Error Analysis"
+                )
+            except Exception as e:
+                logger.debug(f"Failed to generate error analysis plot: {e}")
+                
         except Exception as e:
             logger.warning(f"Failed to generate plots for baseline fold {fold_idx + 1}: {e}", exc_info=True)
         
@@ -2096,9 +2497,28 @@ def stage5_train_models(
         logger.info("=" * 80)
         _flush_logs()
         
-        # Create folds from full dataset for final training
+        # For baseline models, create test set split BEFORE final training
+        # to avoid data leakage (test set should be held out)
+        test_df = None
+        trainval_df = scaled_df
+        if model_type in BASELINE_MODELS:
+            try:
+                from lib.data.loading import train_val_test_split, SplitConfig
+                split_config = SplitConfig(val_size=0.0, test_size=0.2, random_state=42)
+                splits = train_val_test_split(scaled_df, split_config)
+                trainval_df = splits["train"]  # 80% for train+val (CV)
+                test_df = splits["test"]  # 20% for test (held out)
+                logger.info(f"Test set created: {test_df.height} rows (held out for final evaluation)")
+                logger.info(f"Train+Val set: {trainval_df.height} rows (for CV)")
+                _flush_logs()
+            except Exception as e:
+                logger.warning(f"Failed to create test set split: {e}. Using full dataset for CV.")
+                test_df = None
+                trainval_df = scaled_df
+        
+        # Create folds from train+val dataset for final training
         all_folds = stratified_kfold(
-            scaled_df,
+            trainval_df,
             n_splits=n_splits,
             random_state=42
         )
@@ -2106,7 +2526,7 @@ def stage5_train_models(
         if len(all_folds) != n_splits:
             raise ValueError(f"Expected {n_splits} folds for final training, got {len(all_folds)}")
         
-        logger.info(f"Final training: Using {n_splits}-fold stratified cross-validation on full dataset ({scaled_df.height} rows)")
+        logger.info(f"Final training: Using {n_splits}-fold stratified cross-validation on train+val dataset ({trainval_df.height} rows)")
         _flush_logs()
         
         # Train on full dataset with best hyperparameters
@@ -2397,6 +2817,22 @@ def stage5_train_models(
                 with open(metrics_file, "w") as f:
                     json.dump(results[model_type], f, indent=2, default=str)
                 logger.info(f"Saved aggregated metrics to {metrics_file} (model: {model_type})")
+                
+                # Save aggregated metrics to DuckDB
+                try:
+                    _save_metrics_to_duckdb(
+                        results[model_type],
+                        model_type,
+                        -1,  # -1 indicates aggregated metrics
+                        project_root_str
+                    )
+                except Exception as e:
+                    logger.debug(f"Failed to save aggregated metrics to DuckDB: {e}")
+                
+                # Check Airflow status
+                airflow_status = _check_airflow_status(model_type, project_root_str)
+                if airflow_status:
+                    logger.debug(f"Airflow status for {model_type}: {airflow_status}")
             except Exception as e:
                 logger.error(f"Failed to save metrics.json for {model_type}: {e}", exc_info=True)
                 # Don't raise - continue with other models
@@ -2427,6 +2863,123 @@ def stage5_train_models(
                 _flush_logs()
             except Exception as e:
                 logger.warning(f"Failed to generate plots for {model_type}: {e}", exc_info=True)
+            
+            # For baseline models, evaluate on test set and save results.json
+            if model_type in BASELINE_MODELS and fold_results and test_df is not None:
+                try:
+                    logger.info(f"Evaluating {model_type} on held-out test set...")
+                    _flush_logs()
+                    
+                    logger.info(f"Test set size: {test_df.height} rows")
+                    _flush_logs()
+                    
+                    # Load best model
+                    best_model_dir = model_output_dir / "best_model"
+                    if not best_model_dir.exists():
+                        # Fallback: use fold_1 if best_model doesn't exist
+                        best_model_dir = model_output_dir / "fold_1"
+                        logger.warning(f"best_model directory not found, using {best_model_dir}")
+                    
+                    # Load model
+                    from lib.training.model_factory import create_model
+                    best_model_config = model_config.copy()
+                    if best_params:
+                        best_model_config.update(best_params)
+                    
+                    if model_type in BASELINE_MODELS:
+                        from lib.utils.paths import load_metadata_flexible
+                        stage2_df = load_metadata_flexible(features_stage2_path)
+                        if stage2_df is not None and stage2_df.height > 0:
+                            if "model_specific_config" not in best_model_config:
+                                best_model_config["model_specific_config"] = {}
+                            best_model_config["model_specific_config"]["features_stage2_path"] = features_stage2_path
+                            best_model_config["features_stage2_path"] = features_stage2_path
+                        
+                        if model_type in STAGE4_MODELS:
+                            stage4_df = load_metadata_flexible(features_stage4_path)
+                            if stage4_df is not None and stage4_df.height > 0:
+                                if "model_specific_config" not in best_model_config:
+                                    best_model_config["model_specific_config"] = {}
+                                best_model_config["model_specific_config"]["features_stage4_path"] = features_stage4_path
+                                best_model_config["features_stage4_path"] = features_stage4_path
+                    
+                    test_model = create_model(model_type, best_model_config)
+                    test_model.load(str(best_model_dir))
+                    
+                    # Evaluate on test set
+                    test_probs = test_model.predict(test_df, project_root=project_root_str)
+                    test_preds = np.argmax(test_probs, axis=1)
+                    test_labels = test_df["label"].to_list()
+                    label_map = {label: idx for idx, label in enumerate(sorted(set(test_labels)))}
+                    test_y = np.array([label_map[label] for label in test_labels])
+                    
+                    # Compute test metrics
+                    from lib.training.metrics_utils import compute_classification_metrics
+                    test_metrics = compute_classification_metrics(
+                        y_true=test_y,
+                        y_pred=test_preds,
+                        y_probs=test_probs
+                    )
+                    
+                    # Compute additional metrics
+                    from sklearn.metrics import (
+                        roc_auc_score, average_precision_score, 
+                        precision_recall_fscore_support, confusion_matrix
+                    )
+                    
+                    if test_probs.ndim == 2 and test_probs.shape[1] == 2:
+                        test_probs_pos = test_probs[:, 1]
+                    else:
+                        test_probs_pos = test_probs.flatten() if test_probs.ndim > 1 else test_probs
+                    
+                    test_auc = roc_auc_score(test_y, test_probs_pos)
+                    test_ap = average_precision_score(test_y, test_probs_pos)
+                    test_precision_per_class, test_recall_per_class, test_f1_per_class, _ = precision_recall_fscore_support(
+                        test_y, test_preds, average=None, zero_division=0
+                    )
+                    test_cm = confusion_matrix(test_y, test_preds).tolist()
+                    
+                    # Prepare test results
+                    test_results = {
+                        "test_f1": float(test_metrics["val_f1"]),
+                        "test_auc": float(test_auc),
+                        "test_ap": float(test_ap),
+                        "test_acc": float(test_metrics["val_acc"]),
+                        "test_precision": float(test_metrics["val_precision"]),
+                        "test_recall": float(test_metrics["val_recall"]),
+                        "test_confusion_matrix": test_cm,
+                        "test_precision_class0": float(test_precision_per_class[0]) if len(test_precision_per_class) > 0 else 0.0,
+                        "test_recall_class0": float(test_recall_per_class[0]) if len(test_recall_per_class) > 0 else 0.0,
+                        "test_f1_class0": float(test_f1_per_class[0]) if len(test_f1_per_class) > 0 else 0.0,
+                        "test_precision_class1": float(test_precision_per_class[1]) if len(test_precision_per_class) > 1 else 0.0,
+                        "test_recall_class1": float(test_recall_per_class[1]) if len(test_recall_per_class) > 1 else 0.0,
+                        "test_f1_class1": float(test_f1_per_class[1]) if len(test_f1_per_class) > 1 else 0.0,
+                    }
+                    
+                    # Combine with existing results
+                    results_json = results[model_type].copy()
+                    results_json.update(test_results)
+                    if best_params:
+                        results_json["best_params"] = best_params
+                    
+                    # Save results.json
+                    results_file = model_output_dir / "results.json"
+                    import json
+                    with open(results_file, "w") as f:
+                        json.dump(results_json, f, indent=2, default=str)
+                    
+                    logger.info(f"Test F1: {test_results['test_f1']:.4f}, Test AUC: {test_results['test_auc']:.4f}")
+                    logger.info(f"Saved test results to {results_file}")
+                    _flush_logs()
+                    
+                    # Cleanup
+                    cleanup_model_and_memory(model=test_model, clear_cuda=False)
+                    del test_model
+                    
+                except Exception as e:
+                    logger.warning(f"Failed to evaluate {model_type} on test set: {e}", exc_info=True)
+                    logger.warning("Continuing without test set evaluation")
+                    _flush_logs()
         
         # Aggressive GC after all folds for this model type
         aggressive_gc(clear_cuda=False)

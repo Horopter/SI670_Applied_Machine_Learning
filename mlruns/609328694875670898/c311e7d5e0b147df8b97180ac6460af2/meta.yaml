@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/c311e7d5e0b147df8b97180ac6460af2/artifacts
+end_time: 1765590408784
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: c311e7d5e0b147df8b97180ac6460af2
+run_name: chill-chimp-537
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590399849
+status: 3
+tags: []
+user_id: urvim

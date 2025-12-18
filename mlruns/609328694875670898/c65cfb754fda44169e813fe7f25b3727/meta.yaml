@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/c65cfb754fda44169e813fe7f25b3727/artifacts
+end_time: 1765590138357
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: c65cfb754fda44169e813fe7f25b3727
+run_name: abundant-horse-668
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590128928
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/5d2d0f5aab144c20b4a140057f77c38f/artifacts
+end_time: 1765609685765
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 5d2d0f5aab144c20b4a140057f77c38f
+run_name: unequaled-stork-625
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609685070
+status: 3
+tags: []
+user_id: santoshd

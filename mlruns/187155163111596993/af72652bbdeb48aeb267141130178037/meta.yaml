@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/af72652bbdeb48aeb267141130178037/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: af72652bbdeb48aeb267141130178037
+run_name: suave-turtle-288
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591936759
+status: 1
+tags: []
+user_id: santoshd

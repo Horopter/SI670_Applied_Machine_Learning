@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/990947bd24c44aae9cadc310d070d33c/artifacts
+end_time: 1765604468799
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 990947bd24c44aae9cadc310d070d33c
+run_name: nervous-wolf-200
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604468116
+status: 3
+tags: []
+user_id: suzanef

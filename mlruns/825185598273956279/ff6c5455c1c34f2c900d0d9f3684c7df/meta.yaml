@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/ff6c5455c1c34f2c900d0d9f3684c7df/artifacts
+end_time: 1765749230318
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: ff6c5455c1c34f2c900d0d9f3684c7df
+run_name: burly-pig-113
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765749221704
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/af1af38a0a66425c8d93208dc2c3836a/artifacts
+end_time: 1765594451597
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: af1af38a0a66425c8d93208dc2c3836a
+run_name: vaunted-crane-334
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594450928
+status: 3
+tags: []
+user_id: suzanef

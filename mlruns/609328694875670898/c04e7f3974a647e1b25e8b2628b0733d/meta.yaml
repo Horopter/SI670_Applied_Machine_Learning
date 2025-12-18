@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/c04e7f3974a647e1b25e8b2628b0733d/artifacts
+end_time: 1765588784064
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: c04e7f3974a647e1b25e8b2628b0733d
+run_name: spiffy-grouse-481
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588779247
+status: 3
+tags: []
+user_id: urvim

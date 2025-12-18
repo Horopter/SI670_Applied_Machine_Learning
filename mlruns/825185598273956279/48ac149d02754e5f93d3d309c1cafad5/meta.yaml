@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/48ac149d02754e5f93d3d309c1cafad5/artifacts
+end_time: 1765596560970
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 48ac149d02754e5f93d3d309c1cafad5
+run_name: capable-fish-185
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765596560882
+status: 3
+tags: []
+user_id: suzanef

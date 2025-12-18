@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/c17bd23115694377afb7618b484db7ae/artifacts
+end_time: 1765609696177
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: c17bd23115694377afb7618b484db7ae
+run_name: intelligent-croc-144
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609695482
+status: 3
+tags: []
+user_id: santoshd

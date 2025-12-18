@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/c39e7f2fb16541a1a84cc43fc31cea6c/artifacts
+end_time: 1765595476731
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: c39e7f2fb16541a1a84cc43fc31cea6c
+run_name: legendary-gnat-570
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765595476055
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/0c04ced2d0b340dcb728c5205e6665e5/artifacts
+end_time: 1765754044898
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 0c04ced2d0b340dcb728c5205e6665e5
+run_name: upbeat-newt-270
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765754039307
+status: 3
+tags: []
+user_id: urvim

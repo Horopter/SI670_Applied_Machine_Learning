@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/b0b7f98c45af4439b44edabf4c3eb846/artifacts
+end_time: 1765592039865
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: b0b7f98c45af4439b44edabf4c3eb846
+run_name: whimsical-ox-263
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592034728
+status: 3
+tags: []
+user_id: suzanef

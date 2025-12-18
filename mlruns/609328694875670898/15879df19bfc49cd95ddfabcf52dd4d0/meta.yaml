@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/15879df19bfc49cd95ddfabcf52dd4d0/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 15879df19bfc49cd95ddfabcf52dd4d0
+run_name: wise-kite-363
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765753349734
+status: 1
+tags: []
+user_id: urvim

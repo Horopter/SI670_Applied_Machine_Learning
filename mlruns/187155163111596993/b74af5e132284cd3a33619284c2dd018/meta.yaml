@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/b74af5e132284cd3a33619284c2dd018/artifacts
+end_time: 1765584044029
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: b74af5e132284cd3a33619284c2dd018
+run_name: monumental-auk-994
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584014485
+status: 3
+tags: []
+user_id: santoshd

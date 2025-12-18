@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/1c8afa528ad8452eaa9b53b644573665/artifacts
+end_time: 1765596591740
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 1c8afa528ad8452eaa9b53b644573665
+run_name: stately-doe-518
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765596591065
+status: 3
+tags: []
+user_id: suzanef

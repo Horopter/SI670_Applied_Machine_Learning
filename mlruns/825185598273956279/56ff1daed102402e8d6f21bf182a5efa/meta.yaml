@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/56ff1daed102402e8d6f21bf182a5efa/artifacts
+end_time: 1765589291432
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 56ff1daed102402e8d6f21bf182a5efa
+run_name: salty-shrimp-752
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589286257
+status: 3
+tags: []
+user_id: suzanef

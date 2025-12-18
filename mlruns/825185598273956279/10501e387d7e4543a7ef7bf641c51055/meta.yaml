@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/10501e387d7e4543a7ef7bf641c51055/artifacts
+end_time: 1765595358543
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 10501e387d7e4543a7ef7bf641c51055
+run_name: persistent-trout-423
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765595357872
+status: 3
+tags: []
+user_id: suzanef

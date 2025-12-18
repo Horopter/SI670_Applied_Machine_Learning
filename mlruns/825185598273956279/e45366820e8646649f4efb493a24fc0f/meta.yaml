@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/e45366820e8646649f4efb493a24fc0f/artifacts
+end_time: 1765596465973
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: e45366820e8646649f4efb493a24fc0f
+run_name: nimble-goat-83
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765596465887
+status: 3
+tags: []
+user_id: suzanef

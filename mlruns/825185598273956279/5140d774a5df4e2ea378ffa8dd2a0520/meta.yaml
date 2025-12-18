@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/5140d774a5df4e2ea378ffa8dd2a0520/artifacts
+end_time: 1765591771134
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 5140d774a5df4e2ea378ffa8dd2a0520
+run_name: adaptable-cod-545
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591765954
+status: 3
+tags: []
+user_id: suzanef

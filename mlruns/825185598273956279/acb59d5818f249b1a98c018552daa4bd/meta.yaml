@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/acb59d5818f249b1a98c018552daa4bd/artifacts
+end_time: 1765603018312
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: acb59d5818f249b1a98c018552daa4bd
+run_name: omniscient-snake-658
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603018218
+status: 3
+tags: []
+user_id: suzanef

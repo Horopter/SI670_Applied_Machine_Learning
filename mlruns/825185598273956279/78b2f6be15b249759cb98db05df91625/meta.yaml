@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/78b2f6be15b249759cb98db05df91625/artifacts
+end_time: 1765603894423
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 78b2f6be15b249759cb98db05df91625
+run_name: legendary-wasp-699
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603893575
+status: 3
+tags: []
+user_id: suzanef

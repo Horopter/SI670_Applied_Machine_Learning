@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/4f24916cb8b944e5b4e2bf0f6b241090/artifacts
+end_time: 1765585965788
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 4f24916cb8b944e5b4e2bf0f6b241090
+run_name: bustling-calf-39
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585964068
+status: 3
+tags: []
+user_id: suzanef

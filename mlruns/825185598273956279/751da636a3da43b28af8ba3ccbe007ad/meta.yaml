@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/751da636a3da43b28af8ba3ccbe007ad/artifacts
+end_time: 1765595421406
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 751da636a3da43b28af8ba3ccbe007ad
+run_name: sassy-mouse-835
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765595420733
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/8a54cea43cea436abdd3be3e9a1cf1fb/artifacts
+end_time: 1765595490279
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 8a54cea43cea436abdd3be3e9a1cf1fb
+run_name: casual-hare-752
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765595489602
+status: 3
+tags: []
+user_id: suzanef

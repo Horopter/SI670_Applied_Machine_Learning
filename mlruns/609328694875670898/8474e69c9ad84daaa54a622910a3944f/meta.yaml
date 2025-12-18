@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/8474e69c9ad84daaa54a622910a3944f/artifacts
+end_time: 1765739427185
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 8474e69c9ad84daaa54a622910a3944f
+run_name: dashing-cub-901
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765739418367
+status: 3
+tags: []
+user_id: urvim

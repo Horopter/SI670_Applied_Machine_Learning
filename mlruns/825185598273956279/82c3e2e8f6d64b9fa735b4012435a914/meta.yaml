@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/82c3e2e8f6d64b9fa735b4012435a914/artifacts
+end_time: 1765588611070
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 82c3e2e8f6d64b9fa735b4012435a914
+run_name: chill-lark-526
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588606377
+status: 3
+tags: []
+user_id: suzanef

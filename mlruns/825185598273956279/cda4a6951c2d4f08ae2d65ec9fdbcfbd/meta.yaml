@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/cda4a6951c2d4f08ae2d65ec9fdbcfbd/artifacts
+end_time: 1765589150502
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: cda4a6951c2d4f08ae2d65ec9fdbcfbd
+run_name: melodic-moose-838
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589145324
+status: 3
+tags: []
+user_id: suzanef

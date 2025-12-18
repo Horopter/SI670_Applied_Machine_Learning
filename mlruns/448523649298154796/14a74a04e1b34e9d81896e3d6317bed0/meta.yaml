@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/14a74a04e1b34e9d81896e3d6317bed0/artifacts
+end_time: 1765609682175
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 14a74a04e1b34e9d81896e3d6317bed0
+run_name: glamorous-donkey-484
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609682063
+status: 3
+tags: []
+user_id: santoshd

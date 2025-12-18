@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/531b9b9b95f24d50bad010ca9d0148a7/artifacts
+end_time: 1765592975085
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 531b9b9b95f24d50bad010ca9d0148a7
+run_name: stylish-dog-589
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592966560
+status: 3
+tags: []
+user_id: urvim

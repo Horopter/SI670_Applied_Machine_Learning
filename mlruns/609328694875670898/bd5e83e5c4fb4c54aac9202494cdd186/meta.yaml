@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/bd5e83e5c4fb4c54aac9202494cdd186/artifacts
+end_time: 1765586542545
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: bd5e83e5c4fb4c54aac9202494cdd186
+run_name: nimble-goose-826
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586526767
+status: 3
+tags: []
+user_id: urvim

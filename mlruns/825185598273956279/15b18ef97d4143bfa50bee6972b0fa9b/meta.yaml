@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/15b18ef97d4143bfa50bee6972b0fa9b/artifacts
+end_time: 1765603369399
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 15b18ef97d4143bfa50bee6972b0fa9b
+run_name: debonair-deer-251
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603368724
+status: 3
+tags: []
+user_id: suzanef

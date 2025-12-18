@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/37b29b3ec3994247b7b1247d5842721a/artifacts
+end_time: 1765757494485
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 37b29b3ec3994247b7b1247d5842721a
+run_name: burly-kit-246
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765757477609
+status: 3
+tags: []
+user_id: suzanef

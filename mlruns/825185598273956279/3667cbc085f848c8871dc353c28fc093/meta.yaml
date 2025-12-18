@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/3667cbc085f848c8871dc353c28fc093/artifacts
+end_time: 1765756211479
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 3667cbc085f848c8871dc353c28fc093
+run_name: classy-goose-779
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765756194454
+status: 3
+tags: []
+user_id: suzanef

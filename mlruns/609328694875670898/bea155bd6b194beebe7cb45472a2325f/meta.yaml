@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/bea155bd6b194beebe7cb45472a2325f/artifacts
+end_time: 1765585635294
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: bea155bd6b194beebe7cb45472a2325f
+run_name: sneaky-hog-630
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585619806
+status: 3
+tags: []
+user_id: urvim

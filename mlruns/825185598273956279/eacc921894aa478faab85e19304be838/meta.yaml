@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/eacc921894aa478faab85e19304be838/artifacts
+end_time: 1765588532515
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: eacc921894aa478faab85e19304be838
+run_name: skillful-hawk-706
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588527861
+status: 3
+tags: []
+user_id: suzanef

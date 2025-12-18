@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/a334d0119abc4b0fb9c0aa1cf3127069/artifacts
+end_time: 1765593200854
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: a334d0119abc4b0fb9c0aa1cf3127069
+run_name: gregarious-bass-466
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593192131
+status: 3
+tags: []
+user_id: urvim

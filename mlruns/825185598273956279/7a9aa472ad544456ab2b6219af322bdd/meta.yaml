@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/7a9aa472ad544456ab2b6219af322bdd/artifacts
+end_time: 1765590736829
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 7a9aa472ad544456ab2b6219af322bdd
+run_name: intelligent-cow-542
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590732214
+status: 3
+tags: []
+user_id: suzanef

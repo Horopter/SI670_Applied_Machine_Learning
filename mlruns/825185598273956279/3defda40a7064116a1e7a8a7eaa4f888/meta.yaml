@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/3defda40a7064116a1e7a8a7eaa4f888/artifacts
+end_time: 1765590698305
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 3defda40a7064116a1e7a8a7eaa4f888
+run_name: luminous-colt-526
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590693171
+status: 3
+tags: []
+user_id: suzanef

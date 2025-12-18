@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/3e0ea695b5284a5fa3c2b5e7851ad759/artifacts
+end_time: 1765602603678
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 3e0ea695b5284a5fa3c2b5e7851ad759
+run_name: funny-shrike-265
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602603587
+status: 3
+tags: []
+user_id: suzanef

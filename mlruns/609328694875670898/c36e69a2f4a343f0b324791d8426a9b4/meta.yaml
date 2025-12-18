@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/c36e69a2f4a343f0b324791d8426a9b4/artifacts
+end_time: 1765586330064
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: c36e69a2f4a343f0b324791d8426a9b4
+run_name: enthused-smelt-308
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586315291
+status: 3
+tags: []
+user_id: urvim

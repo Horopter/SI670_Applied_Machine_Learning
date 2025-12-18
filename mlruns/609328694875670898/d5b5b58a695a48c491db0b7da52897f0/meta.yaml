@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/d5b5b58a695a48c491db0b7da52897f0/artifacts
+end_time: 1765590252168
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: d5b5b58a695a48c491db0b7da52897f0
+run_name: delicate-cub-25
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590240802
+status: 3
+tags: []
+user_id: urvim

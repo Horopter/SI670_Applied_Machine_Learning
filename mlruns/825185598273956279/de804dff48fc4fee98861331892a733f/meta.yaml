@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/de804dff48fc4fee98861331892a733f/artifacts
+end_time: 1765594025632
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: de804dff48fc4fee98861331892a733f
+run_name: tasteful-squid-153
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594020420
+status: 3
+tags: []
+user_id: suzanef

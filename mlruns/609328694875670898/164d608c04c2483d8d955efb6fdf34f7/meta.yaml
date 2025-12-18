@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/164d608c04c2483d8d955efb6fdf34f7/artifacts
+end_time: 1765750301292
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 164d608c04c2483d8d955efb6fdf34f7
+run_name: inquisitive-fox-999
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765750273891
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/46d5d273cd9945eeb244101381da77d5/artifacts
+end_time: 1765597552845
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 46d5d273cd9945eeb244101381da77d5
+run_name: agreeable-mink-601
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597552118
+status: 3
+tags: []
+user_id: suzanef

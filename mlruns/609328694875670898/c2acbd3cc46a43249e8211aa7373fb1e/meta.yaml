@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/c2acbd3cc46a43249e8211aa7373fb1e/artifacts
+end_time: 1765750379044
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: c2acbd3cc46a43249e8211aa7373fb1e
+run_name: handsome-shoat-911
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765750366172
+status: 3
+tags: []
+user_id: urvim

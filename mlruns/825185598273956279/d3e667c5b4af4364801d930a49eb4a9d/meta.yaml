@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/d3e667c5b4af4364801d930a49eb4a9d/artifacts
+end_time: 1765597668341
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: d3e667c5b4af4364801d930a49eb4a9d
+run_name: industrious-bat-539
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597667660
+status: 3
+tags: []
+user_id: suzanef

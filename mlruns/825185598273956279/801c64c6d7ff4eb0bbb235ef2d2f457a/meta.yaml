@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/801c64c6d7ff4eb0bbb235ef2d2f457a/artifacts
+end_time: 1765588571413
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 801c64c6d7ff4eb0bbb235ef2d2f457a
+run_name: resilient-kite-72
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588566785
+status: 3
+tags: []
+user_id: suzanef

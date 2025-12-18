@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/4650b93de606404d91b107e7a2a407fd/artifacts
+end_time: 1765592865623
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 4650b93de606404d91b107e7a2a407fd
+run_name: trusting-asp-428
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592857072
+status: 3
+tags: []
+user_id: urvim

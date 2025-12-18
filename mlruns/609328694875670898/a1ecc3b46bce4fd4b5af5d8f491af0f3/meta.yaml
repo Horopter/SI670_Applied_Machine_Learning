@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/a1ecc3b46bce4fd4b5af5d8f491af0f3/artifacts
+end_time: 1765592668073
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: a1ecc3b46bce4fd4b5af5d8f491af0f3
+run_name: agreeable-trout-358
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592659626
+status: 3
+tags: []
+user_id: urvim

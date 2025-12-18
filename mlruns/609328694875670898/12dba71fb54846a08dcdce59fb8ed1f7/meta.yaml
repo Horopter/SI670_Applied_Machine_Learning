@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/12dba71fb54846a08dcdce59fb8ed1f7/artifacts
+end_time: 1765587340210
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 12dba71fb54846a08dcdce59fb8ed1f7
+run_name: skillful-swan-412
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587334960
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/360e628585c649bcb2d36be57c65f280/artifacts
+end_time: 1765757449167
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 360e628585c649bcb2d36be57c65f280
+run_name: bright-jay-173
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765757395582
+status: 3
+tags: []
+user_id: urvim

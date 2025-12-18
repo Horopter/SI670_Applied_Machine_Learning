@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/06204ea29afb4f5db77bcb7ee44e95ca/artifacts
+end_time: 1765753904061
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 06204ea29afb4f5db77bcb7ee44e95ca
+run_name: resilient-lamb-584
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765753888095
+status: 3
+tags: []
+user_id: suzanef

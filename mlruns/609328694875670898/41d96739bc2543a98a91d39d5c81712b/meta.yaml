@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/41d96739bc2543a98a91d39d5c81712b/artifacts
+end_time: 1765591838833
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 41d96739bc2543a98a91d39d5c81712b
+run_name: bouncy-ox-583
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591829322
+status: 3
+tags: []
+user_id: urvim

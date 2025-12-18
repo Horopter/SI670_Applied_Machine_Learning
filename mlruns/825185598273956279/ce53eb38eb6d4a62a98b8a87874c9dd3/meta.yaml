@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/ce53eb38eb6d4a62a98b8a87874c9dd3/artifacts
+end_time: 1765603146031
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: ce53eb38eb6d4a62a98b8a87874c9dd3
+run_name: able-skink-849
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603145936
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/48138e90d6f44b34acced8a9582fd656/artifacts
+end_time: 1765595318417
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 48138e90d6f44b34acced8a9582fd656
+run_name: delicate-donkey-219
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765595317743
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/b3a8bf23024848edb9fcd353ede490d8/artifacts
+end_time: 1765609508805
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: b3a8bf23024848edb9fcd353ede490d8
+run_name: sedate-stork-993
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609506877
+status: 3
+tags: []
+user_id: santoshd

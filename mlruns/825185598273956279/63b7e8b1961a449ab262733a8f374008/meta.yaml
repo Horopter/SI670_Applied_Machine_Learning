@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/63b7e8b1961a449ab262733a8f374008/artifacts
+end_time: 1765593786758
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 63b7e8b1961a449ab262733a8f374008
+run_name: beautiful-fish-545
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593782133
+status: 3
+tags: []
+user_id: suzanef

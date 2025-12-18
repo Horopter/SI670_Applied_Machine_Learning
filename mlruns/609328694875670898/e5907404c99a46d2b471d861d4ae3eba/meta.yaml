@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/e5907404c99a46d2b471d861d4ae3eba/artifacts
+end_time: 1765586052928
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: e5907404c99a46d2b471d861d4ae3eba
+run_name: merciful-wren-773
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586033969
+status: 3
+tags: []
+user_id: urvim

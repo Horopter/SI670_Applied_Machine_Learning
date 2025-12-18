@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/b6a8119e695d4e05a8ee6cf360a4bb42/artifacts
+end_time: 1765595444807
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: b6a8119e695d4e05a8ee6cf360a4bb42
+run_name: bold-gull-315
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765595444134
+status: 3
+tags: []
+user_id: suzanef

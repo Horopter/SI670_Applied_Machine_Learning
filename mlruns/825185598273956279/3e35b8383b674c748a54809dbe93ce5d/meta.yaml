@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/3e35b8383b674c748a54809dbe93ce5d/artifacts
+end_time: 1765594512109
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 3e35b8383b674c748a54809dbe93ce5d
+run_name: omniscient-wren-131
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594512028
+status: 3
+tags: []
+user_id: suzanef

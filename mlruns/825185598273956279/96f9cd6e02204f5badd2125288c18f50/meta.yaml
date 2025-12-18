@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/96f9cd6e02204f5badd2125288c18f50/artifacts
+end_time: 1765602557012
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 96f9cd6e02204f5badd2125288c18f50
+run_name: wise-whale-780
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602556338
+status: 3
+tags: []
+user_id: suzanef

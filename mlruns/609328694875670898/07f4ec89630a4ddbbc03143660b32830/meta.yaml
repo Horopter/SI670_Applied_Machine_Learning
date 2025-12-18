@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/07f4ec89630a4ddbbc03143660b32830/artifacts
+end_time: 1765761211433
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 07f4ec89630a4ddbbc03143660b32830
+run_name: overjoyed-panda-938
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765761155617
+status: 3
+tags: []
+user_id: urvim

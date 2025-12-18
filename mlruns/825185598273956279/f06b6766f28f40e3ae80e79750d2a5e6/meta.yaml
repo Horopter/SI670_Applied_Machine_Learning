@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/f06b6766f28f40e3ae80e79750d2a5e6/artifacts
+end_time: 1765586008361
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: f06b6766f28f40e3ae80e79750d2a5e6
+run_name: tasteful-hound-105
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586006647
+status: 3
+tags: []
+user_id: suzanef

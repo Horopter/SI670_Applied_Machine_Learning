@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/7e24591c8f8446178ad2caa2dba291f0/artifacts
+end_time: 1765584888604
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 7e24591c8f8446178ad2caa2dba291f0
+run_name: charming-moose-459
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584886980
+status: 3
+tags: []
+user_id: suzanef

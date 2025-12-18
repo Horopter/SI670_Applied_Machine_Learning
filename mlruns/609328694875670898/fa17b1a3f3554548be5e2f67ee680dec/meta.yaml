@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/fa17b1a3f3554548be5e2f67ee680dec/artifacts
+end_time: 1765752330614
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: fa17b1a3f3554548be5e2f67ee680dec
+run_name: respected-gnu-709
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765752312227
+status: 3
+tags: []
+user_id: urvim

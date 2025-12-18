@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/d8ff1fd81d0c4c9b877302df85121bc1/artifacts
+end_time: 1765595416068
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: d8ff1fd81d0c4c9b877302df85121bc1
+run_name: bemused-hare-404
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765595415395
+status: 3
+tags: []
+user_id: suzanef

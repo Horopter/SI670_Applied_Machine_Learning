@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/486d474e3a914662a2145f2cd81ccac5/artifacts
+end_time: 1765755018680
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 486d474e3a914662a2145f2cd81ccac5
+run_name: languid-newt-519
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765754998972
+status: 3
+tags: []
+user_id: suzanef

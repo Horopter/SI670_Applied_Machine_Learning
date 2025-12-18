@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/87f35b0deac547f091ce2a7e067c214c/artifacts
+end_time: 1765586296483
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 87f35b0deac547f091ce2a7e067c214c
+run_name: bald-stork-699
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586294811
+status: 3
+tags: []
+user_id: suzanef

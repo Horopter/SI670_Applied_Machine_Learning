@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/a883e8a7bbf94ffcacaeeed1ab359bc5/artifacts
+end_time: 1765587281627
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: a883e8a7bbf94ffcacaeeed1ab359bc5
+run_name: youthful-ape-650
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587276444
+status: 3
+tags: []
+user_id: urvim

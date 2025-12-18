@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/f8aeb64d1f144b4fa8836a305699c3b0/artifacts
+end_time: 1765602885217
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: f8aeb64d1f144b4fa8836a305699c3b0
+run_name: upbeat-kite-989
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602884344
+status: 3
+tags: []
+user_id: suzanef

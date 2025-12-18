@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/6d6b9b07c0aa47c2ad44483377dc7fc4/artifacts
+end_time: 1765591152725
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 6d6b9b07c0aa47c2ad44483377dc7fc4
+run_name: rogue-flea-940
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591148138
+status: 3
+tags: []
+user_id: suzanef

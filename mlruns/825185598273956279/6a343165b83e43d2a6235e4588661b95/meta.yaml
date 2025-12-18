@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/6a343165b83e43d2a6235e4588661b95/artifacts
+end_time: 1765593160300
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 6a343165b83e43d2a6235e4588661b95
+run_name: powerful-lynx-931
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593155091
+status: 3
+tags: []
+user_id: suzanef

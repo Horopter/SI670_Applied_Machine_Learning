@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/7df1426f4a994a8c827f1873717892c1/artifacts
+end_time: 1765584284556
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: 7df1426f4a994a8c827f1873717892c1
+run_name: tasteful-quail-455
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584237173
+status: 3
+tags: []
+user_id: santoshd

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/de44b97fc9534540a2a6123175060d1a/artifacts
+end_time: 1765587322393
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: de44b97fc9534540a2a6123175060d1a
+run_name: rogue-dove-185
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587317202
+status: 3
+tags: []
+user_id: urvim

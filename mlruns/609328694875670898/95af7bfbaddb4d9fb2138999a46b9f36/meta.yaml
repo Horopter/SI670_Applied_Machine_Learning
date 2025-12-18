@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/95af7bfbaddb4d9fb2138999a46b9f36/artifacts
+end_time: 1765584018339
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 95af7bfbaddb4d9fb2138999a46b9f36
+run_name: righteous-tern-656
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584001649
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/ea2415f7acb84d0dad9dce286a48f8eb/artifacts
+end_time: 1765738265289
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: ea2415f7acb84d0dad9dce286a48f8eb
+run_name: amusing-squid-806
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765738257260
+status: 3
+tags: []
+user_id: urvim

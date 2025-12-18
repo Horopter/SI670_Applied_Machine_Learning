@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/94363b3ea4ff4caa806ed3ccd2b91cd2/artifacts
+end_time: 1765603922248
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 94363b3ea4ff4caa806ed3ccd2b91cd2
+run_name: hilarious-whale-587
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603921570
+status: 3
+tags: []
+user_id: suzanef

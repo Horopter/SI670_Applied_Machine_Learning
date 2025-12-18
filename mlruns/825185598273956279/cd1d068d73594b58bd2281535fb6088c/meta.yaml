@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/cd1d068d73594b58bd2281535fb6088c/artifacts
+end_time: 1765592391248
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: cd1d068d73594b58bd2281535fb6088c
+run_name: crawling-robin-43
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592386149
+status: 3
+tags: []
+user_id: suzanef

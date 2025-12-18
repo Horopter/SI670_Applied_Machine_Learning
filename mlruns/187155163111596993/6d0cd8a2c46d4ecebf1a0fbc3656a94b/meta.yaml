@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/6d0cd8a2c46d4ecebf1a0fbc3656a94b/artifacts
+end_time: 1765585453336
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: 6d0cd8a2c46d4ecebf1a0fbc3656a94b
+run_name: casual-ape-803
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585382003
+status: 3
+tags: []
+user_id: santoshd

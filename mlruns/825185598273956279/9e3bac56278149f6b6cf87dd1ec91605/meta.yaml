@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/9e3bac56278149f6b6cf87dd1ec91605/artifacts
+end_time: 1765594476021
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 9e3bac56278149f6b6cf87dd1ec91605
+run_name: able-tern-906
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594475344
+status: 3
+tags: []
+user_id: suzanef

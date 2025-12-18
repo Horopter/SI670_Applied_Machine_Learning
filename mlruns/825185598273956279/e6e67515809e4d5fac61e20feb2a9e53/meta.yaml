@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/e6e67515809e4d5fac61e20feb2a9e53/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: e6e67515809e4d5fac61e20feb2a9e53
+run_name: casual-skunk-405
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765738133481
+status: 1
+tags: []
+user_id: suzanef

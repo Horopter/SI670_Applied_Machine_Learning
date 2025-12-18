@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/bd0ebf3d37534c95a790b5bb1c461641/artifacts
+end_time: 1765589462643
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: bd0ebf3d37534c95a790b5bb1c461641
+run_name: unequaled-flea-369
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589457479
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/e5c12c7c588c4875b80e9f0250adbec3/artifacts
+end_time: 1765588662254
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: e5c12c7c588c4875b80e9f0250adbec3
+run_name: melodic-fish-665
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588657255
+status: 3
+tags: []
+user_id: urvim

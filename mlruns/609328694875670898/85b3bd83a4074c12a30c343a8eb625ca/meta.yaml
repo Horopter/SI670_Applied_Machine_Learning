@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/85b3bd83a4074c12a30c343a8eb625ca/artifacts
+end_time: 1765588963842
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 85b3bd83a4074c12a30c343a8eb625ca
+run_name: amazing-stork-318
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588959535
+status: 3
+tags: []
+user_id: urvim

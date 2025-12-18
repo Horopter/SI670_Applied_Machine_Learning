@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/470918c34f894a46bc2e409d2dc1ce25/artifacts
+end_time: 1765602630977
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 470918c34f894a46bc2e409d2dc1ce25
+run_name: bittersweet-fly-563
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602630885
+status: 3
+tags: []
+user_id: suzanef

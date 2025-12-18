@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/d06a9a1b72814b12ac3d9496483404ff/artifacts
+end_time: 1765741691400
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: d06a9a1b72814b12ac3d9496483404ff
+run_name: bright-snail-487
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765741690489
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/65ae44c0731b45fb8b3603f95bf24cca/artifacts
+end_time: 1765585797027
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 65ae44c0731b45fb8b3603f95bf24cca
+run_name: dashing-loon-942
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585767697
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/b23f6465e1af441d83d47f0103c76a8f/artifacts
+end_time: 1765585725092
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: b23f6465e1af441d83d47f0103c76a8f
+run_name: delightful-auk-590
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585723329
+status: 3
+tags: []
+user_id: suzanef

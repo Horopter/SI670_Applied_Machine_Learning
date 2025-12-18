@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/e248ec23310d4bc3a383b3d4f82fc3d7/artifacts
+end_time: 1765586320180
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: e248ec23310d4bc3a383b3d4f82fc3d7
+run_name: popular-conch-534
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586318320
+status: 3
+tags: []
+user_id: suzanef

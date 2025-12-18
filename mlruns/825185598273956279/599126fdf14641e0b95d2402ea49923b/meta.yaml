@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/599126fdf14641e0b95d2402ea49923b/artifacts
+end_time: 1765597790649
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 599126fdf14641e0b95d2402ea49923b
+run_name: sincere-duck-36
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597790559
+status: 3
+tags: []
+user_id: suzanef

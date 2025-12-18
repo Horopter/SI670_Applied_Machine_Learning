@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/97609736e6ef4c5cafa47dd2e2cf6a37/artifacts
+end_time: 1765592494043
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 97609736e6ef4c5cafa47dd2e2cf6a37
+run_name: abundant-perch-987
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592488905
+status: 3
+tags: []
+user_id: suzanef

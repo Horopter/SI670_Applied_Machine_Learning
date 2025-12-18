@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/147cc41fd59c44dfbeaea9f318049954/artifacts
+end_time: 1765588048241
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 147cc41fd59c44dfbeaea9f318049954
+run_name: smiling-eel-863
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588043679
+status: 3
+tags: []
+user_id: urvim

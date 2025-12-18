@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/5f5d77bbe829416e96ec457a39e887e3/artifacts
+end_time: 1765594416328
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 5f5d77bbe829416e96ec457a39e887e3
+run_name: sassy-gull-620
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594416248
+status: 3
+tags: []
+user_id: suzanef

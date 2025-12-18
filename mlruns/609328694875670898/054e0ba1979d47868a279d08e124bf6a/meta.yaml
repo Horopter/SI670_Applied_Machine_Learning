@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/054e0ba1979d47868a279d08e124bf6a/artifacts
+end_time: 1765593664443
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 054e0ba1979d47868a279d08e124bf6a
+run_name: upbeat-wren-607
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593610414
+status: 3
+tags: []
+user_id: urvim

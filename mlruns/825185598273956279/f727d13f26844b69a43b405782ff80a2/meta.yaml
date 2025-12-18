@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/f727d13f26844b69a43b405782ff80a2/artifacts
+end_time: 1765593850905
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: f727d13f26844b69a43b405782ff80a2
+run_name: valuable-cow-658
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593846339
+status: 3
+tags: []
+user_id: suzanef

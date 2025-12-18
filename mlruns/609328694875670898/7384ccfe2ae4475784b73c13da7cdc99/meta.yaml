@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/7384ccfe2ae4475784b73c13da7cdc99/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 7384ccfe2ae4475784b73c13da7cdc99
+run_name: bittersweet-shad-28
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590779303
+status: 1
+tags: []
+user_id: urvim

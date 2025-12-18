@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/ec4a7ba7373c46d298f034985dcf7125/artifacts
+end_time: 1765596570795
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: ec4a7ba7373c46d298f034985dcf7125
+run_name: sedate-loon-278
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765596570708
+status: 3
+tags: []
+user_id: suzanef

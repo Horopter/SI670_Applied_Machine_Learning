@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/8df5b08dcb67434eaf6ccb27062046ba/artifacts
+end_time: 1765603463178
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 8df5b08dcb67434eaf6ccb27062046ba
+run_name: upset-trout-391
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603462504
+status: 3
+tags: []
+user_id: suzanef

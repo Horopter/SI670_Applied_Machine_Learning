@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/a4776c957691480f9a0ce10b3193d935/artifacts
+end_time: 1765742941189
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: a4776c957691480f9a0ce10b3193d935
+run_name: unleashed-hog-17
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765742940249
+status: 3
+tags: []
+user_id: suzanef

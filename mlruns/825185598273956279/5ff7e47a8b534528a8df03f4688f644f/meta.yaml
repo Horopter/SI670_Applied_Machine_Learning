@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/5ff7e47a8b534528a8df03f4688f644f/artifacts
+end_time: 1765595438826
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 5ff7e47a8b534528a8df03f4688f644f
+run_name: serious-squirrel-910
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765595438149
+status: 3
+tags: []
+user_id: suzanef

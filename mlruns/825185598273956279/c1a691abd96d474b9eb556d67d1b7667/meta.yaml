@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/c1a691abd96d474b9eb556d67d1b7667/artifacts
+end_time: 1765589386739
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: c1a691abd96d474b9eb556d67d1b7667
+run_name: casual-steed-169
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589381655
+status: 3
+tags: []
+user_id: suzanef

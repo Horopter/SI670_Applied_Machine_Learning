@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/bb06a0c20789450c82b2e1d81cf8a3f0/artifacts
+end_time: 1765588317895
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: bb06a0c20789450c82b2e1d81cf8a3f0
+run_name: handsome-crab-82
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588313269
+status: 3
+tags: []
+user_id: suzanef

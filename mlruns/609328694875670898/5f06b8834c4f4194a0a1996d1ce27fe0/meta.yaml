@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/5f06b8834c4f4194a0a1996d1ce27fe0/artifacts
+end_time: 1765756242442
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 5f06b8834c4f4194a0a1996d1ce27fe0
+run_name: nebulous-skink-490
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765756211786
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/ac0ec68634b4434d8f666ad26bb970b0/artifacts
+end_time: 1765602632882
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: ac0ec68634b4434d8f666ad26bb970b0
+run_name: indecisive-trout-362
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602632206
+status: 3
+tags: []
+user_id: suzanef

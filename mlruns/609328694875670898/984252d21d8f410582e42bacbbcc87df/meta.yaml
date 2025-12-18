@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/984252d21d8f410582e42bacbbcc87df/artifacts
+end_time: 1765589774266
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 984252d21d8f410582e42bacbbcc87df
+run_name: chill-yak-353
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589757258
+status: 3
+tags: []
+user_id: urvim

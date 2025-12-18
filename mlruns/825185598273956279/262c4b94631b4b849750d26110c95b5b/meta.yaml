@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/262c4b94631b4b849750d26110c95b5b/artifacts
+end_time: 1765586372001
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 262c4b94631b4b849750d26110c95b5b
+run_name: rare-tern-791
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586370332
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/b5e72d9c66cd4a80870a0c673db64d91/artifacts
+end_time: 1765596502372
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: b5e72d9c66cd4a80870a0c673db64d91
+run_name: illustrious-crow-63
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765596501698
+status: 3
+tags: []
+user_id: suzanef

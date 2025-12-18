@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/f060eb0bbba945b0a3c447063e265a1c/artifacts
+end_time: 1765584278767
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: f060eb0bbba945b0a3c447063e265a1c
+run_name: judicious-zebra-146
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584258202
+status: 3
+tags: []
+user_id: urvim

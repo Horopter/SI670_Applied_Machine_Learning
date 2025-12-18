@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/3eeee56aa88643df8bcc9a1f913b5596/artifacts
+end_time: 1765603475400
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 3eeee56aa88643df8bcc9a1f913b5596
+run_name: thundering-whale-475
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603474725
+status: 3
+tags: []
+user_id: suzanef

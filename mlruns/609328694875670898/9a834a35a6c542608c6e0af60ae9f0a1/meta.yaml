@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/9a834a35a6c542608c6e0af60ae9f0a1/artifacts
+end_time: 1765593377601
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 9a834a35a6c542608c6e0af60ae9f0a1
+run_name: learned-steed-303
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593368805
+status: 3
+tags: []
+user_id: urvim

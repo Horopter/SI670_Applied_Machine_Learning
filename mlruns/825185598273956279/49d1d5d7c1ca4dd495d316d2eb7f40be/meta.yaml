@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/49d1d5d7c1ca4dd495d316d2eb7f40be/artifacts
+end_time: 1765589481941
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 49d1d5d7c1ca4dd495d316d2eb7f40be
+run_name: nosy-fawn-355
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589476819
+status: 3
+tags: []
+user_id: suzanef

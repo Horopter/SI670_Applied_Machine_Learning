@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/d9cb9ee2e6694031b36da918feaa8101/artifacts
+end_time: 1765603545330
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: d9cb9ee2e6694031b36da918feaa8101
+run_name: valuable-roo-957
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603544653
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/14ec4489fe7b4ac39464b0ad1f554809/artifacts
+end_time: 1765586137588
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 14ec4489fe7b4ac39464b0ad1f554809
+run_name: resilient-stag-207
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586122549
+status: 3
+tags: []
+user_id: urvim

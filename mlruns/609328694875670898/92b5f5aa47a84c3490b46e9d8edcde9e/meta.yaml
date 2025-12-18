@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/92b5f5aa47a84c3490b46e9d8edcde9e/artifacts
+end_time: 1765591746240
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 92b5f5aa47a84c3490b46e9d8edcde9e
+run_name: bright-sloth-154
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591737272
+status: 3
+tags: []
+user_id: urvim

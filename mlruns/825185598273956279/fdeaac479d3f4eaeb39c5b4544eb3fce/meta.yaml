@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/fdeaac479d3f4eaeb39c5b4544eb3fce/artifacts
+end_time: 1765591140366
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: fdeaac479d3f4eaeb39c5b4544eb3fce
+run_name: gifted-frog-730
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591135236
+status: 3
+tags: []
+user_id: suzanef

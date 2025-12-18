@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/c44d44d0975842f296ebc3976057c7d6/artifacts
+end_time: 1765595417444
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: c44d44d0975842f296ebc3976057c7d6
+run_name: treasured-ram-577
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765595417360
+status: 3
+tags: []
+user_id: suzanef

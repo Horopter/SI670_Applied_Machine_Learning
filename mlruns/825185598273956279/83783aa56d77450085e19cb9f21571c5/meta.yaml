@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/83783aa56d77450085e19cb9f21571c5/artifacts
+end_time: 1765604007299
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 83783aa56d77450085e19cb9f21571c5
+run_name: nosy-owl-934
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604006616
+status: 3
+tags: []
+user_id: suzanef

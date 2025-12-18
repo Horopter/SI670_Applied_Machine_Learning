@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/fcc385b9118e4b16a082f9dc746a5445/artifacts
+end_time: 1765609698060
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: fcc385b9118e4b16a082f9dc746a5445
+run_name: crawling-swan-570
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609697322
+status: 3
+tags: []
+user_id: santoshd

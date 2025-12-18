@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/15122a96cbd749c691ccf5481fbfd565/artifacts
+end_time: 1765584454276
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 15122a96cbd749c691ccf5481fbfd565
+run_name: judicious-koi-135
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584452604
+status: 3
+tags: []
+user_id: suzanef

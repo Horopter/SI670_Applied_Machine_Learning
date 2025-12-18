@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/464cb29c8c6c4ade9a9d8b8b33e8dd6f/artifacts
+end_time: 1765604102869
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 464cb29c8c6c4ade9a9d8b8b33e8dd6f
+run_name: lyrical-skunk-229
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604102189
+status: 3
+tags: []
+user_id: suzanef

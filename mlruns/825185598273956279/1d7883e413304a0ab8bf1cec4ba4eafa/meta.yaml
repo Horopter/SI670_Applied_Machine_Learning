@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/1d7883e413304a0ab8bf1cec4ba4eafa/artifacts
+end_time: 1765591019560
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 1d7883e413304a0ab8bf1cec4ba4eafa
+run_name: funny-mare-90
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591014436
+status: 3
+tags: []
+user_id: suzanef

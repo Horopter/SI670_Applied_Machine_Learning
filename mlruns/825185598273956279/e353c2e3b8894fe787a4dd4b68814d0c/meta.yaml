@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/e353c2e3b8894fe787a4dd4b68814d0c/artifacts
+end_time: 1765603627716
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: e353c2e3b8894fe787a4dd4b68814d0c
+run_name: nervous-slug-187
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603627038
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/61fde12912054ae994409c0b2df30ba4/artifacts
+end_time: 1765609542030
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 61fde12912054ae994409c0b2df30ba4
+run_name: enthused-tern-949
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609541338
+status: 3
+tags: []
+user_id: santoshd

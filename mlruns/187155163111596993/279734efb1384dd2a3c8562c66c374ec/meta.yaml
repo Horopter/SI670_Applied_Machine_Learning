@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/279734efb1384dd2a3c8562c66c374ec/artifacts
+end_time: 1765583880633
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: 279734efb1384dd2a3c8562c66c374ec
+run_name: agreeable-carp-78
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765583828462
+status: 3
+tags: []
+user_id: santoshd

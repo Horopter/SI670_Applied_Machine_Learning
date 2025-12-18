@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/b4035c51fb96410c8f4e7fddf2fbf2f5/artifacts
+end_time: 1765603109525
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: b4035c51fb96410c8f4e7fddf2fbf2f5
+run_name: thundering-duck-164
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603109428
+status: 3
+tags: []
+user_id: suzanef

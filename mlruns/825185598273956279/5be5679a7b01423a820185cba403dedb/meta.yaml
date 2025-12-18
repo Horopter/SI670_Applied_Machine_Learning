@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/5be5679a7b01423a820185cba403dedb/artifacts
+end_time: 1765602596589
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 5be5679a7b01423a820185cba403dedb
+run_name: casual-ant-731
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602595912
+status: 3
+tags: []
+user_id: suzanef

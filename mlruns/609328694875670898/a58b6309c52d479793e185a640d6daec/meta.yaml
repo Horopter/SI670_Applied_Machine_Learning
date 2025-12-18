@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/a58b6309c52d479793e185a640d6daec/artifacts
+end_time: 1765984865283
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: a58b6309c52d479793e185a640d6daec
+run_name: capable-owl-536
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765984791834
+status: 3
+tags: []
+user_id: suzanef

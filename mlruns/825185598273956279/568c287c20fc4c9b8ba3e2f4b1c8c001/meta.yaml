@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/568c287c20fc4c9b8ba3e2f4b1c8c001/artifacts
+end_time: 1765603159050
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 568c287c20fc4c9b8ba3e2f4b1c8c001
+run_name: trusting-gull-58
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603158204
+status: 3
+tags: []
+user_id: suzanef

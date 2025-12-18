@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/d4baf1c9a69b4d54b7b78666615c219f/artifacts
+end_time: 1765584802381
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: d4baf1c9a69b4d54b7b78666615c219f
+run_name: beautiful-perch-486
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584782371
+status: 3
+tags: []
+user_id: santoshd

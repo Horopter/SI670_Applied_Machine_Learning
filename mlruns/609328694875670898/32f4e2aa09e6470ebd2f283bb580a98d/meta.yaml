@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/32f4e2aa09e6470ebd2f283bb580a98d/artifacts
+end_time: 1765586558890
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 32f4e2aa09e6470ebd2f283bb580a98d
+run_name: kindly-finch-646
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586543437
+status: 3
+tags: []
+user_id: urvim

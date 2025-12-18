@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/f14d33519c2540d38fc2ec0051105a17/artifacts
+end_time: 1765590878427
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: f14d33519c2540d38fc2ec0051105a17
+run_name: debonair-ox-807
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590873275
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/f402c045bd8f41c0aec082ce6f97791c/artifacts
+end_time: 1765591013016
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: f402c045bd8f41c0aec082ce6f97791c
+run_name: nervous-bird-751
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591001755
+status: 3
+tags: []
+user_id: urvim

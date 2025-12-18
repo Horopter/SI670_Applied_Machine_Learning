@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/397f3aabc01c4fe1968843d5161629f1/artifacts
+end_time: 1765590672381
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 397f3aabc01c4fe1968843d5161629f1
+run_name: gentle-mule-543
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590667824
+status: 3
+tags: []
+user_id: suzanef

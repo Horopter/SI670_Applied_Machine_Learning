@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/5e095ac3f8104c129c64dac7030da576/artifacts
+end_time: 1765603499534
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 5e095ac3f8104c129c64dac7030da576
+run_name: melodic-rook-397
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603498858
+status: 3
+tags: []
+user_id: suzanef

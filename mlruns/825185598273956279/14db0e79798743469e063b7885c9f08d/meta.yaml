@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/14db0e79798743469e063b7885c9f08d/artifacts
+end_time: 1765590447078
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 14db0e79798743469e063b7885c9f08d
+run_name: blushing-gnat-345
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590442473
+status: 3
+tags: []
+user_id: suzanef

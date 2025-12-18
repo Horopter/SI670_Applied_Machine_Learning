@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/3431bcc4d37a46e093e5639a2ab1c273/artifacts
+end_time: 1765585891573
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 3431bcc4d37a46e093e5639a2ab1c273
+run_name: omniscient-ram-591
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585871315
+status: 3
+tags: []
+user_id: urvim

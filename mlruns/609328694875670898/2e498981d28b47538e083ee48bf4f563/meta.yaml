@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/2e498981d28b47538e083ee48bf4f563/artifacts
+end_time: 1765587409825
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 2e498981d28b47538e083ee48bf4f563
+run_name: treasured-stag-976
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587404590
+status: 3
+tags: []
+user_id: urvim

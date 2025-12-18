@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/328c31b07acf44dfbf88bb9973b48248/artifacts
+end_time: 1765585830554
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 328c31b07acf44dfbf88bb9973b48248
+run_name: kindly-koi-464
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585812480
+status: 3
+tags: []
+user_id: urvim

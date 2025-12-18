@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/4df60cfa4a9744b084501968e757897d/artifacts
+end_time: 1765609548771
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 4df60cfa4a9744b084501968e757897d
+run_name: selective-crab-438
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609548027
+status: 3
+tags: []
+user_id: santoshd

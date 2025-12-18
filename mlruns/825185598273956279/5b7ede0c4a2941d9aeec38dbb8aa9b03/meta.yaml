@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/5b7ede0c4a2941d9aeec38dbb8aa9b03/artifacts
+end_time: 1765591816258
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 5b7ede0c4a2941d9aeec38dbb8aa9b03
+run_name: indecisive-mare-810
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591811089
+status: 3
+tags: []
+user_id: suzanef

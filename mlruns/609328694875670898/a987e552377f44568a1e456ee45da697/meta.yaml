@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/a987e552377f44568a1e456ee45da697/artifacts
+end_time: 1765587960546
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: a987e552377f44568a1e456ee45da697
+run_name: bouncy-stoat-547
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587955999
+status: 3
+tags: []
+user_id: urvim

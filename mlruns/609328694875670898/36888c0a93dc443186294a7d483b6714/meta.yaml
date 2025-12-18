@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/36888c0a93dc443186294a7d483b6714/artifacts
+end_time: 1765588042927
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 36888c0a93dc443186294a7d483b6714
+run_name: abundant-ram-163
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588037756
+status: 3
+tags: []
+user_id: urvim

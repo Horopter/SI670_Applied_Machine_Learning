@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/15a5d6fabf8944bd952b5b53e8e5fdff/artifacts
+end_time: 1765603537629
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 15a5d6fabf8944bd952b5b53e8e5fdff
+run_name: learned-bass-465
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603537532
+status: 3
+tags: []
+user_id: suzanef

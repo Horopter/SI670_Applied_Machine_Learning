@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/00a15581c7ca4e03a52c81f6d37578c8/artifacts
+end_time: 1765591893535
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 00a15581c7ca4e03a52c81f6d37578c8
+run_name: delicate-stork-978
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591885185
+status: 3
+tags: []
+user_id: urvim

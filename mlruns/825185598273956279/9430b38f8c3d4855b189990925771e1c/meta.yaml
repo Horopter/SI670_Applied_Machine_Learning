@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/9430b38f8c3d4855b189990925771e1c/artifacts
+end_time: 1765739265882
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 9430b38f8c3d4855b189990925771e1c
+run_name: sincere-snipe-491
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765739258270
+status: 3
+tags: []
+user_id: suzanef

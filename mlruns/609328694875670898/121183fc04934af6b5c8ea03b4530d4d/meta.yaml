@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/121183fc04934af6b5c8ea03b4530d4d/artifacts
+end_time: 1765753349709
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 121183fc04934af6b5c8ea03b4530d4d
+run_name: unruly-duck-677
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765753332870
+status: 3
+tags: []
+user_id: urvim

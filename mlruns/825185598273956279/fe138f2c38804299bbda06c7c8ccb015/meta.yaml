@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/fe138f2c38804299bbda06c7c8ccb015/artifacts
+end_time: 1765584510600
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: fe138f2c38804299bbda06c7c8ccb015
+run_name: dazzling-toad-139
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584508965
+status: 3
+tags: []
+user_id: suzanef

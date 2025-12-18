@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/f01536395c28433d9f4dd7b6e983bcbf/artifacts
+end_time: 1765593767714
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: f01536395c28433d9f4dd7b6e983bcbf
+run_name: mysterious-moth-910
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593762500
+status: 3
+tags: []
+user_id: suzanef

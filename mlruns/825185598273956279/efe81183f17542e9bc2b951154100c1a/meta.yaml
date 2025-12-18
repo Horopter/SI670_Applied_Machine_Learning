@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/efe81183f17542e9bc2b951154100c1a/artifacts
+end_time: 1765585951996
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: efe81183f17542e9bc2b951154100c1a
+run_name: suave-vole-827
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585950326
+status: 3
+tags: []
+user_id: suzanef

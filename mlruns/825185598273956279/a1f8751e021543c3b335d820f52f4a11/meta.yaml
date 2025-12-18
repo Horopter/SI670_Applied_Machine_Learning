@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/a1f8751e021543c3b335d820f52f4a11/artifacts
+end_time: 1765603120520
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: a1f8751e021543c3b335d820f52f4a11
+run_name: clumsy-rook-298
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603119838
+status: 3
+tags: []
+user_id: suzanef

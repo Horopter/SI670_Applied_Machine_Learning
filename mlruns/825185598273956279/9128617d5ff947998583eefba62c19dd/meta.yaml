@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/9128617d5ff947998583eefba62c19dd/artifacts
+end_time: 1765585011550
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 9128617d5ff947998583eefba62c19dd
+run_name: sincere-swan-552
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585009737
+status: 3
+tags: []
+user_id: suzanef

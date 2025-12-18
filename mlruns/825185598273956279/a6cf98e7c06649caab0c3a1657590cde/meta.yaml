@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/a6cf98e7c06649caab0c3a1657590cde/artifacts
+end_time: 1765603587018
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: a6cf98e7c06649caab0c3a1657590cde
+run_name: gifted-stag-100
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603586173
+status: 3
+tags: []
+user_id: suzanef

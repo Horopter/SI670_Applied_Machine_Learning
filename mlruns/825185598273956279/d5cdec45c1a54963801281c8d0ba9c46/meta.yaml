@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/d5cdec45c1a54963801281c8d0ba9c46/artifacts
+end_time: 1765593844999
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: d5cdec45c1a54963801281c8d0ba9c46
+run_name: unleashed-loon-827
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593839814
+status: 3
+tags: []
+user_id: suzanef

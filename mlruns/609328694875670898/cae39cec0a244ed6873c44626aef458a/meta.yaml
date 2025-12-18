@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/cae39cec0a244ed6873c44626aef458a/artifacts
+end_time: 1765593725901
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: cae39cec0a244ed6873c44626aef458a
+run_name: calm-bear-397
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593716842
+status: 3
+tags: []
+user_id: urvim

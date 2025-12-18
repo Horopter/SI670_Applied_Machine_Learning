@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/2f173ae46ef14f8d9fa8ed2e621df4d2/artifacts
+end_time: 1765587668032
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 2f173ae46ef14f8d9fa8ed2e621df4d2
+run_name: brawny-bird-474
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587655775
+status: 3
+tags: []
+user_id: urvim

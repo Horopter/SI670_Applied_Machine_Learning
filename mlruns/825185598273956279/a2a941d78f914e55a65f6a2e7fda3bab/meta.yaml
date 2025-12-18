@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/a2a941d78f914e55a65f6a2e7fda3bab/artifacts
+end_time: 1765588808830
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: a2a941d78f914e55a65f6a2e7fda3bab
+run_name: clean-grouse-805
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588804193
+status: 3
+tags: []
+user_id: suzanef

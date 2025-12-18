@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/427eb047c15c4411a506752c3fcb40a2/artifacts
+end_time: 1765754039283
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 427eb047c15c4411a506752c3fcb40a2
+run_name: polite-eel-960
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765754033910
+status: 3
+tags: []
+user_id: urvim

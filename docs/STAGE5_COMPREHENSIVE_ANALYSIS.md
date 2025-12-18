@@ -594,8 +594,8 @@ airflow scheduler
 
 ## Plots & Visualizations
 
-### Plot Generation Script
-**File**: `generate_plots_from_trained_models.py`
+### Plot Generation
+**Note**: Plot generation is now handled by Jupyter notebooks in `src/notebooks/executed/` and utility functions in `src/notebooks/notebook_utils.py`.
 
 **Purpose**: Generate comprehensive plots from trained models
 
@@ -663,15 +663,17 @@ airflow scheduler
 
 ### Running Plot Generation
 
+Plots are generated automatically when running the Jupyter notebooks:
+
 ```bash
-# Generate plots for all models
-python generate_plots_from_trained_models.py
+# Run notebooks to generate plots
+cd src/notebooks/executed
+jupyter nbconvert --to notebook --execute --inplace 5a_logistic_regression.ipynb
+```
 
-# Generate plots for specific model
-python generate_plots_from_trained_models.py --model-type logistic_regression
-
-# Custom output directory
-python generate_plots_from_trained_models.py --output-dir data/stage5/custom_plots
+Or use the validation script:
+```bash
+python validate_notebooks_comprehensive.py
 ```
 
 ---

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/c8be4f5680e64cecaebee6ff0c6a6a64/artifacts
+end_time: 1765591589351
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: c8be4f5680e64cecaebee6ff0c6a6a64
+run_name: sincere-shrew-13
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591569259
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/e56aab7f93cc4ee3b8d7e3bce210021f/artifacts
+end_time: 1765749727392
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: e56aab7f93cc4ee3b8d7e3bce210021f
+run_name: clumsy-koi-983
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765749718047
+status: 3
+tags: []
+user_id: suzanef

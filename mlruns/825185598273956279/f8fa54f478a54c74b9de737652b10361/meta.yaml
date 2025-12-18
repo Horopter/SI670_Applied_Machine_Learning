@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/f8fa54f478a54c74b9de737652b10361/artifacts
+end_time: 1765593496399
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: f8fa54f478a54c74b9de737652b10361
+run_name: amusing-mouse-379
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593491832
+status: 3
+tags: []
+user_id: suzanef

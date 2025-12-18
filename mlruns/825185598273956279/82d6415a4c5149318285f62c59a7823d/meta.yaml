@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/82d6415a4c5149318285f62c59a7823d/artifacts
+end_time: 1765584643521
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 82d6415a4c5149318285f62c59a7823d
+run_name: auspicious-trout-341
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584641847
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/82391ad2091e4f2d864e16cb870caf8a/artifacts
+end_time: 1765591796757
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 82391ad2091e4f2d864e16cb870caf8a
+run_name: crawling-hound-902
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591792186
+status: 3
+tags: []
+user_id: suzanef

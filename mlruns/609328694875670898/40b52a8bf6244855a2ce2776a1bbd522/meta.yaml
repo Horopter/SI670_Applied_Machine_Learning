@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/40b52a8bf6244855a2ce2776a1bbd522/artifacts
+end_time: 1765588188476
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 40b52a8bf6244855a2ce2776a1bbd522
+run_name: awesome-kit-773
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588183284
+status: 3
+tags: []
+user_id: urvim

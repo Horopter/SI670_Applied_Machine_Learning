@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/0fd2c27da1824ba5afd2da4c0e598d2e/artifacts
+end_time: 1765603655319
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 0fd2c27da1824ba5afd2da4c0e598d2e
+run_name: gregarious-bug-818
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603653611
+status: 3
+tags: []
+user_id: suzanef

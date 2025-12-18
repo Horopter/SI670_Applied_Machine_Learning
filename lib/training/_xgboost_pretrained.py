@@ -154,8 +154,76 @@ def extract_features_from_pretrained_model(
                     # For I3D, R2+1D, PretrainedInceptionVideoModel
                     # ARCHITECTURAL IMPROVEMENT: Multi-layer feature extraction + better temporal pooling
                     # Extract features before final fc layer
-                    if hasattr(model, 'backbone'):
-                        # I3D, R2+1D - Enhanced feature extraction
+                    if model_type == "i3d" and hasattr(model, 'backbone') and hasattr(model.backbone, 'blocks'):
+                        # I3D from PyTorchVideo has blocks structure, not stem/layer1/layer2/layer3/layer4
+                        # CRITICAL: Clips are in (N, C, T, H, W) format after shape conversion
+                        x = clips
+                        # Run through all blocks except the last one (which has the projection head)
+                        blocks_to_process = model.backbone.blocks[:-1]  # Exclude last block with proj
+                        num_blocks = len(blocks_to_process)
+                        block_outputs = []
+                        for i, block in enumerate(blocks_to_process):
+                            x = block(x)
+                            # Extract features from intermediate blocks for multi-scale representation
+                            # Keep outputs from last 2-3 blocks (if we have enough blocks)
+                            if i >= max(0, num_blocks - 3):  # Last 2-3 blocks
+                                block_outputs.append(x)
+                        
+                        # Use the output from the last non-projection block
+                        if block_outputs:
+                            x4 = block_outputs[-1]  # (N, C, T, H, W) - features from last block
+                        else:
+                            # Fallback: use the output from all blocks except last
+                            x4 = x  # (N, C, T, H, W)
+                        
+                        # CRITICAL: Extract features BEFORE global pooling to preserve temporal information
+                        N, C, T, H, W = x4.shape
+                        
+                        # Multi-scale temporal pooling: mean, max, std, min
+                        # 1. Mean pooling over temporal dimension
+                        x4_mean = x4.mean(dim=2)  # (N, C, H, W)
+                        x4_mean_pooled = nn.AdaptiveAvgPool2d((1, 1))(x4_mean)  # (N, C, 1, 1)
+                        features_mean = torch.flatten(x4_mean_pooled, 1)  # (N, C)
+                        
+                        # 2. Max pooling over temporal dimension
+                        x4_max = x4.max(dim=2)[0]  # (N, C, H, W)
+                        x4_max_pooled = nn.AdaptiveAvgPool2d((1, 1))(x4_max)
+                        features_max = torch.flatten(x4_max_pooled, 1)  # (N, C)
+                        
+                        # 3. Temporal statistics: std, min
+                        x4_std = x4.std(dim=2)  # (N, C, H, W)
+                        x4_std_pooled = nn.AdaptiveAvgPool2d((1, 1))(x4_std)
+                        features_std = torch.flatten(x4_std_pooled, 1)  # (N, C)
+                        
+                        x4_min = x4.min(dim=2)[0]  # (N, C, H, W)
+                        x4_min_pooled = nn.AdaptiveAvgPool2d((1, 1))(x4_min)
+                        features_min = torch.flatten(x4_min_pooled, 1)  # (N, C)
+                        
+                        # 4. Multi-layer features: extract from earlier blocks if available
+                        features_multi = []
+                        if len(block_outputs) >= 2:
+                            # Extract from second-to-last block
+                            x_prev = block_outputs[-2]
+                            x_prev_pooled = nn.AdaptiveAvgPool3d((1, 1, 1))(x_prev)
+                            features_prev = torch.flatten(x_prev_pooled, 1)
+                            features_multi.append(features_prev)
+                        
+                        # Concatenate all features
+                        feature_list = [features_mean, features_max, features_std, features_min] + features_multi
+                        features = torch.cat(feature_list, dim=1)  # (N, C*4 + ...)
+                        
+                        # Clean up intermediate tensors with aggressive GC
+                        del x, x4, x4_mean, x4_max, x4_std, x4_min
+                        del x4_mean_pooled, x4_max_pooled, x4_std_pooled, x4_min_pooled
+                        del block_outputs, features_multi
+                        del features_mean, features_max, features_std, features_min
+                        # Aggressive GC after cleanup
+                        if device_obj.type == "cuda":
+                            torch.cuda.empty_cache()
+                            torch.cuda.synchronize()
+                        aggressive_gc(clear_cuda=device_obj.type == "cuda")
+                    elif hasattr(model, 'backbone') and hasattr(model.backbone, 'stem'):
+                        # R2+1D or other ResNet-based models - Enhanced feature extraction
                         # CRITICAL: Clips are in (N, C, T, H, W) format after shape conversion
                         x = model.backbone.stem(clips)  # (N, C, T, H, W)
                         x1 = model.backbone.layer1(x)
@@ -768,6 +836,10 @@ class XGBoostPretrainedBaseline:
         # Log best iteration
         if hasattr(self.model, 'best_iteration'):
             logger.info(f"Early stopping: Best iteration = {self.model.best_iteration + 1} (out of {fit_params.get('n_estimators', 200)})")
+        
+        # Capture XGBoost training history for epoch-wise curves
+        # Note: This requires the output_dir to be passed, which is not available in this class
+        # The training history will be captured in the pipeline.py _train_xgboost_model_fold function
         
         logger.info("✓ XGBoost trained on pretrained model features with enhanced feature extraction")
     

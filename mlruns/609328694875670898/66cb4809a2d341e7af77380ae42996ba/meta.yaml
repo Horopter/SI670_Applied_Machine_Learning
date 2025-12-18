@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/66cb4809a2d341e7af77380ae42996ba/artifacts
+end_time: 1765759775054
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 66cb4809a2d341e7af77380ae42996ba
+run_name: puzzled-squid-317
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765759715242
+status: 3
+tags: []
+user_id: urvim

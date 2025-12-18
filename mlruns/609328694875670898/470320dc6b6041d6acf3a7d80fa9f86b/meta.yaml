@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/470320dc6b6041d6acf3a7d80fa9f86b/artifacts
+end_time: 1765587984611
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 470320dc6b6041d6acf3a7d80fa9f86b
+run_name: clumsy-zebra-297
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587979389
+status: 3
+tags: []
+user_id: urvim

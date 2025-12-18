@@ -1,0 +1,1224 @@
+2025-12-17 10:12:39 [INFO] [__main__:310] ================================================================================
+2025-12-17 10:12:39 [INFO] [__main__:311] STAGE 5: MODEL TRAINING
+2025-12-17 10:12:39 [INFO] [__main__:312] ================================================================================
+2025-12-17 10:12:39 [INFO] [__main__:313] Project root: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc
+2025-12-17 10:12:39 [INFO] [__main__:314] Scaled metadata: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/scaled_videos/scaled_metadata.arrow
+2025-12-17 10:12:39 [INFO] [__main__:315] Features Stage 2: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage2/features_metadata.arrow
+2025-12-17 10:12:39 [INFO] [__main__:316] Features Stage 4: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage4/features_scaled_metadata.arrow
+2025-12-17 10:12:39 [INFO] [__main__:317] Model types: ['x3d']
+2025-12-17 10:12:39 [INFO] [__main__:318] K-fold splits: 5
+2025-12-17 10:12:39 [INFO] [__main__:319] Number of frames: 500
+2025-12-17 10:12:39 [INFO] [__main__:320] Output directory: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5
+2025-12-17 10:12:39 [INFO] [__main__:321] Experiment tracking: Enabled
+2025-12-17 10:12:39 [INFO] [__main__:324] Delete existing: False
+2025-12-17 10:12:39 [INFO] [__main__:325] Resume mode: True
+2025-12-17 10:12:39 [INFO] [__main__:326] Log file: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/logs/stage5_training_1765984359.log
+2025-12-17 10:12:39 [INFO] [__main__:333] ================================================================================
+2025-12-17 10:12:39 [INFO] [__main__:334] Checking prerequisites...
+2025-12-17 10:12:39 [INFO] [__main__:335] ================================================================================
+2025-12-17 10:12:39 [INFO] [__main__:342] ✓ Scaled metadata file found: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/scaled_videos/scaled_metadata.arrow
+2025-12-17 10:12:39 [INFO] [__main__:352] ✓ All model types are valid
+2025-12-17 10:12:39 [INFO] [__main__:358] ================================================================================
+2025-12-17 10:12:39 [INFO] [__main__:359] Initial memory statistics:
+2025-12-17 10:12:39 [INFO] [__main__:360] ================================================================================
+2025-12-17 10:12:40 [INFO] [lib.utils.memory:91] Memory stats (Stage 5: before training): {'cpu_memory_mb': 736.6875, 'cpu_memory_gb': 0.71942138671875, 'cpu_vms_mb': 10218.39453125, 'gpu_allocated_gb': 0.0, 'gpu_reserved_gb': 0.0, 'gpu_total_gb': 16.928342016, 'gpu_free_gb': 16.928342016}
+2025-12-17 10:12:40 [INFO] [__main__:364] ================================================================================
+2025-12-17 10:12:40 [INFO] [__main__:365] Starting Stage 5: Model Training
+2025-12-17 10:12:40 [INFO] [__main__:366] ================================================================================
+2025-12-17 10:12:40 [INFO] [__main__:367] Training 1 model(s) with 5-fold cross-validation
+2025-12-17 10:12:40 [INFO] [__main__:368] This may take a while depending on dataset size and model complexity...
+2025-12-17 10:12:40 [INFO] [__main__:369] Progress will be logged in real-time
+2025-12-17 10:12:40 [INFO] [__main__:370] ================================================================================
+2025-12-17 10:12:40 [INFO] [__main__:375] Calling Stage 5 training pipeline...
+2025-12-17 10:12:40 [INFO] [__main__:376] This may take a while - progress will be logged in real-time
+2025-12-17 10:12:40 [INFO] [lib.training.pipeline:1443] Applied global PyTorch memory optimizations at pipeline start
+2025-12-17 10:12:40 [INFO] [lib.training.pipeline:1446] ================================================================================
+2025-12-17 10:12:40 [INFO] [lib.training.pipeline:1447] Stage 5: Model Training Pipeline Started
+2025-12-17 10:12:40 [INFO] [lib.training.pipeline:1448] ================================================================================
+2025-12-17 10:12:40 [INFO] [lib.training.pipeline:1449] Model types: ['x3d']
+2025-12-17 10:12:40 [INFO] [lib.training.pipeline:1450] K-fold splits: 5
+2025-12-17 10:12:40 [INFO] [lib.training.pipeline:1451] Frames per video: 500
+2025-12-17 10:12:40 [INFO] [lib.training.pipeline:1452] Output directory: data/stage5
+2025-12-17 10:12:40 [INFO] [lib.training.pipeline:1453] Initializing pipeline...
+2025-12-17 10:12:40 [INFO] [lib.training.pipeline:246] ================================================================================
+2025-12-17 10:12:40 [INFO] [lib.training.pipeline:247] STAGE 5 PREREQUISITE VALIDATION
+2025-12-17 10:12:40 [INFO] [lib.training.pipeline:248] ================================================================================
+2025-12-17 10:12:40 [INFO] [lib.training.pipeline:250] 
+[1/3] Checking Stage 3 (scaled videos) - REQUIRED for all models...
+2025-12-17 10:12:42 [INFO] [lib.training.pipeline:259] ✓ Stage 3 metadata found: 3278 scaled videos
+2025-12-17 10:12:42 [INFO] [lib.training.pipeline:260]   Path: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/scaled_videos/scaled_metadata.arrow
+2025-12-17 10:12:42 [INFO] [lib.training.pipeline:262] 
+[2/3] Checking Stage 2 (features) - REQUIRED for *_stage2 models...
+2025-12-17 10:12:42 [INFO] [lib.training.pipeline:270] ✓ Stage 2 metadata found: 3278 feature rows
+2025-12-17 10:12:42 [INFO] [lib.training.pipeline:271]   Path: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage2/features_metadata.arrow
+2025-12-17 10:12:42 [INFO] [lib.training.pipeline:273] 
+[3/3] Checking Stage 4 (scaled features) - REQUIRED for *_stage2_stage4 models...
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:281] ✓ Stage 4 metadata found: 3277 feature rows
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:282]   Path: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage4/features_scaled_metadata.arrow
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:284] 
+================================================================================
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:285] MODEL REQUIREMENTS CHECK
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:286] ================================================================================
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:305] ✓ x3d: CAN RUN
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:307] 
+================================================================================
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:308] VALIDATION SUMMARY
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:309] ================================================================================
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:310] Stage 3 (scaled videos): ✓ Available
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:311]   Count: 3278 videos
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:312] Stage 2 (features): ✓ Available
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:313]   Count: 3278 feature rows
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:314] Stage 4 (scaled features): ✓ Available
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:315]   Count: 3277 feature rows
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:316] 
+Runnable models: 1/1
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:317]   ['x3d']
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:324] ================================================================================
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:1534] 
+Stage 5: Loading metadata...
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:1558] Loaded metadata: 3278 rows
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:1568] ✓ Data validation passed: 3278 rows (> 3000 required)
+2025-12-17 10:12:43 [WARNING] [lib.utils.guardrails:171] Disk usage high: free=764876.28GB, used=1734963.72GB (69.4%)
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:1599] Stage 5: Found 3278 scaled videos
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:1602] ================================================================================
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:1603] STAGE 5: VALIDATING VIDEOS (checking for corruption and empty videos)
+2025-12-17 10:12:43 [INFO] [lib.training.pipeline:1604] ================================================================================
+2025-12-17 10:12:44 [INFO] [lib.data.loading:156] Checking file existence for 3278 videos...
+2025-12-17 10:12:48 [INFO] [lib.data.loading:166] Found 3278 existing video files (filtered out 0 missing files)
+2025-12-17 10:12:48 [INFO] [lib.data.loading:170] Checking for corrupted videos (moov atom errors, etc.)...
+2025-12-17 10:12:49 [INFO] [lib.data.loading:92] Loaded validation cache from /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/.video_validation_cache/validation_0192be168a40eb7e_corruptTrue_framesTrue.parquet (3278 entries)
+2025-12-17 10:12:50 [INFO] [lib.data.loading:194] Cache hit: 3278 videos, Cache miss: 0 videos
+2025-12-17 10:12:50 [WARNING] [lib.data.loading:306] Filtered out 1 corrupted videos and 0 empty videos. Keeping 3277 valid videos.
+2025-12-17 10:12:50 [WARNING] [lib.data.loading:311] Sample of invalid videos:
+2025-12-17 10:12:50 [WARNING] [lib.data.loading:313]   data/scaled_videos/FX5aeuJFQ64_aug1_scaled_aug1.mp4: Corrupted video: moov atom not found
+2025-12-17 10:12:50 [INFO] [lib.data.loading:323] Found /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/skip_frame_check.txt - skipping frame check as requested.
+2025-12-17 10:12:50 [WARNING] [lib.data.loading:387] Filtered out 1 invalid videos (corrupted). Keeping 3277 valid videos.
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1613] ✓ Video validation complete: 3277 valid videos ready for training
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1614] ================================================================================
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1689] Enabling adaptive chunked frame loading for x3d: initial_chunk_size=4, num_frames=500. Chunk size will adapt automatically based on OOM events (AIMD algorithm).
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1700] Frame caching enabled (default): cache_dir=data/.frame_cache. This will cache processed frames to disk to speed up training. First epoch will be slower (building cache), subsequent epochs will be faster. To disable, set FVC_USE_FRAME_CACHE=0
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1816] 
+================================================================================
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1817] Stage 5: Training model: x3d
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1818] ================================================================================
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1854] Grid search: 1 hyperparameter combinations to try
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1862] ================================================================================
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1863] HYPERPARAMETER SEARCH: Using 10.0% stratified sample for efficiency
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1864] ================================================================================
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1873] Hyperparameter search sample: 327 rows (10.0% of 3277 total)
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1874] To change sample size, set FVC_GRID_SEARCH_SAMPLE_SIZE environment variable (current: 0.1)
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1886] Using 5-fold stratified cross-validation on 10.0% sample for hyperparameter search
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1897] 
+================================================================================
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1898] Grid Search: Hyperparameter combination 1/1
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1899] Parameters: {'learning_rate': 0.0001, 'backbone_lr': 5e-06, 'head_lr': 0.0005, 'weight_decay': 0.0001, 'batch_size': 2}
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1900] ================================================================================
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:1918] 
+Hyperparameter Search - x3d - Fold 1/5 (10.0% sample)
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:614] Training PyTorch model x3d on fold 1...
+2025-12-17 10:12:50 [WARNING] [lib.training.pipeline:636] x3d model requires batch_size<=1 to prevent OOM. Overriding batch_size from 2 to 1. Adjusting gradient_accumulation_steps to maintain effective batch size of 64.
+2025-12-17 10:12:50 [INFO] [lib.training.pipeline:646] Training configuration - Batch size: 1, Gradient accumulation steps: 64, Effective batch size: 64
+2025-12-17 10:12:51 [INFO] [lib.training.pipeline:689] Applied PyTorch memory optimizations: expandable_segments, cudnn.benchmark=False
+2025-12-17 10:12:51 [INFO] [lib.training.x3d:48] Loading X3D model from PyTorchVideo: x3d_m (pretrained=True)
+2025-12-17 10:12:53 [INFO] [lib.training.x3d:141] ✓ Successfully loaded X3D model from PyTorchVideo: x3d_m
+2025-12-17 10:12:53 [INFO] [lib.training.x3d:142] ✓ Verified X3D model structure: Net
+2025-12-17 10:13:01 [INFO] [lib.mlops.mlflow_tracker:89] MLflow run started: 7c079864383044718b81db89345aaac6 (experiment: x3d)
+2025-12-17 10:13:01 [INFO] [lib.training.pipeline:760] Performing hyper-aggressive GC before training x3d...
+2025-12-17 10:13:03 [INFO] [lib.training.pipeline:770] Hyper-aggressive GC complete. GPU memory cleared.
+2025-12-17 10:13:18 [INFO] [lib.training.pipeline:825] Model forward pass test successful. Output shape: torch.Size([1, 1])
+2025-12-17 10:13:18 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:13:39 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 1/4): CUDA out of memory. Tried to allocate 28.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 192.00 KiB is free. Including non-PyTorch memory, this process has 15.76 GiB memory in use. Of the allocated memory 15.28 GiB is allocated by PyTorch, and 107.35 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 1, Current batch size: 1
+2025-12-17 10:13:41 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:13:56 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 2/4): CUDA out of memory. Tried to allocate 28.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 192.00 KiB is free. Including non-PyTorch memory, this process has 15.76 GiB memory in use. Of the allocated memory 15.28 GiB is allocated by PyTorch, and 107.35 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 1, Current batch size: 1
+2025-12-17 10:13:58 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:14:09 [INFO] [lib.models.video:462] Chunk size increased from 10 to 20 (after 3 successes, increment: 10)
+2025-12-17 10:14:15 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 3/4): CUDA out of memory. Tried to allocate 28.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 192.00 KiB is free. Including non-PyTorch memory, this process has 15.76 GiB memory in use. Of the allocated memory 15.28 GiB is allocated by PyTorch, and 107.35 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 1, Current batch size: 1
+2025-12-17 10:14:17 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:14:34 [ERROR] [lib.training.pipeline:982] CUDA OOM or runtime error during training (max retries reached): CUDA out of memory. Tried to allocate 28.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 192.00 KiB is free. Including non-PyTorch memory, this process has 15.76 GiB memory in use. Of the allocated memory 15.28 GiB is allocated by PyTorch, and 107.35 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 1
+2025-12-17 10:14:34 [ERROR] [lib.training.pipeline:2035] Error training fold 1: CUDA out of memory. Tried to allocate 28.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 192.00 KiB is free. Including non-PyTorch memory, this process has 15.76 GiB memory in use. Of the allocated memory 15.28 GiB is allocated by PyTorch, and 107.35 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 1981, in stage5_train_models
+    result = _train_pytorch_model_fold(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 915, in _train_pytorch_model_fold
+    model = fit(
+            ^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 939, in fit
+    train_loss = train_one_epoch(
+                 ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 590, in train_one_epoch
+    scaler.scale(loss).backward()
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_tensor.py", line 625, in backward
+    torch.autograd.backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/__init__.py", line 354, in backward
+    _engine_run_backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/graph.py", line 841, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1154, in unpack_hook
+    _run_fn_with_dynamo_disabled(frame.recompute_fn, *args)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_compile.py", line 53, in inner
+    return disable_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1124, in _run_fn_with_dynamo_disabled
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1555, in recompute_fn
+    fn(*args, **kwargs)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/x3d.py", line 312, in checkpointed_forward
+    return self.backbone(x)
+           ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/net.py", line 43, in forward
+    x = block(x)
+        ^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1399, in forward
+    x = res_block(x)
+        ^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1186, in forward
+    x = self.branch_fusion(shortcut, self.branch2(x))
+                                     ^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1359, in forward
+    x = self.act_b(x)
+        ^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/layers/swish.py", line 13, in forward
+    return SwishFunction.apply(x)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/function.py", line 581, in apply
+    return super().apply(*args, **kwargs)  # type: ignore[misc]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/layers/swish.py", line 26, in forward
+    result = x * torch.sigmoid(x)
+             ~~^~~~~~~~~~~~~~~~~~
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 28.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 192.00 KiB is free. Including non-PyTorch memory, this process has 15.76 GiB memory in use. Of the allocated memory 15.28 GiB is allocated by PyTorch, and 107.35 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+2025-12-17 10:14:35 [INFO] [lib.training.pipeline:1918] 
+Hyperparameter Search - x3d - Fold 2/5 (10.0% sample)
+2025-12-17 10:14:35 [INFO] [lib.training.pipeline:614] Training PyTorch model x3d on fold 2...
+2025-12-17 10:14:35 [WARNING] [lib.training.pipeline:636] x3d model requires batch_size<=1 to prevent OOM. Overriding batch_size from 2 to 1. Adjusting gradient_accumulation_steps to maintain effective batch size of 64.
+2025-12-17 10:14:35 [INFO] [lib.training.pipeline:646] Training configuration - Batch size: 1, Gradient accumulation steps: 64, Effective batch size: 64
+2025-12-17 10:14:35 [INFO] [lib.training.pipeline:689] Applied PyTorch memory optimizations: expandable_segments, cudnn.benchmark=False
+2025-12-17 10:14:35 [INFO] [lib.training.x3d:48] Loading X3D model from PyTorchVideo: x3d_m (pretrained=True)
+2025-12-17 10:14:36 [INFO] [lib.training.x3d:141] ✓ Successfully loaded X3D model from PyTorchVideo: x3d_m
+2025-12-17 10:14:36 [INFO] [lib.training.x3d:142] ✓ Verified X3D model structure: Net
+2025-12-17 10:14:36 [INFO] [lib.mlops.mlflow_tracker:89] MLflow run started: ad00eb316b87401288621d0b36a155af (experiment: x3d)
+2025-12-17 10:14:36 [INFO] [lib.training.pipeline:760] Performing hyper-aggressive GC before training x3d...
+2025-12-17 10:14:38 [INFO] [lib.training.pipeline:770] Hyper-aggressive GC complete. GPU memory cleared.
+2025-12-17 10:14:40 [INFO] [lib.training.pipeline:825] Model forward pass test successful. Output shape: torch.Size([1, 1])
+2025-12-17 10:14:40 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:14:56 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 1/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 2, Current batch size: 1
+2025-12-17 10:14:58 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:15:08 [INFO] [lib.models.video:462] Chunk size increased from 10 to 20 (after 3 successes, increment: 10)
+2025-12-17 10:15:13 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 2/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 2, Current batch size: 1
+2025-12-17 10:15:15 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:15:45 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 3/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 2, Current batch size: 1
+2025-12-17 10:15:47 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:16:02 [ERROR] [lib.training.pipeline:982] CUDA OOM or runtime error during training (max retries reached): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 2
+2025-12-17 10:16:02 [ERROR] [lib.training.pipeline:2035] Error training fold 2: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 1981, in stage5_train_models
+    result = _train_pytorch_model_fold(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 915, in _train_pytorch_model_fold
+    model = fit(
+            ^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 939, in fit
+    train_loss = train_one_epoch(
+                 ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 590, in train_one_epoch
+    scaler.scale(loss).backward()
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_tensor.py", line 625, in backward
+    torch.autograd.backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/__init__.py", line 354, in backward
+    _engine_run_backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/graph.py", line 841, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1154, in unpack_hook
+    _run_fn_with_dynamo_disabled(frame.recompute_fn, *args)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_compile.py", line 53, in inner
+    return disable_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1124, in _run_fn_with_dynamo_disabled
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1555, in recompute_fn
+    fn(*args, **kwargs)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/x3d.py", line 312, in checkpointed_forward
+    return self.backbone(x)
+           ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/net.py", line 43, in forward
+    x = block(x)
+        ^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1399, in forward
+    x = res_block(x)
+        ^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1186, in forward
+    x = self.branch_fusion(shortcut, self.branch2(x))
+                                     ^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1352, in forward
+    x = self.act_a(x)
+        ^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 144, in forward
+    return F.relu(input, inplace=self.inplace)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/functional.py", line 1697, in relu
+    result = torch.relu(input)
+             ^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+2025-12-17 10:16:03 [INFO] [lib.training.pipeline:1918] 
+Hyperparameter Search - x3d - Fold 3/5 (10.0% sample)
+2025-12-17 10:16:03 [INFO] [lib.training.pipeline:614] Training PyTorch model x3d on fold 3...
+2025-12-17 10:16:03 [WARNING] [lib.training.pipeline:636] x3d model requires batch_size<=1 to prevent OOM. Overriding batch_size from 2 to 1. Adjusting gradient_accumulation_steps to maintain effective batch size of 64.
+2025-12-17 10:16:03 [INFO] [lib.training.pipeline:646] Training configuration - Batch size: 1, Gradient accumulation steps: 64, Effective batch size: 64
+2025-12-17 10:16:03 [INFO] [lib.training.pipeline:689] Applied PyTorch memory optimizations: expandable_segments, cudnn.benchmark=False
+2025-12-17 10:16:03 [INFO] [lib.training.x3d:48] Loading X3D model from PyTorchVideo: x3d_m (pretrained=True)
+2025-12-17 10:16:03 [INFO] [lib.training.x3d:141] ✓ Successfully loaded X3D model from PyTorchVideo: x3d_m
+2025-12-17 10:16:03 [INFO] [lib.training.x3d:142] ✓ Verified X3D model structure: Net
+2025-12-17 10:16:04 [INFO] [lib.mlops.mlflow_tracker:89] MLflow run started: 89de6f24421b4c94be04a00b9d4ae680 (experiment: x3d)
+2025-12-17 10:16:04 [INFO] [lib.training.pipeline:760] Performing hyper-aggressive GC before training x3d...
+2025-12-17 10:16:06 [INFO] [lib.training.pipeline:770] Hyper-aggressive GC complete. GPU memory cleared.
+2025-12-17 10:16:07 [INFO] [lib.training.pipeline:825] Model forward pass test successful. Output shape: torch.Size([1, 1])
+2025-12-17 10:16:07 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:16:18 [INFO] [lib.models.video:462] Chunk size increased from 10 to 20 (after 3 successes, increment: 10)
+2025-12-17 10:16:23 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 1/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 3, Current batch size: 1
+2025-12-17 10:16:25 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:16:42 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 2/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 3, Current batch size: 1
+2025-12-17 10:16:44 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:17:00 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 3/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 3, Current batch size: 1
+2025-12-17 10:17:02 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:17:12 [INFO] [lib.models.video:462] Chunk size increased from 10 to 20 (after 3 successes, increment: 10)
+2025-12-17 10:17:18 [ERROR] [lib.training.pipeline:982] CUDA OOM or runtime error during training (max retries reached): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 3
+2025-12-17 10:17:18 [ERROR] [lib.training.pipeline:2035] Error training fold 3: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 1981, in stage5_train_models
+    result = _train_pytorch_model_fold(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 915, in _train_pytorch_model_fold
+    model = fit(
+            ^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 939, in fit
+    train_loss = train_one_epoch(
+                 ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 590, in train_one_epoch
+    scaler.scale(loss).backward()
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_tensor.py", line 625, in backward
+    torch.autograd.backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/__init__.py", line 354, in backward
+    _engine_run_backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/graph.py", line 841, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1154, in unpack_hook
+    _run_fn_with_dynamo_disabled(frame.recompute_fn, *args)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_compile.py", line 53, in inner
+    return disable_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1124, in _run_fn_with_dynamo_disabled
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1555, in recompute_fn
+    fn(*args, **kwargs)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/x3d.py", line 312, in checkpointed_forward
+    return self.backbone(x)
+           ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/net.py", line 43, in forward
+    x = block(x)
+        ^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1399, in forward
+    x = res_block(x)
+        ^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1186, in forward
+    x = self.branch_fusion(shortcut, self.branch2(x))
+                                     ^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1352, in forward
+    x = self.act_a(x)
+        ^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 144, in forward
+    return F.relu(input, inplace=self.inplace)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/functional.py", line 1697, in relu
+    result = torch.relu(input)
+             ^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+2025-12-17 10:17:18 [INFO] [lib.training.pipeline:1918] 
+Hyperparameter Search - x3d - Fold 4/5 (10.0% sample)
+2025-12-17 10:17:18 [INFO] [lib.training.pipeline:614] Training PyTorch model x3d on fold 4...
+2025-12-17 10:17:18 [WARNING] [lib.training.pipeline:636] x3d model requires batch_size<=1 to prevent OOM. Overriding batch_size from 2 to 1. Adjusting gradient_accumulation_steps to maintain effective batch size of 64.
+2025-12-17 10:17:18 [INFO] [lib.training.pipeline:646] Training configuration - Batch size: 1, Gradient accumulation steps: 64, Effective batch size: 64
+2025-12-17 10:17:18 [INFO] [lib.training.pipeline:689] Applied PyTorch memory optimizations: expandable_segments, cudnn.benchmark=False
+2025-12-17 10:17:18 [INFO] [lib.training.x3d:48] Loading X3D model from PyTorchVideo: x3d_m (pretrained=True)
+2025-12-17 10:17:19 [INFO] [lib.training.x3d:141] ✓ Successfully loaded X3D model from PyTorchVideo: x3d_m
+2025-12-17 10:17:19 [INFO] [lib.training.x3d:142] ✓ Verified X3D model structure: Net
+2025-12-17 10:17:19 [INFO] [lib.mlops.mlflow_tracker:89] MLflow run started: 77daf0971f0c49adb240e4360ab97501 (experiment: x3d)
+2025-12-17 10:17:19 [INFO] [lib.training.pipeline:760] Performing hyper-aggressive GC before training x3d...
+2025-12-17 10:17:21 [INFO] [lib.training.pipeline:770] Hyper-aggressive GC complete. GPU memory cleared.
+2025-12-17 10:17:23 [INFO] [lib.training.pipeline:825] Model forward pass test successful. Output shape: torch.Size([1, 1])
+2025-12-17 10:17:24 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:17:41 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 1/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 4, Current batch size: 1
+2025-12-17 10:17:42 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:17:58 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 2/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 4, Current batch size: 1
+2025-12-17 10:18:00 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:18:10 [INFO] [lib.models.video:462] Chunk size increased from 10 to 20 (after 3 successes, increment: 10)
+2025-12-17 10:18:15 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 3/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 4, Current batch size: 1
+2025-12-17 10:18:17 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:18:35 [ERROR] [lib.training.pipeline:982] CUDA OOM or runtime error during training (max retries reached): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 4
+2025-12-17 10:18:35 [ERROR] [lib.training.pipeline:2035] Error training fold 4: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 1981, in stage5_train_models
+    result = _train_pytorch_model_fold(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 915, in _train_pytorch_model_fold
+    model = fit(
+            ^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 939, in fit
+    train_loss = train_one_epoch(
+                 ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 590, in train_one_epoch
+    scaler.scale(loss).backward()
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_tensor.py", line 625, in backward
+    torch.autograd.backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/__init__.py", line 354, in backward
+    _engine_run_backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/graph.py", line 841, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1154, in unpack_hook
+    _run_fn_with_dynamo_disabled(frame.recompute_fn, *args)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_compile.py", line 53, in inner
+    return disable_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1124, in _run_fn_with_dynamo_disabled
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1555, in recompute_fn
+    fn(*args, **kwargs)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/x3d.py", line 312, in checkpointed_forward
+    return self.backbone(x)
+           ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/net.py", line 43, in forward
+    x = block(x)
+        ^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1399, in forward
+    x = res_block(x)
+        ^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1186, in forward
+    x = self.branch_fusion(shortcut, self.branch2(x))
+                                     ^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1352, in forward
+    x = self.act_a(x)
+        ^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 144, in forward
+    return F.relu(input, inplace=self.inplace)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/functional.py", line 1697, in relu
+    result = torch.relu(input)
+             ^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+2025-12-17 10:18:36 [INFO] [lib.training.pipeline:1918] 
+Hyperparameter Search - x3d - Fold 5/5 (10.0% sample)
+2025-12-17 10:18:36 [INFO] [lib.training.pipeline:614] Training PyTorch model x3d on fold 5...
+2025-12-17 10:18:36 [WARNING] [lib.training.pipeline:636] x3d model requires batch_size<=1 to prevent OOM. Overriding batch_size from 2 to 1. Adjusting gradient_accumulation_steps to maintain effective batch size of 64.
+2025-12-17 10:18:36 [INFO] [lib.training.pipeline:646] Training configuration - Batch size: 1, Gradient accumulation steps: 64, Effective batch size: 64
+2025-12-17 10:18:36 [INFO] [lib.training.pipeline:689] Applied PyTorch memory optimizations: expandable_segments, cudnn.benchmark=False
+2025-12-17 10:18:36 [INFO] [lib.training.x3d:48] Loading X3D model from PyTorchVideo: x3d_m (pretrained=True)
+2025-12-17 10:18:37 [INFO] [lib.training.x3d:141] ✓ Successfully loaded X3D model from PyTorchVideo: x3d_m
+2025-12-17 10:18:37 [INFO] [lib.training.x3d:142] ✓ Verified X3D model structure: Net
+2025-12-17 10:18:37 [INFO] [lib.mlops.mlflow_tracker:89] MLflow run started: 0ec3518997654643a09d9d095e5960c2 (experiment: x3d)
+2025-12-17 10:18:37 [INFO] [lib.training.pipeline:760] Performing hyper-aggressive GC before training x3d...
+2025-12-17 10:18:39 [INFO] [lib.training.pipeline:770] Hyper-aggressive GC complete. GPU memory cleared.
+2025-12-17 10:18:42 [INFO] [lib.training.pipeline:825] Model forward pass test successful. Output shape: torch.Size([1, 1])
+2025-12-17 10:18:42 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:18:57 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 1/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 5, Current batch size: 1
+2025-12-17 10:18:59 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:19:09 [INFO] [lib.models.video:462] Chunk size increased from 10 to 20 (after 3 successes, increment: 10)
+2025-12-17 10:19:14 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 2/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 5, Current batch size: 1
+2025-12-17 10:19:16 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:19:32 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 3/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 5, Current batch size: 1
+2025-12-17 10:19:34 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:19:50 [ERROR] [lib.training.pipeline:982] CUDA OOM or runtime error during training (max retries reached): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 5
+2025-12-17 10:19:50 [ERROR] [lib.training.pipeline:2035] Error training fold 5: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 1981, in stage5_train_models
+    result = _train_pytorch_model_fold(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 915, in _train_pytorch_model_fold
+    model = fit(
+            ^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 939, in fit
+    train_loss = train_one_epoch(
+                 ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 590, in train_one_epoch
+    scaler.scale(loss).backward()
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_tensor.py", line 625, in backward
+    torch.autograd.backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/__init__.py", line 354, in backward
+    _engine_run_backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/graph.py", line 841, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1154, in unpack_hook
+    _run_fn_with_dynamo_disabled(frame.recompute_fn, *args)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_compile.py", line 53, in inner
+    return disable_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1124, in _run_fn_with_dynamo_disabled
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1555, in recompute_fn
+    fn(*args, **kwargs)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/x3d.py", line 312, in checkpointed_forward
+    return self.backbone(x)
+           ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/net.py", line 43, in forward
+    x = block(x)
+        ^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1399, in forward
+    x = res_block(x)
+        ^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1186, in forward
+    x = self.branch_fusion(shortcut, self.branch2(x))
+                                     ^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1352, in forward
+    x = self.act_a(x)
+        ^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 144, in forward
+    return F.relu(input, inplace=self.inplace)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/functional.py", line 1697, in relu
+    result = torch.relu(input)
+             ^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+2025-12-17 10:19:50 [INFO] [lib.training.pipeline:2091] Using single parameter combination: {'learning_rate': 0.0001, 'backbone_lr': 5e-06, 'head_lr': 0.0005, 'weight_decay': 0.0001, 'batch_size': 2}
+2025-12-17 10:19:50 [INFO] [lib.training.pipeline:2094] ================================================================================
+2025-12-17 10:19:50 [INFO] [lib.training.pipeline:2095] FINAL TRAINING: Using full dataset with best hyperparameters
+2025-12-17 10:19:50 [INFO] [lib.training.pipeline:2096] ================================================================================
+2025-12-17 10:19:50 [INFO] [lib.training.pipeline:2109] Final training: Using 5-fold stratified cross-validation on full dataset (3277 rows)
+2025-12-17 10:19:50 [INFO] [lib.training.pipeline:2117] Final training using best hyperparameters: {'learning_rate': 0.0001, 'backbone_lr': 5e-06, 'head_lr': 0.0005, 'weight_decay': 0.0001, 'batch_size': 2}
+2025-12-17 10:19:50 [INFO] [lib.training.pipeline:2123] 
+Final Training - x3d - Fold 1/5 (full dataset)
+2025-12-17 10:19:50 [INFO] [lib.training.pipeline:614] Training PyTorch model x3d on fold 1...
+2025-12-17 10:19:50 [WARNING] [lib.training.pipeline:636] x3d model requires batch_size<=1 to prevent OOM. Overriding batch_size from 2 to 1. Adjusting gradient_accumulation_steps to maintain effective batch size of 64.
+2025-12-17 10:19:50 [INFO] [lib.training.pipeline:646] Training configuration - Batch size: 1, Gradient accumulation steps: 64, Effective batch size: 64
+2025-12-17 10:19:51 [INFO] [lib.training.pipeline:689] Applied PyTorch memory optimizations: expandable_segments, cudnn.benchmark=False
+2025-12-17 10:19:51 [INFO] [lib.training.x3d:48] Loading X3D model from PyTorchVideo: x3d_m (pretrained=True)
+2025-12-17 10:19:51 [INFO] [lib.training.x3d:141] ✓ Successfully loaded X3D model from PyTorchVideo: x3d_m
+2025-12-17 10:19:51 [INFO] [lib.training.x3d:142] ✓ Verified X3D model structure: Net
+2025-12-17 10:19:51 [INFO] [lib.mlops.mlflow_tracker:89] MLflow run started: a58b6309c52d479793e185a640d6daec (experiment: x3d)
+2025-12-17 10:19:51 [INFO] [lib.training.pipeline:760] Performing hyper-aggressive GC before training x3d...
+2025-12-17 10:19:53 [INFO] [lib.training.pipeline:770] Hyper-aggressive GC complete. GPU memory cleared.
+2025-12-17 10:19:55 [INFO] [lib.training.pipeline:825] Model forward pass test successful. Output shape: torch.Size([1, 1])
+2025-12-17 10:19:56 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:20:06 [INFO] [lib.models.video:462] Chunk size increased from 10 to 20 (after 3 successes, increment: 10)
+2025-12-17 10:20:11 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 1/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 1, Current batch size: 1
+2025-12-17 10:20:13 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:20:28 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 2/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 1, Current batch size: 1
+2025-12-17 10:20:30 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:20:47 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 3/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 1, Current batch size: 1
+2025-12-17 10:20:48 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:20:58 [INFO] [lib.models.video:462] Chunk size increased from 10 to 20 (after 3 successes, increment: 10)
+2025-12-17 10:21:04 [ERROR] [lib.training.pipeline:982] CUDA OOM or runtime error during training (max retries reached): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 1
+2025-12-17 10:21:04 [ERROR] [lib.training.pipeline:2241] Error training final fold 1: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 2189, in stage5_train_models
+    result = _train_pytorch_model_fold(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 915, in _train_pytorch_model_fold
+    model = fit(
+            ^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 939, in fit
+    train_loss = train_one_epoch(
+                 ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 590, in train_one_epoch
+    scaler.scale(loss).backward()
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_tensor.py", line 625, in backward
+    torch.autograd.backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/__init__.py", line 354, in backward
+    _engine_run_backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/graph.py", line 841, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1154, in unpack_hook
+    _run_fn_with_dynamo_disabled(frame.recompute_fn, *args)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_compile.py", line 53, in inner
+    return disable_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1124, in _run_fn_with_dynamo_disabled
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1555, in recompute_fn
+    fn(*args, **kwargs)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/x3d.py", line 312, in checkpointed_forward
+    return self.backbone(x)
+           ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/net.py", line 43, in forward
+    x = block(x)
+        ^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1399, in forward
+    x = res_block(x)
+        ^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1186, in forward
+    x = self.branch_fusion(shortcut, self.branch2(x))
+                                     ^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1352, in forward
+    x = self.act_a(x)
+        ^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 144, in forward
+    return F.relu(input, inplace=self.inplace)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/functional.py", line 1697, in relu
+    result = torch.relu(input)
+             ^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+2025-12-17 10:21:04 [INFO] [lib.training.pipeline:2123] 
+Final Training - x3d - Fold 2/5 (full dataset)
+2025-12-17 10:21:04 [INFO] [lib.training.pipeline:614] Training PyTorch model x3d on fold 2...
+2025-12-17 10:21:04 [WARNING] [lib.training.pipeline:636] x3d model requires batch_size<=1 to prevent OOM. Overriding batch_size from 2 to 1. Adjusting gradient_accumulation_steps to maintain effective batch size of 64.
+2025-12-17 10:21:04 [INFO] [lib.training.pipeline:646] Training configuration - Batch size: 1, Gradient accumulation steps: 64, Effective batch size: 64
+2025-12-17 10:21:04 [INFO] [lib.training.pipeline:689] Applied PyTorch memory optimizations: expandable_segments, cudnn.benchmark=False
+2025-12-17 10:21:04 [INFO] [lib.training.x3d:48] Loading X3D model from PyTorchVideo: x3d_m (pretrained=True)
+2025-12-17 10:21:05 [INFO] [lib.training.x3d:141] ✓ Successfully loaded X3D model from PyTorchVideo: x3d_m
+2025-12-17 10:21:05 [INFO] [lib.training.x3d:142] ✓ Verified X3D model structure: Net
+2025-12-17 10:21:05 [INFO] [lib.mlops.mlflow_tracker:89] MLflow run started: 758b3d5c82f74f18b20a7e6647fe869c (experiment: x3d)
+2025-12-17 10:21:05 [INFO] [lib.training.pipeline:760] Performing hyper-aggressive GC before training x3d...
+2025-12-17 10:21:07 [INFO] [lib.training.pipeline:770] Hyper-aggressive GC complete. GPU memory cleared.
+2025-12-17 10:21:09 [INFO] [lib.training.pipeline:825] Model forward pass test successful. Output shape: torch.Size([1, 1])
+2025-12-17 10:21:09 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:21:23 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 1/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 2, Current batch size: 1
+2025-12-17 10:21:25 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:21:41 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 2/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 2, Current batch size: 1
+2025-12-17 10:21:43 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:21:53 [INFO] [lib.models.video:462] Chunk size increased from 10 to 20 (after 3 successes, increment: 10)
+2025-12-17 10:21:57 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 3/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 2, Current batch size: 1
+2025-12-17 10:21:59 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:22:13 [ERROR] [lib.training.pipeline:982] CUDA OOM or runtime error during training (max retries reached): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 2
+2025-12-17 10:22:13 [ERROR] [lib.training.pipeline:2241] Error training final fold 2: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 2189, in stage5_train_models
+    result = _train_pytorch_model_fold(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 915, in _train_pytorch_model_fold
+    model = fit(
+            ^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 939, in fit
+    train_loss = train_one_epoch(
+                 ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 590, in train_one_epoch
+    scaler.scale(loss).backward()
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_tensor.py", line 625, in backward
+    torch.autograd.backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/__init__.py", line 354, in backward
+    _engine_run_backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/graph.py", line 841, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1154, in unpack_hook
+    _run_fn_with_dynamo_disabled(frame.recompute_fn, *args)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_compile.py", line 53, in inner
+    return disable_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1124, in _run_fn_with_dynamo_disabled
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1555, in recompute_fn
+    fn(*args, **kwargs)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/x3d.py", line 312, in checkpointed_forward
+    return self.backbone(x)
+           ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/net.py", line 43, in forward
+    x = block(x)
+        ^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1399, in forward
+    x = res_block(x)
+        ^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1186, in forward
+    x = self.branch_fusion(shortcut, self.branch2(x))
+                                     ^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1352, in forward
+    x = self.act_a(x)
+        ^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 144, in forward
+    return F.relu(input, inplace=self.inplace)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/functional.py", line 1697, in relu
+    result = torch.relu(input)
+             ^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+2025-12-17 10:22:13 [INFO] [lib.training.pipeline:2123] 
+Final Training - x3d - Fold 3/5 (full dataset)
+2025-12-17 10:22:13 [INFO] [lib.training.pipeline:614] Training PyTorch model x3d on fold 3...
+2025-12-17 10:22:13 [WARNING] [lib.training.pipeline:636] x3d model requires batch_size<=1 to prevent OOM. Overriding batch_size from 2 to 1. Adjusting gradient_accumulation_steps to maintain effective batch size of 64.
+2025-12-17 10:22:13 [INFO] [lib.training.pipeline:646] Training configuration - Batch size: 1, Gradient accumulation steps: 64, Effective batch size: 64
+2025-12-17 10:22:13 [INFO] [lib.training.pipeline:689] Applied PyTorch memory optimizations: expandable_segments, cudnn.benchmark=False
+2025-12-17 10:22:13 [INFO] [lib.training.x3d:48] Loading X3D model from PyTorchVideo: x3d_m (pretrained=True)
+2025-12-17 10:22:14 [INFO] [lib.training.x3d:141] ✓ Successfully loaded X3D model from PyTorchVideo: x3d_m
+2025-12-17 10:22:14 [INFO] [lib.training.x3d:142] ✓ Verified X3D model structure: Net
+2025-12-17 10:22:14 [INFO] [lib.mlops.mlflow_tracker:89] MLflow run started: f1a4c89ba63e45f5843309dab7c4c97b (experiment: x3d)
+2025-12-17 10:22:14 [INFO] [lib.training.pipeline:760] Performing hyper-aggressive GC before training x3d...
+2025-12-17 10:22:16 [INFO] [lib.training.pipeline:770] Hyper-aggressive GC complete. GPU memory cleared.
+2025-12-17 10:22:18 [INFO] [lib.training.pipeline:825] Model forward pass test successful. Output shape: torch.Size([1, 1])
+2025-12-17 10:22:18 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:22:33 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 1/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 3, Current batch size: 1
+2025-12-17 10:22:34 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:22:44 [INFO] [lib.models.video:462] Chunk size increased from 10 to 20 (after 3 successes, increment: 10)
+2025-12-17 10:22:49 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 2/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 3, Current batch size: 1
+2025-12-17 10:22:51 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:23:07 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 3/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 3, Current batch size: 1
+2025-12-17 10:23:09 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:23:23 [ERROR] [lib.training.pipeline:982] CUDA OOM or runtime error during training (max retries reached): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 3
+2025-12-17 10:23:23 [ERROR] [lib.training.pipeline:2241] Error training final fold 3: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 2189, in stage5_train_models
+    result = _train_pytorch_model_fold(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 915, in _train_pytorch_model_fold
+    model = fit(
+            ^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 939, in fit
+    train_loss = train_one_epoch(
+                 ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 590, in train_one_epoch
+    scaler.scale(loss).backward()
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_tensor.py", line 625, in backward
+    torch.autograd.backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/__init__.py", line 354, in backward
+    _engine_run_backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/graph.py", line 841, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1154, in unpack_hook
+    _run_fn_with_dynamo_disabled(frame.recompute_fn, *args)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_compile.py", line 53, in inner
+    return disable_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1124, in _run_fn_with_dynamo_disabled
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1555, in recompute_fn
+    fn(*args, **kwargs)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/x3d.py", line 312, in checkpointed_forward
+    return self.backbone(x)
+           ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/net.py", line 43, in forward
+    x = block(x)
+        ^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1399, in forward
+    x = res_block(x)
+        ^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1186, in forward
+    x = self.branch_fusion(shortcut, self.branch2(x))
+                                     ^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1352, in forward
+    x = self.act_a(x)
+        ^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 144, in forward
+    return F.relu(input, inplace=self.inplace)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/functional.py", line 1697, in relu
+    result = torch.relu(input)
+             ^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+2025-12-17 10:23:23 [INFO] [lib.training.pipeline:2123] 
+Final Training - x3d - Fold 4/5 (full dataset)
+2025-12-17 10:23:23 [INFO] [lib.training.pipeline:614] Training PyTorch model x3d on fold 4...
+2025-12-17 10:23:23 [WARNING] [lib.training.pipeline:636] x3d model requires batch_size<=1 to prevent OOM. Overriding batch_size from 2 to 1. Adjusting gradient_accumulation_steps to maintain effective batch size of 64.
+2025-12-17 10:23:23 [INFO] [lib.training.pipeline:646] Training configuration - Batch size: 1, Gradient accumulation steps: 64, Effective batch size: 64
+2025-12-17 10:23:23 [INFO] [lib.training.pipeline:689] Applied PyTorch memory optimizations: expandable_segments, cudnn.benchmark=False
+2025-12-17 10:23:23 [INFO] [lib.training.x3d:48] Loading X3D model from PyTorchVideo: x3d_m (pretrained=True)
+2025-12-17 10:23:24 [INFO] [lib.training.x3d:141] ✓ Successfully loaded X3D model from PyTorchVideo: x3d_m
+2025-12-17 10:23:24 [INFO] [lib.training.x3d:142] ✓ Verified X3D model structure: Net
+2025-12-17 10:23:24 [INFO] [lib.mlops.mlflow_tracker:89] MLflow run started: 675f1275190346e4aab100cd84dfafd4 (experiment: x3d)
+2025-12-17 10:23:24 [INFO] [lib.training.pipeline:760] Performing hyper-aggressive GC before training x3d...
+2025-12-17 10:23:26 [INFO] [lib.training.pipeline:770] Hyper-aggressive GC complete. GPU memory cleared.
+2025-12-17 10:23:28 [INFO] [lib.training.pipeline:825] Model forward pass test successful. Output shape: torch.Size([1, 1])
+2025-12-17 10:23:28 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:23:38 [INFO] [lib.models.video:462] Chunk size increased from 10 to 20 (after 3 successes, increment: 10)
+2025-12-17 10:23:44 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 1/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 4, Current batch size: 1
+2025-12-17 10:23:46 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:23:50 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 2/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 4, Current batch size: 1
+2025-12-17 10:23:52 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:24:07 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 3/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 4, Current batch size: 1
+2025-12-17 10:24:09 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:24:23 [ERROR] [lib.training.pipeline:982] CUDA OOM or runtime error during training (max retries reached): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 4
+2025-12-17 10:24:23 [ERROR] [lib.training.pipeline:2241] Error training final fold 4: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 2189, in stage5_train_models
+    result = _train_pytorch_model_fold(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 915, in _train_pytorch_model_fold
+    model = fit(
+            ^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 939, in fit
+    train_loss = train_one_epoch(
+                 ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 590, in train_one_epoch
+    scaler.scale(loss).backward()
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_tensor.py", line 625, in backward
+    torch.autograd.backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/__init__.py", line 354, in backward
+    _engine_run_backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/graph.py", line 841, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1154, in unpack_hook
+    _run_fn_with_dynamo_disabled(frame.recompute_fn, *args)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_compile.py", line 53, in inner
+    return disable_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1124, in _run_fn_with_dynamo_disabled
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1555, in recompute_fn
+    fn(*args, **kwargs)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/x3d.py", line 312, in checkpointed_forward
+    return self.backbone(x)
+           ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/net.py", line 43, in forward
+    x = block(x)
+        ^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1399, in forward
+    x = res_block(x)
+        ^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1186, in forward
+    x = self.branch_fusion(shortcut, self.branch2(x))
+                                     ^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1352, in forward
+    x = self.act_a(x)
+        ^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 144, in forward
+    return F.relu(input, inplace=self.inplace)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/functional.py", line 1697, in relu
+    result = torch.relu(input)
+             ^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+2025-12-17 10:24:23 [INFO] [lib.training.pipeline:2123] 
+Final Training - x3d - Fold 5/5 (full dataset)
+2025-12-17 10:24:23 [INFO] [lib.training.pipeline:614] Training PyTorch model x3d on fold 5...
+2025-12-17 10:24:23 [WARNING] [lib.training.pipeline:636] x3d model requires batch_size<=1 to prevent OOM. Overriding batch_size from 2 to 1. Adjusting gradient_accumulation_steps to maintain effective batch size of 64.
+2025-12-17 10:24:23 [INFO] [lib.training.pipeline:646] Training configuration - Batch size: 1, Gradient accumulation steps: 64, Effective batch size: 64
+2025-12-17 10:24:23 [INFO] [lib.training.pipeline:689] Applied PyTorch memory optimizations: expandable_segments, cudnn.benchmark=False
+2025-12-17 10:24:23 [INFO] [lib.training.x3d:48] Loading X3D model from PyTorchVideo: x3d_m (pretrained=True)
+2025-12-17 10:24:24 [INFO] [lib.training.x3d:141] ✓ Successfully loaded X3D model from PyTorchVideo: x3d_m
+2025-12-17 10:24:24 [INFO] [lib.training.x3d:142] ✓ Verified X3D model structure: Net
+2025-12-17 10:24:24 [INFO] [lib.mlops.mlflow_tracker:89] MLflow run started: e6c08a030d784904a328eec2fafa11c3 (experiment: x3d)
+2025-12-17 10:24:24 [INFO] [lib.training.pipeline:760] Performing hyper-aggressive GC before training x3d...
+2025-12-17 10:24:26 [INFO] [lib.training.pipeline:770] Hyper-aggressive GC complete. GPU memory cleared.
+2025-12-17 10:24:27 [INFO] [lib.training.pipeline:825] Model forward pass test successful. Output shape: torch.Size([1, 1])
+2025-12-17 10:24:28 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:24:37 [INFO] [lib.models.video:462] Chunk size increased from 10 to 20 (after 3 successes, increment: 10)
+2025-12-17 10:24:42 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 1/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 5, Current batch size: 1
+2025-12-17 10:24:44 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:24:59 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 2/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 5, Current batch size: 1
+2025-12-17 10:25:01 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:25:17 [WARNING] [lib.training.pipeline:960] CUDA OOM during training (attempt 3/4): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 5, Current batch size: 1
+2025-12-17 10:25:19 [INFO] [lib.training.trainer:383] Warmup will be handled in training loop (2 epochs)
+2025-12-17 10:25:30 [INFO] [lib.models.video:462] Chunk size increased from 10 to 20 (after 3 successes, increment: 10)
+2025-12-17 10:25:35 [ERROR] [lib.training.pipeline:982] CUDA OOM or runtime error during training (max retries reached): CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables). Model: x3d, Fold: 5
+2025-12-17 10:25:35 [ERROR] [lib.training.pipeline:2241] Error training final fold 5: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 2189, in stage5_train_models
+    result = _train_pytorch_model_fold(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/pipeline.py", line 915, in _train_pytorch_model_fold
+    model = fit(
+            ^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 939, in fit
+    train_loss = train_one_epoch(
+                 ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/trainer.py", line 590, in train_one_epoch
+    scaler.scale(loss).backward()
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_tensor.py", line 625, in backward
+    torch.autograd.backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/__init__.py", line 354, in backward
+    _engine_run_backward(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/autograd/graph.py", line 841, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1154, in unpack_hook
+    _run_fn_with_dynamo_disabled(frame.recompute_fn, *args)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_compile.py", line 53, in inner
+    return disable_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1044, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1124, in _run_fn_with_dynamo_disabled
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/utils/checkpoint.py", line 1555, in recompute_fn
+    fn(*args, **kwargs)
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/lib/training/x3d.py", line 312, in checkpointed_forward
+    return self.backbone(x)
+           ^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/net.py", line 43, in forward
+    x = block(x)
+        ^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1399, in forward
+    x = res_block(x)
+        ^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1186, in forward
+    x = self.branch_fusion(shortcut, self.branch2(x))
+                                     ^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/suzanef/.cache/torch/hub/facebookresearch_pytorchvideo_main/pytorchvideo/models/resnet.py", line 1352, in forward
+    x = self.act_a(x)
+        ^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 144, in forward
+    return F.relu(input, inplace=self.inplace)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/lib/python3.11/site-packages/torch/nn/functional.py", line 1697, in relu
+    result = torch.relu(input)
+             ^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 106.00 MiB. GPU 0 has a total capacity of 15.77 GiB of which 100.19 MiB is free. Including non-PyTorch memory, this process has 15.66 GiB memory in use. Of the allocated memory 15.17 GiB is allocated by PyTorch, and 112.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+2025-12-17 10:25:35 [WARNING] [lib.training.pipeline:109] No model files found in /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/x3d/fold_1 to copy
+2025-12-17 10:25:35 [INFO] [lib.training.pipeline:2348] 
+x3d - Avg Val Loss: nan ± nan, Avg Val Acc: nan ± nan, Avg Val F1: nan ± nan
+2025-12-17 10:25:35 [INFO] [lib.training.pipeline:2352]   Avg Val Precision: nan ± nan, Avg Val Recall: nan ± nan
+2025-12-17 10:25:35 [INFO] [lib.training.pipeline:2356]   Class 0 - F1: nan ± nan, Precision: nan ± nan, Recall: nan ± nan
+2025-12-17 10:25:35 [INFO] [lib.training.pipeline:2361]   Class 1 - F1: nan ± nan, Precision: nan ± nan, Recall: nan ± nan
+2025-12-17 10:25:35 [INFO] [lib.training.pipeline:2399] Saved aggregated metrics to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/x3d/metrics.json (model: x3d)
+2025-12-17 10:25:40 [INFO] [lib.training.visualization:256] Saved CV fold comparison to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/x3d/plots/cv_fold_comparison.png
+2025-12-17 10:25:40 [INFO] [lib.training.pipeline:2426] Generated plots for x3d in /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/x3d/plots
+2025-12-17 10:25:40 [INFO] [lib.training.pipeline:2463] ================================================================================
+2025-12-17 10:25:40 [INFO] [lib.training.pipeline:2464] Stage 5: Model Training Pipeline Completed
+2025-12-17 10:25:40 [INFO] [lib.training.pipeline:2465] ================================================================================
+2025-12-17 10:25:40 [INFO] [__main__:401] ================================================================================
+2025-12-17 10:25:40 [INFO] [__main__:402] STAGE 5 COMPLETED SUCCESSFULLY
+2025-12-17 10:25:40 [INFO] [__main__:403] ================================================================================
+2025-12-17 10:25:40 [INFO] [__main__:404] Execution time: 780.66 seconds (13.01 minutes)
+2025-12-17 10:25:40 [INFO] [__main__:406] Output directory: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5
+2025-12-17 10:25:40 [INFO] [__main__:407] Models trained: ['x3d']
+2025-12-17 10:25:40 [INFO] [__main__:408] K-fold splits: 5
+2025-12-17 10:25:40 [INFO] [__main__:414] ================================================================================
+2025-12-17 10:25:40 [INFO] [__main__:415] Final memory statistics:
+2025-12-17 10:25:40 [INFO] [__main__:416] ================================================================================
+2025-12-17 10:25:40 [INFO] [lib.utils.memory:91] Memory stats (Stage 5: after training): {'cpu_memory_mb': 2569.77734375, 'cpu_memory_gb': 2.5095481872558594, 'cpu_vms_mb': 49877.65234375, 'gpu_allocated_gb': 0.01703936, 'gpu_reserved_gb': 16.412311552, 'gpu_total_gb': 16.928342016, 'gpu_free_gb': 0.516030464}
+2025-12-17 10:25:40 [INFO] [__main__:419] ================================================================================
+2025-12-17 10:25:40 [INFO] [__main__:420] Training complete!
+2025-12-17 10:25:40 [INFO] [__main__:421] Results saved to: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5
+2025-12-17 10:25:40 [INFO] [__main__:422] ================================================================================

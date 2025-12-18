@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/8897966abd06497bac4cf625135fcd1b/artifacts
+end_time: 1765609606886
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 8897966abd06497bac4cf625135fcd1b
+run_name: mysterious-shrew-735
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609606194
+status: 3
+tags: []
+user_id: santoshd

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/36e10dfb25b54fa9a794ab76eb280a12/artifacts
+end_time: 1765603511796
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 36e10dfb25b54fa9a794ab76eb280a12
+run_name: judicious-stork-704
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603511121
+status: 3
+tags: []
+user_id: suzanef

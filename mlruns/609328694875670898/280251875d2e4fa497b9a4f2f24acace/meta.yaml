@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/280251875d2e4fa497b9a4f2f24acace/artifacts
+end_time: 1765587316473
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 280251875d2e4fa497b9a4f2f24acace
+run_name: placid-cow-806
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587311913
+status: 3
+tags: []
+user_id: urvim

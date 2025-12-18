@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/59cdcd8ea1a7465b8ff062e548c37355/artifacts
+end_time: 1765585049290
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 59cdcd8ea1a7465b8ff062e548c37355
+run_name: sincere-bird-585
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585048225
+status: 3
+tags: []
+user_id: suzanef

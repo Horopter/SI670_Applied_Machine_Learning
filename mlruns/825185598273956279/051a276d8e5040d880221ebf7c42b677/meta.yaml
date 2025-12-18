@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/051a276d8e5040d880221ebf7c42b677/artifacts
+end_time: 1765589513630
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 051a276d8e5040d880221ebf7c42b677
+run_name: melodic-chimp-775
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589508525
+status: 3
+tags: []
+user_id: suzanef

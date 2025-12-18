@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/a1110e6796844e57afae4f2d70f985ea/artifacts
+end_time: 1765586819198
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: a1110e6796844e57afae4f2d70f985ea
+run_name: blushing-wren-993
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586804599
+status: 3
+tags: []
+user_id: urvim

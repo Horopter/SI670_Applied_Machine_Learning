@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/2a27d7fee45c447283719a4bc40678eb/artifacts
+end_time: 1765609593603
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 2a27d7fee45c447283719a4bc40678eb
+run_name: adaptable-wolf-894
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609592898
+status: 3
+tags: []
+user_id: santoshd

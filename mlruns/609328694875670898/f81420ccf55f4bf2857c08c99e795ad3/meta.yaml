@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/f81420ccf55f4bf2857c08c99e795ad3/artifacts
+end_time: 1765586487150
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: f81420ccf55f4bf2857c08c99e795ad3
+run_name: casual-carp-658
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586466704
+status: 3
+tags: []
+user_id: urvim

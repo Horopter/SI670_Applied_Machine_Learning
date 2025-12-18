@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/f63cac432e79460a9c1acfd43b98bf58/artifacts
+end_time: 1765588118515
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: f63cac432e79460a9c1acfd43b98bf58
+run_name: trusting-crow-343
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588113397
+status: 3
+tags: []
+user_id: urvim

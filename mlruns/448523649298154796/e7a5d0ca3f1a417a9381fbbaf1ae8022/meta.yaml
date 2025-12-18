@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/e7a5d0ca3f1a417a9381fbbaf1ae8022/artifacts
+end_time: 1765609709504
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: e7a5d0ca3f1a417a9381fbbaf1ae8022
+run_name: learned-mare-501
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609708808
+status: 3
+tags: []
+user_id: santoshd

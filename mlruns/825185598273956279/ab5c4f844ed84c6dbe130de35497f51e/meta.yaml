@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/ab5c4f844ed84c6dbe130de35497f51e/artifacts
+end_time: 1765604106157
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: ab5c4f844ed84c6dbe130de35497f51e
+run_name: handsome-carp-830
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604105477
+status: 3
+tags: []
+user_id: suzanef

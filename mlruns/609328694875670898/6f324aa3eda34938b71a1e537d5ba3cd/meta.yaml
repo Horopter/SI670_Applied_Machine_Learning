@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/6f324aa3eda34938b71a1e537d5ba3cd/artifacts
+end_time: 1765750338953
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 6f324aa3eda34938b71a1e537d5ba3cd
+run_name: charming-gull-185
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765750302755
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/1a0cbc8fe5574d5aa14a6e7c5f8135e3/artifacts
+end_time: 1765585214449
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 1a0cbc8fe5574d5aa14a6e7c5f8135e3
+run_name: marvelous-colt-832
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585198286
+status: 3
+tags: []
+user_id: urvim

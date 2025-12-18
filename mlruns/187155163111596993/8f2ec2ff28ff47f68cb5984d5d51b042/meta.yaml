@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/8f2ec2ff28ff47f68cb5984d5d51b042/artifacts
+end_time: 1765583542947
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: 8f2ec2ff28ff47f68cb5984d5d51b042
+run_name: incongruous-stag-559
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765583511956
+status: 3
+tags: []
+user_id: santoshd

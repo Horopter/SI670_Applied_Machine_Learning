@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/72fb22268f79473cbd09ddfc3357e434/artifacts
+end_time: 1765604650088
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 72fb22268f79473cbd09ddfc3357e434
+run_name: flawless-eel-371
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604649403
+status: 3
+tags: []
+user_id: suzanef

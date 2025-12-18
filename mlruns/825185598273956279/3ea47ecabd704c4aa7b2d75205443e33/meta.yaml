@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/3ea47ecabd704c4aa7b2d75205443e33/artifacts
+end_time: 1765604160625
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 3ea47ecabd704c4aa7b2d75205443e33
+run_name: serious-cod-698
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604158774
+status: 3
+tags: []
+user_id: suzanef

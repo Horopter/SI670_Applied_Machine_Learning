@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/0ca687d60f734d2cb1662af901e43f70/artifacts
+end_time: 1765597689582
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 0ca687d60f734d2cb1662af901e43f70
+run_name: silent-bear-127
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597688699
+status: 3
+tags: []
+user_id: suzanef

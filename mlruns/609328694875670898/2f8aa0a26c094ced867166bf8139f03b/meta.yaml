@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/2f8aa0a26c094ced867166bf8139f03b/artifacts
+end_time: 1765591144962
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 2f8aa0a26c094ced867166bf8139f03b
+run_name: melodic-crab-989
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591135813
+status: 3
+tags: []
+user_id: urvim

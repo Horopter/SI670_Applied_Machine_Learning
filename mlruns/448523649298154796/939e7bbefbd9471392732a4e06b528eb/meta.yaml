@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/939e7bbefbd9471392732a4e06b528eb/artifacts
+end_time: 1765609578298
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 939e7bbefbd9471392732a4e06b528eb
+run_name: learned-duck-983
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609577606
+status: 3
+tags: []
+user_id: santoshd

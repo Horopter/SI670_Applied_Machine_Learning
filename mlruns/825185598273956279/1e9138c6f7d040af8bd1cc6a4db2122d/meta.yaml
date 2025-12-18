@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/1e9138c6f7d040af8bd1cc6a4db2122d/artifacts
+end_time: 1765603450168
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 1e9138c6f7d040af8bd1cc6a4db2122d
+run_name: incongruous-lark-112
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603449493
+status: 3
+tags: []
+user_id: suzanef

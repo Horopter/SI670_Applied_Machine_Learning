@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/2f341ab576ad422eaf81adc1c7c33ad0/artifacts
+end_time: 1765603960668
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 2f341ab576ad422eaf81adc1c7c33ad0
+run_name: silent-carp-663
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603959990
+status: 3
+tags: []
+user_id: suzanef

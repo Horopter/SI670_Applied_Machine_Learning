@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/118c0db087be417ea42cdbc3cdf3f189/artifacts
+end_time: 1765750355524
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 118c0db087be417ea42cdbc3cdf3f189
+run_name: gentle-flea-995
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765750347677
+status: 3
+tags: []
+user_id: urvim

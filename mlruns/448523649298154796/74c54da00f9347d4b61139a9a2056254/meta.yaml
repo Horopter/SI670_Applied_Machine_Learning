@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/74c54da00f9347d4b61139a9a2056254/artifacts
+end_time: 1765609595417
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 74c54da00f9347d4b61139a9a2056254
+run_name: handsome-boar-50
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609594722
+status: 3
+tags: []
+user_id: santoshd

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/52a3bd7f5c1c494b850da4519e432052/artifacts
+end_time: 1765587538301
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 52a3bd7f5c1c494b850da4519e432052
+run_name: indecisive-trout-513
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587533124
+status: 3
+tags: []
+user_id: urvim

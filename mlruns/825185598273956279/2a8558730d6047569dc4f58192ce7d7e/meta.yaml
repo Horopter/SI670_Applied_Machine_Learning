@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/2a8558730d6047569dc4f58192ce7d7e/artifacts
+end_time: 1765589920348
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 2a8558730d6047569dc4f58192ce7d7e
+run_name: debonair-perch-138
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589915234
+status: 3
+tags: []
+user_id: suzanef

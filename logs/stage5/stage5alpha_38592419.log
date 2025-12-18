@@ -1,0 +1,46 @@
+==========================================
+STAGE 5ALPHA LOG FILE INITIALIZED
+Timestamp: Thu Dec 18 01:53:39 EST 2025
+Log file: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/logs/stage5/stage5alpha_38592419.log
+==========================================
+Executing command...
+Python: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/bin/python3
+Script: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/src/scripts/train_sklearn_logreg.py
+Arguments: --project-root /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc --scaled-metadata /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/scaled_videos/scaled_metadata.arrow --features-stage2 /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage2/features_metadata.arrow --features-stage4 /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage4/features_scaled_metadata.arrow --output-dir data/stage5/sklearn_logreg --n-splits 5 --delete-existing
+==========================================
+2025-12-18 01:57:21,530 [INFO] [__main__:93] ================================================================================
+2025-12-18 01:57:21,530 [INFO] [__main__:94] STAGE 5ALPHA: sklearn LogisticRegression Training Script Starting
+2025-12-18 01:57:21,531 [INFO] [__main__:95] ================================================================================
+2025-12-18 01:57:21,531 [INFO] [__main__:751] Parsing command line arguments...
+2025-12-18 01:57:21,535 [INFO] [__main__:770] Arguments parsed successfully:
+2025-12-18 01:57:21,535 [INFO] [__main__:771]   project-root: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc
+2025-12-18 01:57:21,535 [INFO] [__main__:772]   scaled-metadata: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/scaled_videos/scaled_metadata.arrow
+2025-12-18 01:57:21,535 [INFO] [__main__:773]   features-stage2: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage2/features_metadata.arrow
+2025-12-18 01:57:21,535 [INFO] [__main__:774]   features-stage4: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage4/features_scaled_metadata.arrow
+2025-12-18 01:57:21,535 [INFO] [__main__:775]   output-dir: data/stage5/sklearn_logreg
+2025-12-18 01:57:21,535 [INFO] [__main__:776]   n-splits: 5
+2025-12-18 01:57:21,536 [INFO] [__main__:777]   delete-existing: True
+2025-12-18 01:57:21,536 [CRITICAL] [__main__:797] Training failed with exception: UnboundLocalError: cannot access local variable 'Path' where it is not associated with a value
+Traceback (most recent call last):
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/src/scripts/train_sklearn_logreg.py", line 787, in main
+    train_sklearn_logreg(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/src/scripts/train_sklearn_logreg.py", line 139, in train_sklearn_logreg
+    project_root_path = Path(project_root).resolve()
+                        ^^^^
+UnboundLocalError: cannot access local variable 'Path' where it is not associated with a value
+2025-12-18 01:57:21,538 [CRITICAL] [__main__:823] ================================================================================
+2025-12-18 01:57:21,538 [CRITICAL] [__main__:824] UNHANDLED EXCEPTION - This may cause a crash
+2025-12-18 01:57:21,538 [CRITICAL] [__main__:825] ================================================================================
+2025-12-18 01:57:21,538 [CRITICAL] [__main__:826] Exception type: UnboundLocalError
+2025-12-18 01:57:21,538 [CRITICAL] [__main__:827] Exception message: cannot access local variable 'Path' where it is not associated with a value
+2025-12-18 01:57:21,538 [CRITICAL] [__main__:828] Full traceback:
+Traceback (most recent call last):
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/src/scripts/train_sklearn_logreg.py", line 807, in <module>
+    main()
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/src/scripts/train_sklearn_logreg.py", line 787, in main
+    train_sklearn_logreg(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/src/scripts/train_sklearn_logreg.py", line 139, in train_sklearn_logreg
+    project_root_path = Path(project_root).resolve()
+                        ^^^^
+UnboundLocalError: cannot access local variable 'Path' where it is not associated with a value
+2025-12-18 01:57:21,539 [CRITICAL] [__main__:829] ================================================================================

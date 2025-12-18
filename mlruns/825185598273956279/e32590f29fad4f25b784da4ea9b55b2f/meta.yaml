@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/e32590f29fad4f25b784da4ea9b55b2f/artifacts
+end_time: 1765602474856
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: e32590f29fad4f25b784da4ea9b55b2f
+run_name: rare-sheep-85
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602474184
+status: 3
+tags: []
+user_id: suzanef

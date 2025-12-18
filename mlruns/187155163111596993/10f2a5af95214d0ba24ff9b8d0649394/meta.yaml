@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/10f2a5af95214d0ba24ff9b8d0649394/artifacts
+end_time: 1765584071422
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: 10f2a5af95214d0ba24ff9b8d0649394
+run_name: stylish-ray-164
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584044454
+status: 3
+tags: []
+user_id: santoshd

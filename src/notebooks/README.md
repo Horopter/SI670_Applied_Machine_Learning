@@ -13,6 +13,18 @@ This directory contains **presentation-quality notebooks** demonstrating the com
   - Feature preprocessing (imputation, scaling, normalization)
   - Model evaluation & results
 
+### Executed Notebooks
+
+The `executed/` directory contains notebooks that have been executed with results and outputs:
+
+- **5a**: `executed/5a_logistic_regression.ipynb` - Logistic Regression baseline
+- **5alpha**: `executed/5alpha_sklearn_logreg.ipynb` - Scikit-learn Logistic Regression
+- **5b**: `executed/5b_svm.ipynb` - Support Vector Machine
+- **5beta**: `executed/5beta_gradient_boosting.ipynb` - Gradient Boosting (XGBoost, LightGBM, CatBoost)
+- **5f**: `executed/5f_xgboost_pretrained_inception.ipynb` - XGBoost + Pretrained Inception
+- **5g**: `executed/5g_xgboost_i3d.ipynb` - XGBoost + I3D
+- **5h**: `executed/5h_xgboost_r2plus1d.ipynb` - XGBoost + R(2+1)D
+
 ### Individual Model Notebooks (5c-5u)
 
 Each model notebook includes:
@@ -121,6 +133,54 @@ sbatch scripts/slurm_jobs/slurm_stage5c.sh  # For model 5c, etc.
 
 # Or Python API (see commented code in notebooks)
 ```
+
+### Running Notebooks Locally
+
+To execute notebooks in-place using `jupyter nbconvert`:
+
+```bash
+# Execute a single notebook in-place
+jupyter nbconvert --to notebook --execute --inplace src/notebooks/executed/notebook_name.ipynb
+
+# Execute all notebooks in executed/ directory as background daemons (no logs)
+cd /path/to/fvc
+for nb in src/notebooks/executed/*.ipynb; do
+    nohup jupyter nbconvert --to notebook --execute --inplace "$nb" > /dev/null 2>&1 &
+    echo "Started: $(basename "$nb") (PID: $!)"
+done
+
+# Execute with error handling (stops on first failure)
+for nb in src/notebooks/executed/*.ipynb; do
+    echo "Executing $nb..."
+    jupyter nbconvert --to notebook --execute --inplace "$nb" || exit 1
+done
+```
+
+**Note**: The `--execute` flag runs all cells, and `--inplace` updates the notebook file with outputs. Use `nohup` and redirect to `/dev/null` for background execution without logs.
+
+### Running Notebooks on Remote Cluster
+
+To execute notebooks on a SLURM cluster, use the conversion utility:
+
+```bash
+# Convert notebook to Python script and create SLURM job
+cd src/notebooks
+python run_notebook_on_cluster.py --notebook 5i_xgboost_vit_gru.ipynb --create-slurm --submit
+
+# Or convert all notebooks in a directory
+python run_notebook_on_cluster.py --notebook-dir unexecuted/ --create-slurm
+```
+
+Alternatively, use `jupyter nbconvert` directly on the cluster:
+
+```bash
+# SSH into cluster and run
+ssh user@cluster
+cd /path/to/fvc
+jupyter nbconvert --to notebook --execute --inplace src/notebooks/notebook_name.ipynb
+```
+
+See [CLUSTER_EXECUTION.md](CLUSTER_EXECUTION.md) for detailed instructions.
 
 ## Technical Highlights
 

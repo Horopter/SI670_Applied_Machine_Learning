@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/15aae8dc1c774e9a9d4a7fdfca4b104a/artifacts
+end_time: 1765602516379
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 15aae8dc1c774e9a9d4a7fdfca4b104a
+run_name: unleashed-colt-415
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602515534
+status: 3
+tags: []
+user_id: suzanef

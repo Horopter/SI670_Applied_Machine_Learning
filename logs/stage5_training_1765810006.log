@@ -393,3 +393,59 @@ Final Training - xgboost_vit_transformer - Fold 2/5 (full dataset)
 2025-12-15 18:46:21 [INFO] [lib.training._xgboost_pretrained:554] ViT model (vit_transformer) requires 256x256 input. Setting fixed_size=256 (VideoDataset will resize even with use_scaled_videos=True).
 2025-12-15 18:46:21 [INFO] [lib.training._xgboost_pretrained:604] Extracting features using vit_transformer (num_frames=400)...
 2025-12-15 18:46:21 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-15 19:31:08 [INFO] [lib.training._xgboost_pretrained:410] Extracted features shape: (656, 3072)
+2025-12-15 19:31:09 [INFO] [lib.training._xgboost_pretrained:622] Cleared vit_transformer model from GPU after feature extraction
+2025-12-15 19:31:09 [INFO] [lib.training.pipeline:500] Fold 2 - Val Loss: 0.0429, Val Acc: 0.9970, Val F1: 0.9970, Val Precision: 0.9970, Val Recall: 0.9970
+2025-12-15 19:31:09 [INFO] [lib.training._xgboost_pretrained:840] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_vit_transformer/fold_2
+2025-12-15 19:31:09 [INFO] [lib.training.pipeline:516] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_vit_transformer/fold_2
+2025-12-15 19:31:09 [INFO] [lib.training.pipeline:1976] 
+Final Training - xgboost_vit_transformer - Fold 3/5 (full dataset)
+2025-12-15 19:31:09 [INFO] [lib.training.pipeline:448] Training XGBoost model xgboost_vit_transformer on fold 3...
+2025-12-15 19:31:09 [INFO] [lib.training._xgboost_pretrained:636] Training XGBoost on features from vit_transformer...
+2025-12-15 19:31:09 [INFO] [lib.training._xgboost_pretrained:637] Processing 2622 videos...
+2025-12-15 19:31:09 [INFO] [lib.training._xgboost_pretrained:522] Loading pretrained model: vit_transformer (num_frames=400)
+2025-12-15 19:31:10 [INFO] [timm.models._builder:217] Loading pretrained weights from Hugging Face hub (timm/vit_base_patch16_224.augreg2_in21k_ft_in1k)
+2025-12-15 19:31:10 [INFO] [timm.models._hub:232] [timm/vit_base_patch16_224.augreg2_in21k_ft_in1k] Safe alternative available for 'pytorch_model.bin' (as 'model.safetensors'). Loading weights using safetensors.
+2025-12-15 19:31:10 [INFO] [timm.layers.pos_embed:57] Resized position embedding: (14, 14) to (16, 16).
+2025-12-15 19:31:11 [INFO] [lib.training._xgboost_pretrained:537] Loaded vit_transformer model to GPU, cleared cache
+2025-12-15 19:31:11 [INFO] [lib.training._xgboost_pretrained:554] ViT model (vit_transformer) requires 256x256 input. Setting fixed_size=256 (VideoDataset will resize even with use_scaled_videos=True).
+2025-12-15 19:31:11 [INFO] [lib.training._xgboost_pretrained:604] Extracting features using vit_transformer (num_frames=400)...
+2025-12-15 19:31:11 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-15 22:34:28 [INFO] [lib.training._xgboost_pretrained:410] Extracted features shape: (2622, 3072)
+2025-12-15 22:34:29 [INFO] [lib.training._xgboost_pretrained:622] Cleared vit_transformer model from GPU after feature extraction
+2025-12-15 22:34:29 [INFO] [lib.training._xgboost_pretrained:660] Removing collinear features...
+2025-12-15 22:34:29 [INFO] [lib.training.feature_preprocessing:77] Removed 0 features with zero variance
+2025-12-15 22:34:31 [INFO] [lib.training.feature_preprocessing:141] Removed 0 collinear features (correlation >= 0.95)
+2025-12-15 22:34:31 [INFO] [lib.training.feature_preprocessing:162] Final feature count: 3072/3072 (100.0% retained)
+2025-12-15 22:34:31 [INFO] [lib.training._xgboost_pretrained:667] Using 3072 features after collinearity removal
+2025-12-15 22:34:31 [INFO] [lib.training._xgboost_pretrained:683] Class distribution: Class 0=1284, Class 1=1338, scale_pos_weight=0.960
+2025-12-15 22:34:31 [INFO] [lib.training._xgboost_pretrained:701] Training XGBoost: 2097 train samples, 525 validation samples for early stopping
+2025-12-15 22:34:31 [INFO] [lib.training._xgboost_pretrained:704] Training XGBoost with improved architecture (multi-layer + temporal pooling + class weights + early stopping)...
+2025-12-15 22:35:28 [INFO] [lib.training._xgboost_pretrained:770] Early stopping: Best iteration = 200 (out of 200)
+2025-12-15 22:35:28 [INFO] [lib.training._xgboost_pretrained:772] ✓ XGBoost trained on pretrained model features with enhanced feature extraction
+2025-12-15 22:35:28 [INFO] [lib.training._xgboost_pretrained:522] Loading pretrained model: vit_transformer (num_frames=400)
+2025-12-15 22:35:30 [INFO] [timm.models._builder:217] Loading pretrained weights from Hugging Face hub (timm/vit_base_patch16_224.augreg2_in21k_ft_in1k)
+2025-12-15 22:35:30 [INFO] [timm.models._hub:232] [timm/vit_base_patch16_224.augreg2_in21k_ft_in1k] Safe alternative available for 'pytorch_model.bin' (as 'model.safetensors'). Loading weights using safetensors.
+2025-12-15 22:35:30 [INFO] [timm.layers.pos_embed:57] Resized position embedding: (14, 14) to (16, 16).
+2025-12-15 22:35:30 [INFO] [lib.training._xgboost_pretrained:537] Loaded vit_transformer model to GPU, cleared cache
+2025-12-15 22:35:30 [INFO] [lib.training._xgboost_pretrained:554] ViT model (vit_transformer) requires 256x256 input. Setting fixed_size=256 (VideoDataset will resize even with use_scaled_videos=True).
+2025-12-15 22:35:30 [INFO] [lib.training._xgboost_pretrained:604] Extracting features using vit_transformer (num_frames=400)...
+2025-12-15 22:35:30 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-15 23:19:50 [INFO] [lib.training._xgboost_pretrained:410] Extracted features shape: (655, 3072)
+2025-12-15 23:19:51 [INFO] [lib.training._xgboost_pretrained:622] Cleared vit_transformer model from GPU after feature extraction
+2025-12-15 23:19:51 [INFO] [lib.training.pipeline:500] Fold 3 - Val Loss: 0.0505, Val Acc: 0.9924, Val F1: 0.9925, Val Precision: 0.9940, Val Recall: 0.9910
+2025-12-15 23:19:51 [INFO] [lib.training._xgboost_pretrained:840] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_vit_transformer/fold_3
+2025-12-15 23:19:51 [INFO] [lib.training.pipeline:516] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_vit_transformer/fold_3
+2025-12-15 23:19:51 [INFO] [lib.training.pipeline:1976] 
+Final Training - xgboost_vit_transformer - Fold 4/5 (full dataset)
+2025-12-15 23:19:51 [INFO] [lib.training.pipeline:448] Training XGBoost model xgboost_vit_transformer on fold 4...
+2025-12-15 23:19:51 [INFO] [lib.training._xgboost_pretrained:636] Training XGBoost on features from vit_transformer...
+2025-12-15 23:19:51 [INFO] [lib.training._xgboost_pretrained:637] Processing 2622 videos...
+2025-12-15 23:19:52 [INFO] [lib.training._xgboost_pretrained:522] Loading pretrained model: vit_transformer (num_frames=400)
+2025-12-15 23:19:53 [INFO] [timm.models._builder:217] Loading pretrained weights from Hugging Face hub (timm/vit_base_patch16_224.augreg2_in21k_ft_in1k)
+2025-12-15 23:19:53 [INFO] [timm.models._hub:232] [timm/vit_base_patch16_224.augreg2_in21k_ft_in1k] Safe alternative available for 'pytorch_model.bin' (as 'model.safetensors'). Loading weights using safetensors.
+2025-12-15 23:19:53 [INFO] [timm.layers.pos_embed:57] Resized position embedding: (14, 14) to (16, 16).
+2025-12-15 23:19:53 [INFO] [lib.training._xgboost_pretrained:537] Loaded vit_transformer model to GPU, cleared cache
+2025-12-15 23:19:53 [INFO] [lib.training._xgboost_pretrained:554] ViT model (vit_transformer) requires 256x256 input. Setting fixed_size=256 (VideoDataset will resize even with use_scaled_videos=True).
+2025-12-15 23:19:53 [INFO] [lib.training._xgboost_pretrained:604] Extracting features using vit_transformer (num_frames=400)...
+2025-12-15 23:19:53 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction

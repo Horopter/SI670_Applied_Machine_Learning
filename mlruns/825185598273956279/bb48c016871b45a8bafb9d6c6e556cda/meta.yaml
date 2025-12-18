@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/bb48c016871b45a8bafb9d6c6e556cda/artifacts
+end_time: 1765595400551
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: bb48c016871b45a8bafb9d6c6e556cda
+run_name: welcoming-yak-262
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765595399875
+status: 3
+tags: []
+user_id: suzanef

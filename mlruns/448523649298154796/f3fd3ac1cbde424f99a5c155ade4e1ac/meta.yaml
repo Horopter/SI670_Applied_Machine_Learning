@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/f3fd3ac1cbde424f99a5c155ade4e1ac/artifacts
+end_time: 1765609552405
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: f3fd3ac1cbde424f99a5c155ade4e1ac
+run_name: whimsical-lark-245
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609551714
+status: 3
+tags: []
+user_id: santoshd

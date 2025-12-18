@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/c151d1c00f854bfbbac9a99820be614b/artifacts
+end_time: 1765597704432
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: c151d1c00f854bfbbac9a99820be614b
+run_name: nebulous-mole-842
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597704341
+status: 3
+tags: []
+user_id: suzanef

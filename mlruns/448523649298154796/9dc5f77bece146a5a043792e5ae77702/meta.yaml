@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/9dc5f77bece146a5a043792e5ae77702/artifacts
+end_time: 1765609724861
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 9dc5f77bece146a5a043792e5ae77702
+run_name: languid-moth-122
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609716681
+status: 3
+tags: []
+user_id: santoshd

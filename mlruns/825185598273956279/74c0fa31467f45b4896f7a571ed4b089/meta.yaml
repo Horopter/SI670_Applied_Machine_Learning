@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/74c0fa31467f45b4896f7a571ed4b089/artifacts
+end_time: 1765593528791
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 74c0fa31467f45b4896f7a571ed4b089
+run_name: dazzling-moose-971
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593524221
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/7a46e082663a45e6a8f96e966355035d/artifacts
+end_time: 1765587480338
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 7a46e082663a45e6a8f96e966355035d
+run_name: shivering-chimp-82
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587475080
+status: 3
+tags: []
+user_id: urvim

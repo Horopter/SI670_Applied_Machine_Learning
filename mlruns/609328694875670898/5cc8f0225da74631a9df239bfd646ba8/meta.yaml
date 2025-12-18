@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/5cc8f0225da74631a9df239bfd646ba8/artifacts
+end_time: 1765588656402
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 5cc8f0225da74631a9df239bfd646ba8
+run_name: receptive-boar-357
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588651861
+status: 3
+tags: []
+user_id: urvim

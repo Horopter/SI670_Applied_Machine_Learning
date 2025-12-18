@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/36de7fb223c542168db1f689af7053e5/artifacts
+end_time: 1765587263827
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 36de7fb223c542168db1f689af7053e5
+run_name: brawny-crab-612
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587258657
+status: 3
+tags: []
+user_id: urvim

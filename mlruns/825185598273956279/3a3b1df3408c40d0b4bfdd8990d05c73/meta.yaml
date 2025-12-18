@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/3a3b1df3408c40d0b4bfdd8990d05c73/artifacts
+end_time: 1765593967372
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 3a3b1df3408c40d0b4bfdd8990d05c73
+run_name: clumsy-robin-1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593962223
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/38ec8a14717943898ac2d4547d425274/artifacts
+end_time: 1765586682728
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 38ec8a14717943898ac2d4547d425274
+run_name: hilarious-foal-610
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586663992
+status: 3
+tags: []
+user_id: urvim

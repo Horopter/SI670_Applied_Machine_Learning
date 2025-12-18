@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/93aaa011da4c4b4f8eb40cf9b9f67b33/artifacts
+end_time: 1765593149956
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 93aaa011da4c4b4f8eb40cf9b9f67b33
+run_name: skittish-bee-639
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592997273
+status: 3
+tags: []
+user_id: urvim

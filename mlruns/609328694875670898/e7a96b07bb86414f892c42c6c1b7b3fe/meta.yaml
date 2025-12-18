@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/e7a96b07bb86414f892c42c6c1b7b3fe/artifacts
+end_time: 1765584496891
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: e7a96b07bb86414f892c42c6c1b7b3fe
+run_name: bouncy-deer-307
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584476274
+status: 3
+tags: []
+user_id: urvim

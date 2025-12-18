@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/e6cb7dd5db974a1599185f83fe8947bd/artifacts
+end_time: 1765749402189
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: e6cb7dd5db974a1599185f83fe8947bd
+run_name: brawny-robin-842
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765749371619
+status: 3
+tags: []
+user_id: urvim

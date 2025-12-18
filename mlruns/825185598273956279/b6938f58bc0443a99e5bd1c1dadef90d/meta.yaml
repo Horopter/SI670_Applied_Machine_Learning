@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/b6938f58bc0443a99e5bd1c1dadef90d/artifacts
+end_time: 1765584865092
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: b6938f58bc0443a99e5bd1c1dadef90d
+run_name: bustling-penguin-342
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584863382
+status: 3
+tags: []
+user_id: suzanef

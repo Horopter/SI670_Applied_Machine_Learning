@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/159c789a2b2e43a2ab2998bb2e0c9004/artifacts
+end_time: 1765590871949
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 159c789a2b2e43a2ab2998bb2e0c9004
+run_name: unleashed-auk-971
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590866771
+status: 3
+tags: []
+user_id: suzanef

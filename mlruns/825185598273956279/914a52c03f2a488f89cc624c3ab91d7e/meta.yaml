@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/914a52c03f2a488f89cc624c3ab91d7e/artifacts
+end_time: 1765595261902
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 914a52c03f2a488f89cc624c3ab91d7e
+run_name: funny-grub-942
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765595260184
+status: 3
+tags: []
+user_id: suzanef

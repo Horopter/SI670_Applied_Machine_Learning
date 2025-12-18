@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/041d89832c6f4e48b3cfbfbbfa75f994/artifacts
+end_time: 1765586159768
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 041d89832c6f4e48b3cfbfbbfa75f994
+run_name: able-turtle-582
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586158097
+status: 3
+tags: []
+user_id: suzanef

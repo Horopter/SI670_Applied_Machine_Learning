@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/f96ca9e40c9b4faa891a2e9cb4d5cfae/artifacts
+end_time: 1765590768652
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: f96ca9e40c9b4faa891a2e9cb4d5cfae
+run_name: caring-jay-465
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590764113
+status: 3
+tags: []
+user_id: suzanef

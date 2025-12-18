@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/0ba6a9b276c741808cb89aa407343bd7/artifacts
+end_time: 1765594199424
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 0ba6a9b276c741808cb89aa407343bd7
+run_name: dashing-skunk-762
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594190984
+status: 3
+tags: []
+user_id: urvim

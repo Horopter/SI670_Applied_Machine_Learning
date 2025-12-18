@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/15a67681489d4671b1713ffcd2952c2d/artifacts
+end_time: 1765584456041
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 15a67681489d4671b1713ffcd2952c2d
+run_name: unequaled-auk-343
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584430576
+status: 3
+tags: []
+user_id: urvim

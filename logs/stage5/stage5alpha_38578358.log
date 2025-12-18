@@ -1,0 +1,460 @@
+==========================================
+STAGE 5ALPHA LOG FILE INITIALIZED
+Timestamp: Wed Dec 17 20:26:07 EST 2025
+Log file: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/logs/stage5/stage5alpha_38578358.log
+==========================================
+Executing command...
+Python: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/bin/python3
+Script: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/src/scripts/train_sklearn_logreg.py
+Arguments: --project-root /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc --scaled-metadata /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/scaled_videos/scaled_metadata.arrow --features-stage2 /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage2/features_metadata.arrow --features-stage4 /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage4/features_scaled_metadata.arrow --output-dir data/stage5/sklearn_logreg --n-splits 5 --delete-existing
+==========================================
+2025-12-17 20:30:04,256 [INFO] [__main__:93] ================================================================================
+2025-12-17 20:30:04,256 [INFO] [__main__:94] STAGE 5ALPHA: sklearn LogisticRegression Training Script Starting
+2025-12-17 20:30:04,256 [INFO] [__main__:95] ================================================================================
+2025-12-17 20:30:04,256 [INFO] [__main__:689] Parsing command line arguments...
+2025-12-17 20:30:04,258 [INFO] [__main__:708] Arguments parsed successfully:
+2025-12-17 20:30:04,258 [INFO] [__main__:709]   project-root: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc
+2025-12-17 20:30:04,258 [INFO] [__main__:710]   scaled-metadata: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/scaled_videos/scaled_metadata.arrow
+2025-12-17 20:30:04,258 [INFO] [__main__:711]   features-stage2: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage2/features_metadata.arrow
+2025-12-17 20:30:04,258 [INFO] [__main__:712]   features-stage4: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage4/features_scaled_metadata.arrow
+2025-12-17 20:30:04,258 [INFO] [__main__:713]   output-dir: data/stage5/sklearn_logreg
+2025-12-17 20:30:04,258 [INFO] [__main__:714]   n-splits: 5
+2025-12-17 20:30:04,258 [INFO] [__main__:715]   delete-existing: True
+2025-12-17 20:30:04,269 [INFO] [__main__:160] Deleted existing output directory (clean mode): /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/sklearn_logreg
+2025-12-17 20:30:04,269 [INFO] [__main__:170] Loading scaled metadata...
+2025-12-17 20:30:07,809 [INFO] [__main__:182] Data validation passed: 3278 rows (> 3000 required)
+2025-12-17 20:30:07,809 [INFO] [__main__:184] ✓ Data validation check successful
+2025-12-17 20:30:08,193 [INFO] [__main__:209] Labels: [0, 1] -> {0: 0, 1: 1}
+2025-12-17 20:30:08,193 [INFO] [__main__:210] Loaded 3278 videos
+2025-12-17 20:30:08,193 [INFO] [__main__:213] Loading features from Stage 2/4...
+2025-12-17 20:30:08,363 [INFO] [lib.training.feature_preprocessing:320] Loading Stage 2 features...
+2025-12-17 20:30:08,363 [INFO] [lib.training.feature_preprocessing:321] Stage 2 path: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage2/features_metadata.arrow
+2025-12-17 20:30:08,426 [INFO] [lib.training.feature_preprocessing:331] ✓ Loaded Stage 2 metadata: 3278 rows, 18 columns
+2025-12-17 20:30:42,746 [INFO] [lib.training.feature_preprocessing:369] Converting Stage 2 features to numpy array...
+2025-12-17 20:30:42,751 [INFO] [lib.training.feature_preprocessing:373] Stage 2 array shape: (3278, 15), dtype: float64
+2025-12-17 20:30:42,751 [INFO] [lib.training.feature_preprocessing:376] Loaded 15 Stage 2 features (3278/3278 videos matched)
+2025-12-17 20:30:42,993 [INFO] [lib.training.feature_preprocessing:403] Loading Stage 4 features...
+2025-12-17 20:30:42,993 [INFO] [lib.training.feature_preprocessing:404] Stage 4 path: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage4/features_scaled_metadata.arrow
+2025-12-17 20:30:43,810 [INFO] [lib.training.feature_preprocessing:414] ✓ Loaded Stage 4 metadata: 3277 rows, 26 columns
+2025-12-17 20:31:18,216 [INFO] [lib.training.feature_preprocessing:452] Converting Stage 4 features to numpy array...
+2025-12-17 20:31:18,222 [INFO] [lib.training.feature_preprocessing:456] Stage 4 array shape: (3278, 23), dtype: float64
+2025-12-17 20:31:18,222 [INFO] [lib.training.feature_preprocessing:459] Loaded 23 Stage 4 features (3277/3278 videos matched)
+2025-12-17 20:31:18,222 [INFO] [lib.training.feature_preprocessing:488] Combining 2 feature arrays...
+2025-12-17 20:31:18,222 [INFO] [lib.training.feature_preprocessing:489] Feature array shapes: [(3278, 15), (3278, 23)]
+2025-12-17 20:31:18,222 [INFO] [lib.training.feature_preprocessing:494] Combined 38 features from 2 stages
+2025-12-17 20:31:18,222 [INFO] [lib.training.feature_preprocessing:495] Combined feature matrix shape: (3278, 38), dtype: float64
+2025-12-17 20:31:18,222 [INFO] [lib.training.feature_preprocessing:496] Combined feature matrix size: 0.95 MB
+2025-12-17 20:31:18,223 [INFO] [lib.training.feature_preprocessing:517] Stage 2: 3278 videos, Stage 4: 3277 videos
+2025-12-17 20:31:18,223 [INFO] [lib.training.feature_preprocessing:518] Intersection (videos with BOTH Stage 2 AND Stage 4): 3277 videos
+2025-12-17 20:31:18,223 [INFO] [lib.training.feature_preprocessing:532] ✓ Found 3277 videos with valid features
+2025-12-17 20:31:18,590 [INFO] [lib.training.feature_training_pipeline:186] Removing collinear features BEFORE data splits (to avoid data leakage)...
+2025-12-17 20:31:18,590 [INFO] [lib.training.feature_training_pipeline:187]   Original feature count: 38
+2025-12-17 20:31:18,594 [INFO] [lib.training.feature_preprocessing:77] Removed 2 features with zero variance
+2025-12-17 20:31:18,623 [INFO] [lib.training.feature_preprocessing:141] Removed 10 collinear features (correlation >= 0.95)
+2025-12-17 20:31:18,623 [INFO] [lib.training.feature_preprocessing:162] Final feature count: 26/38 (68.4% retained)
+2025-12-17 20:31:18,623 [INFO] [lib.training.feature_training_pipeline:196]   Final feature count after collinearity removal: 26/38 (68.4% retained)
+2025-12-17 20:31:18,623 [INFO] [__main__:232] Filtered to 3277 videos with valid features
+2025-12-17 20:31:18,623 [INFO] [__main__:237] ✓ Loaded 26 features for 3277 videos
+2025-12-17 20:31:18,623 [INFO] [__main__:238]   Input dimension: 26
+2025-12-17 20:31:18,623 [INFO] [__main__:249] Creating 60-20-20 stratified train-val-test split...
+2025-12-17 20:31:18,628 [INFO] [__main__:257] Train: 1966, Val: 655, Test: 656
+2025-12-17 20:31:18,628 [INFO] [__main__:265] ================================================================================
+2025-12-17 20:31:18,628 [INFO] [__main__:266] HYPERPARAMETER SEARCH: Using 20% stratified sample for efficiency
+2025-12-17 20:31:18,628 [INFO] [__main__:267] ================================================================================
+2025-12-17 20:31:18,630 [INFO] [__main__:285] Hyperparameter search sample: 524 rows (20.0% of 2621 total)
+2025-12-17 20:31:18,630 [INFO] [__main__:286]   Sample train: 419, Sample val: 105
+2025-12-17 20:31:18,631 [INFO] [__main__:315] Hyperparameter search: 60 combinations
+2025-12-17 20:31:18,631 [INFO] [__main__:324] Scaling features for hyperparameter search (20% sample)...
+2025-12-17 20:31:18,631 [INFO] [__main__:325] Sample train shape: (419, 26), dtype: float64
+2025-12-17 20:31:18,632 [INFO] [__main__:342] Feature scaling completed for hyperparameter search. Scaled shape: (419, 26)
+2025-12-17 20:31:18,632 [INFO] [__main__:360] Grid search 1/60: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'}
+2025-12-17 20:31:18,632 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:18,632 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,634 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,634 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,634 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,637 [INFO] [__main__:360] Grid search 2/60: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'}
+2025-12-17 20:31:18,637 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:18,637 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,752 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,752 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,752 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,754 [INFO] [__main__:360] Grid search 3/60: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'}
+2025-12-17 20:31:18,754 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:18,754 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,756 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,756 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,756 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,758 [INFO] [__main__:360] Grid search 4/60: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'}
+2025-12-17 20:31:18,758 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:18,758 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,762 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,762 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,762 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,764 [INFO] [__main__:360] Grid search 5/60: {'C': 0.01, 'l1_ratio': 0.1, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'}
+2025-12-17 20:31:18,764 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.01, 'l1_ratio': 0.1, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:18,764 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,770 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,770 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,770 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,772 [INFO] [__main__:360] Grid search 6/60: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'}
+2025-12-17 20:31:18,772 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:18,772 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,773 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,773 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,773 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,775 [INFO] [__main__:360] Grid search 7/60: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'}
+2025-12-17 20:31:18,775 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:18,775 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,777 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,777 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,778 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,779 [INFO] [__main__:360] Grid search 8/60: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'}
+2025-12-17 20:31:18,779 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:18,779 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,781 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,781 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,781 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,783 [INFO] [__main__:360] Grid search 9/60: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'}
+2025-12-17 20:31:18,783 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:18,783 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,787 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,787 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,788 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,789 [INFO] [__main__:360] Grid search 10/60: {'C': 0.01, 'l1_ratio': 0.5, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'}
+2025-12-17 20:31:18,789 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.01, 'l1_ratio': 0.5, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:18,789 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,792 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,792 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,792 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,794 [INFO] [__main__:360] Grid search 11/60: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'}
+2025-12-17 20:31:18,794 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:18,794 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,795 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,795 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,796 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,797 [INFO] [__main__:360] Grid search 12/60: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'}
+2025-12-17 20:31:18,797 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:18,797 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,800 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,800 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,800 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,802 [INFO] [__main__:360] Grid search 13/60: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'}
+2025-12-17 20:31:18,802 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:18,802 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,803 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,803 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,804 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,805 [INFO] [__main__:360] Grid search 14/60: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'}
+2025-12-17 20:31:18,805 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.01, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:18,805 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,809 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,810 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,810 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,811 [INFO] [__main__:360] Grid search 15/60: {'C': 0.01, 'l1_ratio': 0.9, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'}
+2025-12-17 20:31:18,812 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.01, 'l1_ratio': 0.9, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:18,812 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,814 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,814 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,814 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,816 [INFO] [__main__:360] Grid search 16/60: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'}
+2025-12-17 20:31:18,816 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:18,816 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,818 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,818 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,819 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,820 [INFO] [__main__:360] Grid search 17/60: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'}
+2025-12-17 20:31:18,820 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:18,820 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,852 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,852 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,852 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,854 [INFO] [__main__:360] Grid search 18/60: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'}
+2025-12-17 20:31:18,854 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:18,854 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,856 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,856 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,857 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,858 [INFO] [__main__:360] Grid search 19/60: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'}
+2025-12-17 20:31:18,858 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:18,858 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,873 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,873 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,873 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,875 [INFO] [__main__:360] Grid search 20/60: {'C': 0.1, 'l1_ratio': 0.1, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'}
+2025-12-17 20:31:18,875 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.1, 'l1_ratio': 0.1, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:18,875 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,893 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,893 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,893 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,895 [INFO] [__main__:360] Grid search 21/60: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'}
+2025-12-17 20:31:18,895 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:18,895 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,897 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,897 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,897 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,899 [INFO] [__main__:360] Grid search 22/60: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'}
+2025-12-17 20:31:18,899 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:18,899 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,931 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,931 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,931 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,933 [INFO] [__main__:360] Grid search 23/60: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'}
+2025-12-17 20:31:18,933 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:18,933 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,935 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,935 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,935 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,937 [INFO] [__main__:360] Grid search 24/60: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'}
+2025-12-17 20:31:18,937 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:18,937 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,952 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,952 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,952 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,954 [INFO] [__main__:360] Grid search 25/60: {'C': 0.1, 'l1_ratio': 0.5, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'}
+2025-12-17 20:31:18,954 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.1, 'l1_ratio': 0.5, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:18,954 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,972 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,972 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,972 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,974 [INFO] [__main__:360] Grid search 26/60: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'}
+2025-12-17 20:31:18,974 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:18,974 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:18,976 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:18,976 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:18,976 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:18,978 [INFO] [__main__:360] Grid search 27/60: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'}
+2025-12-17 20:31:18,978 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:18,978 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,010 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,010 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,010 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,011 [INFO] [__main__:360] Grid search 28/60: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'}
+2025-12-17 20:31:19,012 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:19,012 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,014 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,014 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,014 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,016 [INFO] [__main__:360] Grid search 29/60: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'}
+2025-12-17 20:31:19,016 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.1, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:19,016 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,031 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,031 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,031 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,033 [INFO] [__main__:360] Grid search 30/60: {'C': 0.1, 'l1_ratio': 0.9, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'}
+2025-12-17 20:31:19,033 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 0.1, 'l1_ratio': 0.9, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:19,033 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,055 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,055 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,055 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,057 [INFO] [__main__:360] Grid search 31/60: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'}
+2025-12-17 20:31:19,057 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:19,057 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,070 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,070 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,071 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,072 [INFO] [__main__:360] Grid search 32/60: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'}
+2025-12-17 20:31:19,072 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:19,072 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,200 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,200 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,200 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,202 [INFO] [__main__:360] Grid search 33/60: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'}
+2025-12-17 20:31:19,202 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:19,202 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,205 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,205 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,205 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,207 [INFO] [__main__:360] Grid search 34/60: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'}
+2025-12-17 20:31:19,207 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:19,207 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,277 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,277 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,277 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,279 [INFO] [__main__:360] Grid search 35/60: {'C': 1.0, 'l1_ratio': 0.1, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'}
+2025-12-17 20:31:19,279 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 1.0, 'l1_ratio': 0.1, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:19,279 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,367 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,367 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,367 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,369 [INFO] [__main__:360] Grid search 36/60: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'}
+2025-12-17 20:31:19,369 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:19,369 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,382 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,382 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,383 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,384 [INFO] [__main__:360] Grid search 37/60: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'}
+2025-12-17 20:31:19,384 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:19,384 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,511 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,511 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,512 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,513 [INFO] [__main__:360] Grid search 38/60: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'}
+2025-12-17 20:31:19,513 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:19,513 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,516 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,516 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,517 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,518 [INFO] [__main__:360] Grid search 39/60: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'}
+2025-12-17 20:31:19,518 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:19,518 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,588 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,588 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,588 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,589 [INFO] [__main__:360] Grid search 40/60: {'C': 1.0, 'l1_ratio': 0.5, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'}
+2025-12-17 20:31:19,590 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 1.0, 'l1_ratio': 0.5, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:19,590 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,694 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,695 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,695 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,696 [INFO] [__main__:360] Grid search 41/60: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'}
+2025-12-17 20:31:19,697 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:19,697 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,710 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,710 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,711 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,712 [INFO] [__main__:360] Grid search 42/60: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'}
+2025-12-17 20:31:19,712 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:19,712 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,839 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,839 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,840 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,841 [INFO] [__main__:360] Grid search 43/60: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'}
+2025-12-17 20:31:19,841 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:19,841 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,844 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,844 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,845 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,846 [INFO] [__main__:360] Grid search 44/60: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'}
+2025-12-17 20:31:19,846 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 1.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:19,846 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:19,916 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:19,916 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:19,916 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:19,918 [INFO] [__main__:360] Grid search 45/60: {'C': 1.0, 'l1_ratio': 0.9, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'}
+2025-12-17 20:31:19,918 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 1.0, 'l1_ratio': 0.9, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:19,918 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:20,038 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:20,038 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:20,039 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:20,040 [INFO] [__main__:360] Grid search 46/60: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'}
+2025-12-17 20:31:20,040 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:20,040 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:20,062 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:20,062 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:20,062 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:20,064 [INFO] [__main__:360] Grid search 47/60: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'}
+2025-12-17 20:31:20,064 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:20,064 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:20,247 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:20,247 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:20,248 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:20,249 [INFO] [__main__:360] Grid search 48/60: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'}
+2025-12-17 20:31:20,249 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:20,249 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:20,253 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:20,253 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:20,253 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:20,255 [INFO] [__main__:360] Grid search 49/60: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'}
+2025-12-17 20:31:20,255 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:20,255 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:20,395 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:20,395 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:20,395 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:20,397 [INFO] [__main__:360] Grid search 50/60: {'C': 10.0, 'l1_ratio': 0.1, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'}
+2025-12-17 20:31:20,397 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 10.0, 'l1_ratio': 0.1, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:20,397 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:20,567 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:20,567 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:20,568 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:20,569 [INFO] [__main__:360] Grid search 51/60: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'}
+2025-12-17 20:31:20,569 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:20,569 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:20,591 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:20,591 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:20,591 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:20,593 [INFO] [__main__:360] Grid search 52/60: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'}
+2025-12-17 20:31:20,593 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:20,593 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:20,777 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:20,777 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:20,778 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:20,780 [INFO] [__main__:360] Grid search 53/60: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'}
+2025-12-17 20:31:20,780 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:20,780 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:20,783 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:20,784 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:20,784 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:20,785 [INFO] [__main__:360] Grid search 54/60: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'}
+2025-12-17 20:31:20,786 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:20,786 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:20,925 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:20,926 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:20,926 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:20,927 [INFO] [__main__:360] Grid search 55/60: {'C': 10.0, 'l1_ratio': 0.5, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'}
+2025-12-17 20:31:20,928 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 10.0, 'l1_ratio': 0.5, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:20,928 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:21,104 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:21,104 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:21,104 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:21,106 [INFO] [__main__:360] Grid search 56/60: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'}
+2025-12-17 20:31:21,106 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:21,106 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:21,127 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:21,127 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:21,128 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:21,129 [INFO] [__main__:360] Grid search 57/60: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'}
+2025-12-17 20:31:21,129 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l1', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:21,129 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:21,313 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:21,313 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:21,314 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:21,315 [INFO] [__main__:360] Grid search 58/60: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'}
+2025-12-17 20:31:21,315 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'liblinear'} (20% sample)
+2025-12-17 20:31:21,315 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:21,319 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:21,319 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:21,319 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:21,321 [INFO] [__main__:360] Grid search 59/60: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'}
+2025-12-17 20:31:21,321 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 10.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:21,321 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:21,461 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:21,461 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:21,461 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:21,462 [INFO] [__main__:360] Grid search 60/60: {'C': 10.0, 'l1_ratio': 0.9, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'}
+2025-12-17 20:31:21,463 [INFO] [__main__:364] Training LogisticRegression with params: {'C': 10.0, 'l1_ratio': 0.9, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'} (20% sample)
+2025-12-17 20:31:21,463 [INFO] [__main__:365] Training data: 419 samples, 26 features
+2025-12-17 20:31:21,645 [INFO] [__main__:376] ✓ Model.fit() completed successfully
+2025-12-17 20:31:21,645 [INFO] [__main__:388] Running model.predict_proba() on validation set (20% sample)...
+2025-12-17 20:31:21,645 [INFO] [__main__:393] ✓ predict_proba() completed (shape: (105, 2))
+2025-12-17 20:31:21,647 [INFO] [__main__:439] Best hyperparameters from 20% sample: {'C': 0.01, 'l1_ratio': 0.1, 'max_iter': 1000, 'penalty': 'elasticnet', 'solver': 'saga'} (val_f1: 0.7481)
+2025-12-17 20:31:21,647 [INFO] [__main__:442] ================================================================================
+2025-12-17 20:31:21,647 [INFO] [__main__:443] FINAL TRAINING: Using full dataset with best hyperparameters
+2025-12-17 20:31:21,647 [INFO] [__main__:444] ================================================================================
+2025-12-17 20:31:21,647 [INFO] [__main__:447] Scaling full dataset for final training...
+2025-12-17 20:31:21,649 [INFO] [__main__:457] Full dataset scaled. Train: 1966, Val: 655, Test: 656
+2025-12-17 20:31:21,651 [INFO] [__main__:471] CV fold 1/5
+2025-12-17 20:31:21,683 [INFO] [__main__:471] CV fold 2/5
+2025-12-17 20:31:21,714 [INFO] [__main__:471] CV fold 3/5
+2025-12-17 20:31:21,743 [INFO] [__main__:471] CV fold 4/5
+2025-12-17 20:31:21,775 [INFO] [__main__:471] CV fold 5/5
+2025-12-17 20:31:21,807 [INFO] [__main__:534] CV F1: 0.6337 ± 0.0365
+2025-12-17 20:31:21,807 [INFO] [__main__:535] CV AUC: 0.6787 ± 0.0372
+2025-12-17 20:31:21,807 [INFO] [__main__:536] CV Precision: 0.6056 ± 0.0238
+2025-12-17 20:31:21,807 [INFO] [__main__:537] CV Recall: 0.6657 ± 0.0545
+2025-12-17 20:31:21,807 [INFO] [__main__:540] Training final model on full training+validation set...
+2025-12-17 20:31:21,841 [INFO] [__main__:568] Test F1: 0.6337
+2025-12-17 20:31:21,841 [INFO] [__main__:569] Test AUC: 0.6978
+2025-12-17 20:31:21,841 [INFO] [__main__:570] Test AP: 0.6767
+2025-12-17 20:31:21,841 [INFO] [__main__:571] Test Acc: 0.6159
+2025-12-17 20:31:21,841 [INFO] [__main__:572] Test Precision: 0.6176
+2025-12-17 20:31:21,841 [INFO] [__main__:573] Test Recall: 0.6507
+2025-12-17 20:31:21,841 [INFO] [__main__:574] Test Confusion Matrix:
+[[186 135]
+ [117 218]]
+2025-12-17 20:31:21,841 [INFO] [__main__:575] Test Class 0 - Precision: 0.6139, Recall: 0.5794, F1: 0.5962
+2025-12-17 20:31:21,841 [INFO] [__main__:576] Test Class 1 - Precision: 0.6176, Recall: 0.6507, F1: 0.6337
+2025-12-17 20:31:23,255 [INFO] [__main__:677] Training complete. Results saved to: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/sklearn_logreg
+2025-12-17 20:31:23,255 [INFO] [__main__:678] ================================================================================
+2025-12-17 20:31:23,255 [INFO] [__main__:679] STAGE 5ALPHA TRAINING COMPLETED SUCCESSFULLY
+2025-12-17 20:31:23,255 [INFO] [__main__:680] ================================================================================

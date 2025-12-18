@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/93b2b02e1009460b9c5c3de0011ed160/artifacts
+end_time: 1765591394828
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 93b2b02e1009460b9c5c3de0011ed160
+run_name: bedecked-hen-81
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591380007
+status: 3
+tags: []
+user_id: urvim

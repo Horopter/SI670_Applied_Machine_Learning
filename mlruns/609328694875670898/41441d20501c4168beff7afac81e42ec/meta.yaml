@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/41441d20501c4168beff7afac81e42ec/artifacts
+end_time: 1765586465786
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 41441d20501c4168beff7afac81e42ec
+run_name: useful-foal-452
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586449033
+status: 3
+tags: []
+user_id: urvim

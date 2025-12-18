@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/9e39f53bfc674683be9d76cf1148f40b/artifacts
+end_time: 1765588706873
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 9e39f53bfc674683be9d76cf1148f40b
+run_name: resilient-shark-787
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588702087
+status: 3
+tags: []
+user_id: urvim

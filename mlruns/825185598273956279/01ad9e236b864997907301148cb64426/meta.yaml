@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/01ad9e236b864997907301148cb64426/artifacts
+end_time: 1765754991493
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 01ad9e236b864997907301148cb64426
+run_name: rumbling-moose-240
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765754968792
+status: 3
+tags: []
+user_id: suzanef

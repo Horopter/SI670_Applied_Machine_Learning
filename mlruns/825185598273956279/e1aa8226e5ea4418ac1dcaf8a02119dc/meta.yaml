@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/e1aa8226e5ea4418ac1dcaf8a02119dc/artifacts
+end_time: 1765584912603
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: e1aa8226e5ea4418ac1dcaf8a02119dc
+run_name: puzzled-pig-894
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584910906
+status: 3
+tags: []
+user_id: suzanef

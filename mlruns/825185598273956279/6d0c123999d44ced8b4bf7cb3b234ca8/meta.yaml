@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/6d0c123999d44ced8b4bf7cb3b234ca8/artifacts
+end_time: 1765597585932
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 6d0c123999d44ced8b4bf7cb3b234ca8
+run_name: abrasive-boar-763
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597585244
+status: 3
+tags: []
+user_id: suzanef

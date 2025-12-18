@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/e9a48686bab14a9d82d6d17124f401ab/artifacts
+end_time: 1765604517661
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: e9a48686bab14a9d82d6d17124f401ab
+run_name: bedecked-shark-674
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604516978
+status: 3
+tags: []
+user_id: suzanef

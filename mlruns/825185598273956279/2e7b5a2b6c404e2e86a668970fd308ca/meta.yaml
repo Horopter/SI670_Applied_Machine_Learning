@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/2e7b5a2b6c404e2e86a668970fd308ca/artifacts
+end_time: 1765588040441
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 2e7b5a2b6c404e2e86a668970fd308ca
+run_name: rumbling-loon-317
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588035762
+status: 3
+tags: []
+user_id: suzanef

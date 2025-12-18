@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/a23b059fab0f41aba8812c23375c5847/artifacts
+end_time: 1765591293565
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: a23b059fab0f41aba8812c23375c5847
+run_name: bold-stag-14
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591275654
+status: 3
+tags: []
+user_id: urvim

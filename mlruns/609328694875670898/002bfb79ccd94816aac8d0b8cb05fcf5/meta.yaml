@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/002bfb79ccd94816aac8d0b8cb05fcf5/artifacts
+end_time: 1765592936558
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 002bfb79ccd94816aac8d0b8cb05fcf5
+run_name: bemused-moth-973
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592928074
+status: 3
+tags: []
+user_id: urvim

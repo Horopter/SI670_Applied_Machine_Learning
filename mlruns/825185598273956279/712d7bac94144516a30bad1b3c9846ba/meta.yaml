@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/712d7bac94144516a30bad1b3c9846ba/artifacts
+end_time: 1765592398068
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 712d7bac94144516a30bad1b3c9846ba
+run_name: merciful-mole-758
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592392965
+status: 3
+tags: []
+user_id: suzanef

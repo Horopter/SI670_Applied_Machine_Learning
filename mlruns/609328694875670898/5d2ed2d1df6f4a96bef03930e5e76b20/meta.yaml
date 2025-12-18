@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/5d2ed2d1df6f4a96bef03930e5e76b20/artifacts
+end_time: 1765749494615
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 5d2ed2d1df6f4a96bef03930e5e76b20
+run_name: stately-chimp-586
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765749486491
+status: 3
+tags: []
+user_id: urvim

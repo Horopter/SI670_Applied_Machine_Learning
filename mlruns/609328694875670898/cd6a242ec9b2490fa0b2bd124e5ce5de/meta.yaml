@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/cd6a242ec9b2490fa0b2bd124e5ce5de/artifacts
+end_time: 1765758881184
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: cd6a242ec9b2490fa0b2bd124e5ce5de
+run_name: masked-whale-751
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765758823504
+status: 3
+tags: []
+user_id: urvim

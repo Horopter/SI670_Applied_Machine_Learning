@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/2b3d002b9e4c48549f802b5414f11ed7/artifacts
+end_time: 1765588374838
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 2b3d002b9e4c48549f802b5414f11ed7
+run_name: bemused-doe-86
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588369702
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/4977553dc8f54f668d2f5822e4d16b3d/artifacts
+end_time: 1765584781939
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: 4977553dc8f54f668d2f5822e4d16b3d
+run_name: gregarious-panda-836
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584754544
+status: 3
+tags: []
+user_id: santoshd

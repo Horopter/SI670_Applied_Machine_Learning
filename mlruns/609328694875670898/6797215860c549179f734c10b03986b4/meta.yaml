@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/6797215860c549179f734c10b03986b4/artifacts
+end_time: 1765587222866
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 6797215860c549179f734c10b03986b4
+run_name: calm-fox-991
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587217546
+status: 3
+tags: []
+user_id: urvim

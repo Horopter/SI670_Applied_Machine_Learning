@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/e90588f1d98f4e1da214824f8a50498f/artifacts
+end_time: 1765589716955
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: e90588f1d98f4e1da214824f8a50498f
+run_name: agreeable-deer-155
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589711865
+status: 3
+tags: []
+user_id: suzanef

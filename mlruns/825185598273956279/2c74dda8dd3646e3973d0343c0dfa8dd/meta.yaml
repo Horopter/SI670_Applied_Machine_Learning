@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/2c74dda8dd3646e3973d0343c0dfa8dd/artifacts
+end_time: 1765594520339
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 2c74dda8dd3646e3973d0343c0dfa8dd
+run_name: upbeat-hare-879
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594519574
+status: 3
+tags: []
+user_id: suzanef

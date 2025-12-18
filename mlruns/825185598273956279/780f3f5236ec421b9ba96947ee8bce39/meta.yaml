@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/780f3f5236ec421b9ba96947ee8bce39/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 780f3f5236ec421b9ba96947ee8bce39
+run_name: spiffy-shrimp-643
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765749495484
+status: 1
+tags: []
+user_id: suzanef

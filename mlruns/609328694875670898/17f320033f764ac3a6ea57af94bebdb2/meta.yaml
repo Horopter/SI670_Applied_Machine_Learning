@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/17f320033f764ac3a6ea57af94bebdb2/artifacts
+end_time: 1765589906264
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 17f320033f764ac3a6ea57af94bebdb2
+run_name: monumental-bug-433
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589896059
+status: 3
+tags: []
+user_id: urvim

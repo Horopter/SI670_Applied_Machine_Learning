@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/cb94eeea7ab54c45885c6b3a3833046a/artifacts
+end_time: 1765602593372
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: cb94eeea7ab54c45885c6b3a3833046a
+run_name: popular-donkey-789
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602592697
+status: 3
+tags: []
+user_id: suzanef

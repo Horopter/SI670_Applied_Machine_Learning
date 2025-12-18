@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/1e3ea5168cd0449db55b53a54e982097/artifacts
+end_time: 1765594525713
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 1e3ea5168cd0449db55b53a54e982097
+run_name: angry-chimp-165
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594525044
+status: 3
+tags: []
+user_id: suzanef

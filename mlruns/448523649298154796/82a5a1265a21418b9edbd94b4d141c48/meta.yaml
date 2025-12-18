@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/82a5a1265a21418b9edbd94b4d141c48/artifacts
+end_time: 1765609524634
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 82a5a1265a21418b9edbd94b4d141c48
+run_name: defiant-quail-537
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609523940
+status: 3
+tags: []
+user_id: santoshd

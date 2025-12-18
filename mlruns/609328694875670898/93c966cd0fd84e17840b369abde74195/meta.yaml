@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/93c966cd0fd84e17840b369abde74195/artifacts
+end_time: 1765743015066
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 93c966cd0fd84e17840b369abde74195
+run_name: unequaled-fawn-142
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765743006418
+status: 3
+tags: []
+user_id: urvim

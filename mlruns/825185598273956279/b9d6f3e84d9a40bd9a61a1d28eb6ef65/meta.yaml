@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/b9d6f3e84d9a40bd9a61a1d28eb6ef65/artifacts
+end_time: 1765604521789
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: b9d6f3e84d9a40bd9a61a1d28eb6ef65
+run_name: stylish-wolf-85
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604521107
+status: 3
+tags: []
+user_id: suzanef

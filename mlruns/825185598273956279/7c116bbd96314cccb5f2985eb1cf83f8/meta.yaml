@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/7c116bbd96314cccb5f2985eb1cf83f8/artifacts
+end_time: 1765588267484
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 7c116bbd96314cccb5f2985eb1cf83f8
+run_name: polite-wren-448
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588262822
+status: 3
+tags: []
+user_id: suzanef

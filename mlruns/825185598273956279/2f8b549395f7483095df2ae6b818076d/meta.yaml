@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/2f8b549395f7483095df2ae6b818076d/artifacts
+end_time: 1765585158990
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 2f8b549395f7483095df2ae6b818076d
+run_name: bald-pug-230
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585157362
+status: 3
+tags: []
+user_id: suzanef

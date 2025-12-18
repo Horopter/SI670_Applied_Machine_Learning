@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/254c79d803744415a5363ac3ea3edf7f/artifacts
+end_time: 1765590757079
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 254c79d803744415a5363ac3ea3edf7f
+run_name: resilient-tern-858
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590752319
+status: 3
+tags: []
+user_id: urvim

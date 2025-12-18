@@ -55,19 +55,27 @@ class LogisticRegressionBaseline:
         self.features_stage4_path = features_stage4_path
         self.use_stage2_only = use_stage2_only
         self.scaler = StandardScaler()
-        self.model = LogisticRegression(max_iter=1000, random_state=42)
+        # Use solver that supports warm_start for epoch-wise training
+        self.model = LogisticRegression(
+            max_iter=1000, 
+            random_state=42,
+            solver='saga',  # Supports warm_start for iterative training
+            warm_start=True  # Enable iterative training for epoch-wise curves
+        )
         self.is_fitted = False
+        self.tracker = None  # Will be set if epoch-wise training is requested
         self.feature_indices = None  # Indices of kept features after collinearity removal
         self.feature_names = None  # Names of kept features
         self.project_root = None  # Store project root for prediction
     
-    def fit(self, df: pl.DataFrame, project_root: str) -> None:
+    def fit(self, df: pl.DataFrame, project_root: str, output_dir: Optional[str] = None) -> None:
         """
         Train the model.
         
         Args:
             df: DataFrame with video_path and label columns
             project_root: Project root directory
+            output_dir: Optional output directory for metrics logging (defaults to project_root/data/stage5/{model_type}/fold_1)
         """
         self.project_root = project_root
         
@@ -245,9 +253,100 @@ class LogisticRegressionBaseline:
         logger.info(f"Label distribution: {np.bincount(y)}")
         sys.stdout.flush()
         
+        # Check if we should do epoch-wise training (if tracker is available or output_dir is provided)
+        # This allows capturing training/validation metrics per iteration
+        num_epochs = 100  # Default number of iterations for epoch-wise training
+        
+        # Create tracker if output_dir is provided but tracker is not set
+        if self.tracker is None and output_dir is not None:
+            try:
+                from lib.mlops.config import ExperimentTracker
+                from pathlib import Path
+                output_path = Path(output_dir)
+                output_path.mkdir(parents=True, exist_ok=True)
+                self.tracker = ExperimentTracker(output_path)
+                logger.info(f"Created tracker for epoch-wise training at {output_dir}")
+            except Exception as e:
+                logger.debug(f"Could not create tracker from output_dir {output_dir}: {e}")
+        
+        # Default output_dir if not provided and tracker is not available
+        if self.tracker is None and output_dir is None:
+            try:
+                from lib.mlops.config import ExperimentTracker
+                from pathlib import Path
+                # Default to project_root/data/stage5/logistic_regression/fold_1
+                default_output_dir = Path(project_root) / "data" / "stage5" / "logistic_regression" / "fold_1"
+                default_output_dir.mkdir(parents=True, exist_ok=True)
+                self.tracker = ExperimentTracker(default_output_dir)
+                logger.info(f"Created tracker with default output_dir: {default_output_dir}")
+            except Exception as e:
+                logger.debug(f"Could not create tracker with default output_dir: {e}")
+        
+        do_epoch_wise = self.tracker is not None
+        
         try:
-            self.model.fit(features_scaled, y)
-            logger.info("✓ Logistic Regression training completed")
+            if do_epoch_wise:
+                # Train iteratively to capture epoch-wise metrics
+                logger.info(f"Training Logistic Regression with {num_epochs} iterations (epoch-wise)...")
+                
+                # Split data for validation during training
+                from sklearn.model_selection import train_test_split
+                X_train_iter, X_val_iter, y_train_iter, y_val_iter = train_test_split(
+                    features_scaled, y, test_size=0.2, random_state=42, stratify=y
+                )
+                
+                # Train iteratively
+                for epoch in range(num_epochs):
+                    # Fit with max_iter=1 and warm_start=True for iterative training
+                    self.model.max_iter = epoch + 1
+                    self.model.fit(X_train_iter, y_train_iter)
+                    
+                    # Evaluate on validation set
+                    from sklearn.metrics import log_loss, accuracy_score, f1_score
+                    val_probs = self.model.predict_proba(X_val_iter)
+                    val_preds = self.model.predict(X_val_iter)
+                    
+                    val_loss = log_loss(y_val_iter, val_probs)
+                    val_acc = accuracy_score(y_val_iter, val_preds)
+                    val_f1 = f1_score(y_val_iter, val_preds, average='binary', zero_division=0)
+                    
+                    # Log validation metrics
+                    self.tracker.log_epoch_metrics(
+                        epoch + 1,
+                        {
+                            "loss": float(val_loss),
+                            "accuracy": float(val_acc),
+                            "f1": float(val_f1)
+                        },
+                        phase="val"
+                    )
+                    
+                    # Also evaluate on training set periodically
+                    if (epoch + 1) % 10 == 0 or epoch == 0:
+                        train_probs = self.model.predict_proba(X_train_iter)
+                        train_preds = self.model.predict(X_train_iter)
+                        train_loss = log_loss(y_train_iter, train_probs)
+                        train_acc = accuracy_score(y_train_iter, train_preds)
+                        train_f1 = f1_score(y_train_iter, train_preds, average='binary', zero_division=0)
+                        
+                        self.tracker.log_epoch_metrics(
+                            epoch + 1,
+                            {
+                                "loss": float(train_loss),
+                                "accuracy": float(train_acc),
+                                "f1": float(train_f1)
+                            },
+                            phase="train"
+                        )
+                
+                # Final fit on full dataset
+                self.model.max_iter = num_epochs
+                self.model.fit(features_scaled, y)
+                logger.info(f"✓ Logistic Regression training completed ({num_epochs} iterations)")
+            else:
+                # Standard training (no epoch-wise tracking)
+                self.model.fit(features_scaled, y)
+                logger.info("✓ Logistic Regression training completed")
         except MemoryError as e:
             logger.critical(f"Memory error during Logistic Regression training: {e}")
             logger.critical(f"Feature matrix size: {features_scaled.nbytes / 1024**2:.2f} MB")

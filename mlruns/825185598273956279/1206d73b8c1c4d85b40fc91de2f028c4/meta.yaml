@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/1206d73b8c1c4d85b40fc91de2f028c4/artifacts
+end_time: 1765592218517
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 1206d73b8c1c4d85b40fc91de2f028c4
+run_name: dapper-shrimp-184
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592213379
+status: 3
+tags: []
+user_id: suzanef

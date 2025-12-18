@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/c6c94f3653df4f319ad3c39bd5e49824/artifacts
+end_time: 1765583474951
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: c6c94f3653df4f319ad3c39bd5e49824
+run_name: likeable-gnat-743
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765583415565
+status: 3
+tags: []
+user_id: santoshd

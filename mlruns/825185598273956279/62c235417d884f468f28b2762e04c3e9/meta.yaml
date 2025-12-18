@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/62c235417d884f468f28b2762e04c3e9/artifacts
+end_time: 1765603391102
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 62c235417d884f468f28b2762e04c3e9
+run_name: zealous-chimp-99
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603391006
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/94813944babe45d9a9f644bd81d95d00/artifacts
+end_time: 1765593191367
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 94813944babe45d9a9f644bd81d95d00
+run_name: nimble-sponge-132
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593182191
+status: 3
+tags: []
+user_id: urvim

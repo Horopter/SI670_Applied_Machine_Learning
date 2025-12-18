@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/3d5b8f9ef1f7485984855d72a9f4ae69/artifacts
+end_time: 1765585814816
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 3d5b8f9ef1f7485984855d72a9f4ae69
+run_name: fun-seal-361
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585813652
+status: 3
+tags: []
+user_id: suzanef

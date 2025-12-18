@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/2de57ae9a5ec4dc7b1e0c77873342968/artifacts
+end_time: 1765604572578
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 2de57ae9a5ec4dc7b1e0c77873342968
+run_name: respected-newt-542
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604571895
+status: 3
+tags: []
+user_id: suzanef

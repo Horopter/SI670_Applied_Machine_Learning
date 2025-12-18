@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/ed631b407bd94b4cb85ef7b3fa937e23/artifacts
+end_time: 1765592770497
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: ed631b407bd94b4cb85ef7b3fa937e23
+run_name: adaptable-gnat-209
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592764306
+status: 3
+tags: []
+user_id: suzanef

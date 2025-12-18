@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/e504807c126a4a73ba000dd9b7524e99/artifacts
+end_time: 1765585635282
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: e504807c126a4a73ba000dd9b7524e99
+run_name: abundant-mule-441
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585633558
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/545b8f9406a3475bb8b6aaa210965b0e/artifacts
+end_time: 1765602560230
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 545b8f9406a3475bb8b6aaa210965b0e
+run_name: valuable-colt-325
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602559551
+status: 3
+tags: []
+user_id: suzanef

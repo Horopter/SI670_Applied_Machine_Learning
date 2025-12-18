@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/4d4ed63279754a87b529c02653f416ff/artifacts
+end_time: 1765590684848
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 4d4ed63279754a87b529c02653f416ff
+run_name: respected-bug-595
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590675163
+status: 3
+tags: []
+user_id: urvim

@@ -366,20 +366,51 @@ def train_gradient_boosting(
                     eval_metric="logloss",
                     use_label_encoder=False
                 )
+                # Fit with eval_set to capture training history
+                model_cv.fit(
+                    X_train_cv, y_train_cv,
+                    eval_set=[(X_train_cv, y_train_cv), (X_val_cv, y_val_cv)],
+                    verbose=False
+                )
             elif model_name == "lightgbm":
                 model_cv = lgb.LGBMClassifier(
                     **best_params,
                     random_state=42,
                     verbose=-1
                 )
+                model_cv.fit(X_train_cv, y_train_cv)
             elif model_name == "catboost":
                 model_cv = cb.CatBoostClassifier(
                     **best_params,
                     random_seed=42,
                     verbose=False
                 )
+                model_cv.fit(X_train_cv, y_train_cv)
             
-            model_cv.fit(X_train_cv, y_train_cv)
+            # Capture XGBoost training history for epoch-wise curves
+            if model_name == "xgboost" and hasattr(model_cv, 'evals_result_'):
+                try:
+                    from lib.mlops.config import ExperimentTracker
+                    from pathlib import Path
+                    
+                    # Create fold output directory
+                    fold_output_dir = Path(output_dir) / model_name / f"fold_{fold_idx + 1}"
+                    fold_output_dir.mkdir(parents=True, exist_ok=True)
+                    
+                    tracker = ExperimentTracker(fold_output_dir)
+                    evals_result = model_cv.evals_result_
+                    
+                    if evals_result:
+                        train_losses = evals_result.get('validation_0', {}).get('logloss', [])
+                        val_losses = evals_result.get('validation_1', {}).get('logloss', [])
+                        
+                        if train_losses and val_losses:
+                            for round_idx, (train_loss, val_loss) in enumerate(zip(train_losses, val_losses)):
+                                tracker.log_epoch_metrics(round_idx + 1, {"loss": float(train_loss)}, phase="train")
+                                tracker.log_epoch_metrics(round_idx + 1, {"loss": float(val_loss)}, phase="val")
+                            logger.info(f"Logged {len(train_losses)} boosting rounds to metrics.jsonl for fold {fold_idx + 1}")
+                except Exception as e:
+                    logger.debug(f"Could not capture XGBoost training history for fold {fold_idx + 1}: {e}")
             
             val_probs_cv_full = model_cv.predict_proba(X_val_cv)
             if val_probs_cv_full.shape[1] != 2:

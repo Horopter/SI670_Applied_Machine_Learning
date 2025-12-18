@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/e13684be98914a4bb5e004c69423d02b/artifacts
+end_time: 1765602452233
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: e13684be98914a4bb5e004c69423d02b
+run_name: kindly-grub-473
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602451542
+status: 3
+tags: []
+user_id: suzanef

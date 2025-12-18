@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/2ed203a060b74c29861493d75c91fab8/artifacts
+end_time: 1765590015986
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 2ed203a060b74c29861493d75c91fab8
+run_name: illustrious-yak-952
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590010874
+status: 3
+tags: []
+user_id: suzanef

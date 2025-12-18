@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/7f9e26f55b164d31bafc3fa4cdb16966/artifacts
+end_time: 1765596379466
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 7f9e26f55b164d31bafc3fa4cdb16966
+run_name: illustrious-boar-846
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765596379381
+status: 3
+tags: []
+user_id: suzanef

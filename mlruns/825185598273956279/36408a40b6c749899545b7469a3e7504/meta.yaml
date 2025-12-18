@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/36408a40b6c749899545b7469a3e7504/artifacts
+end_time: 1765594531130
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 36408a40b6c749899545b7469a3e7504
+run_name: marvelous-finch-442
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594531048
+status: 3
+tags: []
+user_id: suzanef

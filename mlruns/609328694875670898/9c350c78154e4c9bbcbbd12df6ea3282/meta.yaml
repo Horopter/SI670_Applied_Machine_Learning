@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/9c350c78154e4c9bbcbbd12df6ea3282/artifacts
+end_time: 1765758597940
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 9c350c78154e4c9bbcbbd12df6ea3282
+run_name: upset-hawk-339
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765758510817
+status: 3
+tags: []
+user_id: urvim

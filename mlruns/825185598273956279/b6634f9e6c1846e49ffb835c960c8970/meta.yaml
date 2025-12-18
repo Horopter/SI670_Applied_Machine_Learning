@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/b6634f9e6c1846e49ffb835c960c8970/artifacts
+end_time: 1765589602576
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: b6634f9e6c1846e49ffb835c960c8970
+run_name: polite-horse-778
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589597453
+status: 3
+tags: []
+user_id: suzanef

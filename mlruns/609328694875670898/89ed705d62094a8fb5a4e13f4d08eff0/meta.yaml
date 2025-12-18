@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/89ed705d62094a8fb5a4e13f4d08eff0/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 89ed705d62094a8fb5a4e13f4d08eff0
+run_name: masked-bird-198
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765739427206
+status: 1
+tags: []
+user_id: urvim

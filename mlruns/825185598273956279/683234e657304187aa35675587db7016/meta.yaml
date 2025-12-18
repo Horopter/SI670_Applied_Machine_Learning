@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/683234e657304187aa35675587db7016/artifacts
+end_time: 1765596525114
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 683234e657304187aa35675587db7016
+run_name: bustling-mink-183
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765596524440
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/84cb52eff6574818b61bb3dd66a0eb3d/artifacts
+end_time: 1765594623392
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 84cb52eff6574818b61bb3dd66a0eb3d
+run_name: melodic-hound-364
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594622721
+status: 3
+tags: []
+user_id: suzanef

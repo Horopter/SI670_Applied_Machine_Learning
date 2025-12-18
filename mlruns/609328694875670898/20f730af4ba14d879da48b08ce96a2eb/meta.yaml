@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/20f730af4ba14d879da48b08ce96a2eb/artifacts
+end_time: 1765594208945
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 20f730af4ba14d879da48b08ce96a2eb
+run_name: receptive-colt-548
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594200190
+status: 3
+tags: []
+user_id: urvim

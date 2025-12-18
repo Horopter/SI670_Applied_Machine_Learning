@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/7e8728e8759647e991ed7382c78cea91/artifacts
+end_time: 1765609562359
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 7e8728e8759647e991ed7382c78cea91
+run_name: capricious-squid-402
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609562255
+status: 3
+tags: []
+user_id: santoshd

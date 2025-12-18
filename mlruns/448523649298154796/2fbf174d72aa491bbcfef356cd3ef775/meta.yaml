@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/2fbf174d72aa491bbcfef356cd3ef775/artifacts
+end_time: 1765609546935
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 2fbf174d72aa491bbcfef356cd3ef775
+run_name: handsome-penguin-145
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609546200
+status: 3
+tags: []
+user_id: santoshd

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/c999a52aa5e74c8b87a778282419b63e/artifacts
+end_time: 1765589582738
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: c999a52aa5e74c8b87a778282419b63e
+run_name: bemused-snake-224
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589578223
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/621f93e210ff443ab81f171edc92124b/artifacts
+end_time: 1765588794562
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 621f93e210ff443ab81f171edc92124b
+run_name: agreeable-quail-785
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588790429
+status: 3
+tags: []
+user_id: urvim

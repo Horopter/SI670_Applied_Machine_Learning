@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/deeff37ee53b4708915c89664df82005/artifacts
+end_time: 1765588924781
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: deeff37ee53b4708915c89664df82005
+run_name: clean-goat-519
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588919941
+status: 3
+tags: []
+user_id: urvim

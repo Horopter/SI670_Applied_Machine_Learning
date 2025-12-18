@@ -1,0 +1,6 @@
+artifact_location: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796
+creation_time: 1765609502749
+experiment_id: '448523649298154796'
+last_update_time: 1765609502749
+lifecycle_stage: active
+name: pretrained_inception

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/7a79da150c114a899a03fcd62797d1b4/artifacts
+end_time: 1765587428074
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 7a79da150c114a899a03fcd62797d1b4
+run_name: nervous-frog-78
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587422940
+status: 3
+tags: []
+user_id: urvim

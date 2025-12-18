@@ -55,17 +55,19 @@ class SVMBaseline:
         self.scaler = StandardScaler()
         self.model = LinearSVC(max_iter=1000, random_state=42)
         self.is_fitted = False
+        self.tracker = None  # Will be set if metrics logging is requested
         self.feature_indices = None  # Indices of kept features after collinearity removal
         self.feature_names = None  # Names of kept features
         self.project_root = None  # Store project root for prediction
     
-    def fit(self, df: pl.DataFrame, project_root: str) -> None:
+    def fit(self, df: pl.DataFrame, project_root: str, output_dir: Optional[str] = None) -> None:
         """
         Train the model.
         
         Args:
             df: DataFrame with video_path and label columns
             project_root: Project root directory
+            output_dir: Optional output directory for metrics logging (defaults to project_root/data/stage5/{model_type}/fold_1)
         """
         self.project_root = project_root
         
@@ -203,10 +205,63 @@ class SVMBaseline:
             logger.warning("NaN or Inf values in scaled features, replacing with 0")
             features_scaled = np.nan_to_num(features_scaled, nan=0.0, posinf=0.0, neginf=0.0)
         
+        # Create tracker if output_dir is provided but tracker is not set
+        if self.tracker is None and output_dir is not None:
+            try:
+                from lib.mlops.config import ExperimentTracker
+                from pathlib import Path
+                output_path = Path(output_dir)
+                output_path.mkdir(parents=True, exist_ok=True)
+                self.tracker = ExperimentTracker(output_path)
+                logger.info(f"Created tracker for metrics logging at {output_dir}")
+            except Exception as e:
+                logger.debug(f"Could not create tracker from output_dir {output_dir}: {e}")
+        
+        # Default output_dir if not provided and tracker is not available
+        if self.tracker is None and output_dir is None:
+            try:
+                from lib.mlops.config import ExperimentTracker
+                from pathlib import Path
+                # Default to project_root/data/stage5/svm/fold_1
+                default_output_dir = Path(project_root) / "data" / "stage5" / "svm" / "fold_1"
+                default_output_dir.mkdir(parents=True, exist_ok=True)
+                self.tracker = ExperimentTracker(default_output_dir)
+                logger.info(f"Created tracker with default output_dir: {default_output_dir}")
+            except Exception as e:
+                logger.debug(f"Could not create tracker with default output_dir: {e}")
+        
         # Train model
         logger.info("Training Linear SVM...")
         try:
             self.model.fit(features_scaled, y)
+            
+            # Log final metrics if tracker is available
+            # Note: SVM doesn't support iterative training, so we only log final metrics
+            if self.tracker is not None:
+                from sklearn.metrics import accuracy_score, f1_score
+                # Split for validation metrics
+                from sklearn.model_selection import train_test_split
+                X_train_iter, X_val_iter, y_train_iter, y_val_iter = train_test_split(
+                    features_scaled, y, test_size=0.2, random_state=42, stratify=y
+                )
+                
+                # Re-fit on training split for validation
+                model_temp = LinearSVC(max_iter=1000, random_state=42)
+                model_temp.fit(X_train_iter, y_train_iter)
+                val_preds = model_temp.predict(X_val_iter)
+                
+                val_acc = accuracy_score(y_val_iter, val_preds)
+                val_f1 = f1_score(y_val_iter, val_preds, average='binary', zero_division=0)
+                
+                # Log as epoch 1 (single training step)
+                self.tracker.log_epoch_metrics(
+                    1,
+                    {
+                        "accuracy": float(val_acc),
+                        "f1": float(val_f1)
+                    },
+                    phase="val"
+                )
         except Exception as e:
             logger.error(f"Failed to train Linear SVM: {e}", exc_info=True)
             raise

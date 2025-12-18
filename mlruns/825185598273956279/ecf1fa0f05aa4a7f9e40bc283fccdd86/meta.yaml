@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/ecf1fa0f05aa4a7f9e40bc283fccdd86/artifacts
+end_time: 1765592551138
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: ecf1fa0f05aa4a7f9e40bc283fccdd86
+run_name: bustling-rook-455
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592546037
+status: 3
+tags: []
+user_id: suzanef

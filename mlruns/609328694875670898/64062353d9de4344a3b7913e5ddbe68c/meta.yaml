@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/64062353d9de4344a3b7913e5ddbe68c/artifacts
+end_time: 1765586662758
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 64062353d9de4344a3b7913e5ddbe68c
+run_name: resilient-sloth-132
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586642769
+status: 3
+tags: []
+user_id: urvim

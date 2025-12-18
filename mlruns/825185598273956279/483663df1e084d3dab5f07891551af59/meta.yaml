@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/483663df1e084d3dab5f07891551af59/artifacts
+end_time: 1765603983079
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 483663df1e084d3dab5f07891551af59
+run_name: delicate-kite-964
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603982979
+status: 3
+tags: []
+user_id: suzanef

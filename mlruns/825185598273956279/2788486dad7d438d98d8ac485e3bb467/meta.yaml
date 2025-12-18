@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/2788486dad7d438d98d8ac485e3bb467/artifacts
+end_time: 1765597794622
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 2788486dad7d438d98d8ac485e3bb467
+run_name: mysterious-calf-344
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597793943
+status: 3
+tags: []
+user_id: suzanef

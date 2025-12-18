@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/76b5020a63d64b788c98bfd088b2b572/artifacts
+end_time: 1765592154584
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 76b5020a63d64b788c98bfd088b2b572
+run_name: fun-shoat-872
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592149487
+status: 3
+tags: []
+user_id: suzanef

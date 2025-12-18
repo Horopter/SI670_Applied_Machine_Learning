@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/8172ad16e37345a099f1885075fb31de/artifacts
+end_time: 1765586559968
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: 8172ad16e37345a099f1885075fb31de
+run_name: melodic-sponge-807
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586523049
+status: 3
+tags: []
+user_id: santoshd

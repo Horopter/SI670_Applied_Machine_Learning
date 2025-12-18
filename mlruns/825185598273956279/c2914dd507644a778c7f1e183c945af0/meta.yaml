@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/c2914dd507644a778c7f1e183c945af0/artifacts
+end_time: 1765597572187
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: c2914dd507644a778c7f1e183c945af0
+run_name: nebulous-ray-403
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597571507
+status: 3
+tags: []
+user_id: suzanef

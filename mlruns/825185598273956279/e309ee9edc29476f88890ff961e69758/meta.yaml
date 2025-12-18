@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/e309ee9edc29476f88890ff961e69758/artifacts
+end_time: 1765595570854
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: e309ee9edc29476f88890ff961e69758
+run_name: salty-skunk-490
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765595569373
+status: 3
+tags: []
+user_id: suzanef

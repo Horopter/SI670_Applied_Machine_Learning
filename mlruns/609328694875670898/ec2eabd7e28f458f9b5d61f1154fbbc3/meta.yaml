@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/ec2eabd7e28f458f9b5d61f1154fbbc3/artifacts
+end_time: 1765584936846
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: ec2eabd7e28f458f9b5d61f1154fbbc3
+run_name: fun-shad-986
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584921348
+status: 3
+tags: []
+user_id: urvim

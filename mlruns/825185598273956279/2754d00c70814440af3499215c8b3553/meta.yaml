@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/2754d00c70814440af3499215c8b3553/artifacts
+end_time: 1765590117892
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 2754d00c70814440af3499215c8b3553
+run_name: intelligent-cat-987
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590112751
+status: 3
+tags: []
+user_id: suzanef

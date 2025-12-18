@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/bb92d9c7ccb5447aab05025d471bb4fc/artifacts
+end_time: 1765740465382
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: bb92d9c7ccb5447aab05025d471bb4fc
+run_name: rumbling-cub-160
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765740464566
+status: 3
+tags: []
+user_id: suzanef

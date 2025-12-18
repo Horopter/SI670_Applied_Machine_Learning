@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/c215d95407a54a8e88faba4cf0d5668c/artifacts
+end_time: 1765597693603
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: c215d95407a54a8e88faba4cf0d5668c
+run_name: puzzled-fly-43
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597692924
+status: 3
+tags: []
+user_id: suzanef

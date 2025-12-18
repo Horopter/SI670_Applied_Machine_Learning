@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/766b01db2cc94ce692e7c0017a2c5a8f/artifacts
+end_time: 1765609683974
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 766b01db2cc94ce692e7c0017a2c5a8f
+run_name: sincere-tern-367
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609683280
+status: 3
+tags: []
+user_id: santoshd

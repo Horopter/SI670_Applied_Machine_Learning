@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/8d621292dcf5454c9eb9bf202cc15d98/artifacts
+end_time: 1765603441109
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 8d621292dcf5454c9eb9bf202cc15d98
+run_name: welcoming-mouse-385
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603440216
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/ce7e3e47f19a4842bb8c120e3afd5c7e/artifacts
+end_time: 1765742962583
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: ce7e3e47f19a4842bb8c120e3afd5c7e
+run_name: welcoming-sponge-822
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765742961638
+status: 3
+tags: []
+user_id: urvim

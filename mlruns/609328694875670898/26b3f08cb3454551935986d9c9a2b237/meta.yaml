@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/26b3f08cb3454551935986d9c9a2b237/artifacts
+end_time: 1765590419117
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 26b3f08cb3454551935986d9c9a2b237
+run_name: stately-tern-383
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590409585
+status: 3
+tags: []
+user_id: urvim

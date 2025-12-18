@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/faf741074bbd45c49ec0dabb4c424220/artifacts
+end_time: 1765594472638
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: faf741074bbd45c49ec0dabb4c424220
+run_name: mercurial-bee-930
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594471969
+status: 3
+tags: []
+user_id: suzanef

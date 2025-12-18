@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/07126f97e2d44d959e48405217d7f7a0/artifacts
+end_time: 1765749510591
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 07126f97e2d44d959e48405217d7f7a0
+run_name: trusting-perch-896
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765749503314
+status: 3
+tags: []
+user_id: urvim

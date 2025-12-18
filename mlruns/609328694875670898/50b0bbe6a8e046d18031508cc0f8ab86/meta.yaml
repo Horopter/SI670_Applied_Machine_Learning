@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/50b0bbe6a8e046d18031508cc0f8ab86/artifacts
+end_time: 1765589058905
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 50b0bbe6a8e046d18031508cc0f8ab86
+run_name: suave-pig-186
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589053999
+status: 3
+tags: []
+user_id: urvim

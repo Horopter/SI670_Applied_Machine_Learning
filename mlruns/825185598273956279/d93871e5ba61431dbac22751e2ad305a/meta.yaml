@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/d93871e5ba61431dbac22751e2ad305a/artifacts
+end_time: 1765603967969
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: d93871e5ba61431dbac22751e2ad305a
+run_name: mercurial-doe-288
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603967121
+status: 3
+tags: []
+user_id: suzanef

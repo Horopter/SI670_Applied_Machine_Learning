@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/c8dc5c7d558a4cf1805213f9ec7712ec/artifacts
+end_time: 1765597626721
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: c8dc5c7d558a4cf1805213f9ec7712ec
+run_name: thoughtful-bird-331
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597625994
+status: 3
+tags: []
+user_id: suzanef

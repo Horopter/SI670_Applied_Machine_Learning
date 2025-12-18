@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/77bbb4804be146228563cd4592359aba/artifacts
+end_time: 1765585120293
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 77bbb4804be146228563cd4592359aba
+run_name: clean-rat-669
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585119236
+status: 3
+tags: []
+user_id: suzanef

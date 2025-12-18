@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/eeaa006d7326461ca1c73fbc9e9f1a77/artifacts
+end_time: 1765983484212
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: eeaa006d7326461ca1c73fbc9e9f1a77
+run_name: clumsy-snipe-377
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765983398926
+status: 3
+tags: []
+user_id: suzanef

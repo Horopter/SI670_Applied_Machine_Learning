@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/fde6d204983e4b938f17c4beb7d4bcf6/artifacts
+end_time: 1765756642204
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: fde6d204983e4b938f17c4beb7d4bcf6
+run_name: handsome-penguin-986
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765756585678
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/4a3bdf40ff724c3f9c36399520cacdcf/artifacts
+end_time: 1765596538701
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 4a3bdf40ff724c3f9c36399520cacdcf
+run_name: capable-pug-878
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765596538024
+status: 3
+tags: []
+user_id: suzanef

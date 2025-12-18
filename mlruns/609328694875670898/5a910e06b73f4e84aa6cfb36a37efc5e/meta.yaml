@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/5a910e06b73f4e84aa6cfb36a37efc5e/artifacts
+end_time: 1765584336618
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 5a910e06b73f4e84aa6cfb36a37efc5e
+run_name: gentle-mink-894
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584315399
+status: 3
+tags: []
+user_id: urvim

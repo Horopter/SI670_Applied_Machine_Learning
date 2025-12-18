@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/1c7824b42e5746b691ff5b241bae5fcc/artifacts
+end_time: 1765586741041
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 1c7824b42e5746b691ff5b241bae5fcc
+run_name: sassy-sloth-637
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586714887
+status: 3
+tags: []
+user_id: urvim

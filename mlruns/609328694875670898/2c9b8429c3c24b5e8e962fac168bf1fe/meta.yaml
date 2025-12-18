@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/2c9b8429c3c24b5e8e962fac168bf1fe/artifacts
+end_time: 1765590698059
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 2c9b8429c3c24b5e8e962fac168bf1fe
+run_name: marvelous-stork-235
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590685643
+status: 3
+tags: []
+user_id: urvim

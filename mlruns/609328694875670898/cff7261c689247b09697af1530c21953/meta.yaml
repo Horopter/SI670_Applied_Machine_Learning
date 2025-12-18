@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/cff7261c689247b09697af1530c21953/artifacts
+end_time: 1765588176617
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: cff7261c689247b09697af1530c21953
+run_name: awesome-dog-483
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588171453
+status: 3
+tags: []
+user_id: urvim

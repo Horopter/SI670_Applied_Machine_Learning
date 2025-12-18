@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/eba4ac7f09644b8da13c11a7151e301a/artifacts
+end_time: 1765602944110
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: eba4ac7f09644b8da13c11a7151e301a
+run_name: trusting-robin-848
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602943438
+status: 3
+tags: []
+user_id: suzanef

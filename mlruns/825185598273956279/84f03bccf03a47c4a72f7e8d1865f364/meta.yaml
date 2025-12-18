@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/84f03bccf03a47c4a72f7e8d1865f364/artifacts
+end_time: 1765594331522
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 84f03bccf03a47c4a72f7e8d1865f364
+run_name: marvelous-whale-128
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594330754
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/f9a83b342f9f4f70aaff28441eb055a8/artifacts
+end_time: 1765742959081
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: f9a83b342f9f4f70aaff28441eb055a8
+run_name: serious-finch-17
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765742957754
+status: 3
+tags: []
+user_id: urvim

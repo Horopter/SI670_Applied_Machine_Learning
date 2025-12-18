@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/857eecf08623419cbc1489f79b075add/artifacts
+end_time: 1765597589436
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 857eecf08623419cbc1489f79b075add
+run_name: placid-dog-553
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597589348
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/b30fc6254aad48c3836a161906f8c4f7/artifacts
+end_time: 1765609619174
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: b30fc6254aad48c3836a161906f8c4f7
+run_name: dapper-goose-339
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609618481
+status: 3
+tags: []
+user_id: santoshd

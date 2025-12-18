@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/d130ed1d6e5a40a795fd8ea420ce56e7/artifacts
+end_time: 1765594064352
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: d130ed1d6e5a40a795fd8ea420ce56e7
+run_name: debonair-hound-933
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594059158
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/233f9f3eb93c4a5898029bdf3641ed87/artifacts
+end_time: 1765602496228
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 233f9f3eb93c4a5898029bdf3641ed87
+run_name: orderly-shrike-177
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602495554
+status: 3
+tags: []
+user_id: suzanef

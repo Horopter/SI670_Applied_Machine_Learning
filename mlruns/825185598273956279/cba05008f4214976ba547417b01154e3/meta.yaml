@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/cba05008f4214976ba547417b01154e3/artifacts
+end_time: 1765604587564
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: cba05008f4214976ba547417b01154e3
+run_name: lyrical-ram-818
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604586880
+status: 3
+tags: []
+user_id: suzanef

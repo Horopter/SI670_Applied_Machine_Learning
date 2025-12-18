@@ -1,0 +1,169 @@
+==========================================
+STAGE 5BETA LOG FILE INITIALIZED
+Timestamp: Tue Dec 16 03:25:02 EST 2025
+Log file: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/logs/stage5/stage5beta_38451624.log
+==========================================
+Executing command...
+Python: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/bin/python3
+Script: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/src/scripts/train_gradient_boosting.py
+Arguments: --project-root /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc --scaled-metadata /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/scaled_videos/scaled_metadata.arrow --features-stage2 /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage2/features_metadata.arrow --features-stage4 /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage4/features_scaled_metadata.arrow --output-dir data/stage5/gradient_boosting --n-splits 5 --models xgboost --delete-existing
+==========================================
+2025-12-16 03:25:47,998 [INFO] [__main__:44] ================================================================================
+2025-12-16 03:25:47,998 [INFO] [__main__:45] STAGE 5BETA: Gradient Boosting Training Script Starting
+2025-12-16 03:25:47,998 [INFO] [__main__:46] ================================================================================
+2025-12-16 03:25:47,999 [WARNING] [__main__:63] LightGBM not available
+2025-12-16 03:25:47,999 [WARNING] [__main__:70] CatBoost not available
+2025-12-16 03:25:47,999 [INFO] [__main__:597] Parsing command line arguments...
+2025-12-16 03:25:48,003 [INFO] [__main__:618] Arguments parsed successfully:
+2025-12-16 03:25:48,004 [INFO] [__main__:619]   project-root: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc
+2025-12-16 03:25:48,004 [INFO] [__main__:620]   scaled-metadata: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/scaled_videos/scaled_metadata.arrow
+2025-12-16 03:25:48,004 [INFO] [__main__:621]   features-stage2: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage2/features_metadata.arrow
+2025-12-16 03:25:48,004 [INFO] [__main__:622]   features-stage4: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage4/features_scaled_metadata.arrow
+2025-12-16 03:25:48,004 [INFO] [__main__:623]   output-dir: data/stage5/gradient_boosting
+2025-12-16 03:25:48,004 [INFO] [__main__:624]   n-splits: 5
+2025-12-16 03:25:48,004 [INFO] [__main__:625]   models: ['xgboost']
+2025-12-16 03:25:48,004 [INFO] [__main__:626]   delete-existing: True
+2025-12-16 03:25:48,017 [INFO] [__main__:110] Deleted existing output directory (clean mode): /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/gradient_boosting
+2025-12-16 03:25:48,017 [INFO] [__main__:117] Loading scaled metadata...
+2025-12-16 03:25:48,578 [INFO] [__main__:129] Data validation passed: 3278 rows (> 3000 required)
+2025-12-16 03:25:48,578 [INFO] [__main__:130] ✓ Data validation check successful
+2025-12-16 03:25:48,652 [INFO] [__main__:145] Labels: [0, 1] -> {0: 0, 1: 1}
+2025-12-16 03:25:48,653 [INFO] [__main__:146] Loaded 3278 videos
+2025-12-16 03:25:48,653 [INFO] [__main__:149] Loading features from Stage 2/4...
+2025-12-16 03:25:48,657 [INFO] [lib.training.feature_preprocessing:320] Loading Stage 2 features...
+2025-12-16 03:25:48,657 [INFO] [lib.training.feature_preprocessing:321] Stage 2 path: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage2/features_metadata.arrow
+2025-12-16 03:25:48,688 [INFO] [lib.training.feature_preprocessing:331] ✓ Loaded Stage 2 metadata: 3278 rows, 18 columns
+2025-12-16 03:26:22,694 [INFO] [lib.training.feature_preprocessing:369] Converting Stage 2 features to numpy array...
+2025-12-16 03:26:22,699 [INFO] [lib.training.feature_preprocessing:373] Stage 2 array shape: (3278, 15), dtype: float64
+2025-12-16 03:26:22,699 [INFO] [lib.training.feature_preprocessing:376] Loaded 15 Stage 2 features (3278/3278 videos matched)
+2025-12-16 03:26:22,702 [INFO] [lib.training.feature_preprocessing:403] Loading Stage 4 features...
+2025-12-16 03:26:22,702 [INFO] [lib.training.feature_preprocessing:404] Stage 4 path: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage4/features_scaled_metadata.arrow
+2025-12-16 03:26:22,750 [INFO] [lib.training.feature_preprocessing:414] ✓ Loaded Stage 4 metadata: 3277 rows, 26 columns
+2025-12-16 03:26:57,054 [INFO] [lib.training.feature_preprocessing:452] Converting Stage 4 features to numpy array...
+2025-12-16 03:26:57,059 [INFO] [lib.training.feature_preprocessing:456] Stage 4 array shape: (3278, 23), dtype: float64
+2025-12-16 03:26:57,060 [INFO] [lib.training.feature_preprocessing:459] Loaded 23 Stage 4 features (3277/3278 videos matched)
+2025-12-16 03:26:57,060 [INFO] [lib.training.feature_preprocessing:488] Combining 2 feature arrays...
+2025-12-16 03:26:57,060 [INFO] [lib.training.feature_preprocessing:489] Feature array shapes: [(3278, 15), (3278, 23)]
+2025-12-16 03:26:57,060 [INFO] [lib.training.feature_preprocessing:494] Combined 38 features from 2 stages
+2025-12-16 03:26:57,060 [INFO] [lib.training.feature_preprocessing:495] Combined feature matrix shape: (3278, 38), dtype: float64
+2025-12-16 03:26:57,060 [INFO] [lib.training.feature_preprocessing:496] Combined feature matrix size: 0.95 MB
+2025-12-16 03:26:57,060 [INFO] [lib.training.feature_preprocessing:517] Stage 2: 3278 videos, Stage 4: 3277 videos
+2025-12-16 03:26:57,060 [INFO] [lib.training.feature_preprocessing:518] Intersection (videos with BOTH Stage 2 AND Stage 4): 3277 videos
+2025-12-16 03:26:57,061 [INFO] [lib.training.feature_preprocessing:532] ✓ Found 3277 videos with valid features
+2025-12-16 03:26:57,064 [INFO] [lib.training.feature_training_pipeline:186] Removing collinear features BEFORE data splits (to avoid data leakage)...
+2025-12-16 03:26:57,065 [INFO] [lib.training.feature_training_pipeline:187]   Original feature count: 38
+2025-12-16 03:26:57,068 [INFO] [lib.training.feature_preprocessing:77] Removed 2 features with zero variance
+2025-12-16 03:26:57,070 [INFO] [lib.training.feature_preprocessing:141] Removed 10 collinear features (correlation >= 0.95)
+2025-12-16 03:26:57,070 [INFO] [lib.training.feature_preprocessing:162] Final feature count: 26/38 (68.4% retained)
+2025-12-16 03:26:57,070 [INFO] [lib.training.feature_training_pipeline:196]   Final feature count after collinearity removal: 26/38 (68.4% retained)
+2025-12-16 03:26:57,071 [INFO] [__main__:163] Filtered to 3277 videos with valid features
+2025-12-16 03:26:57,071 [INFO] [__main__:168] ✓ Loaded 26 features for 3277 videos
+2025-12-16 03:26:57,071 [INFO] [__main__:169]   Input dimension: 26
+2025-12-16 03:26:57,071 [INFO] [__main__:175] Creating 60-20-20 stratified train-val-test split...
+2025-12-16 03:26:57,075 [INFO] [__main__:183] Train: 1966, Val: 655, Test: 656
+2025-12-16 03:26:57,075 [INFO] [__main__:189] ================================================================================
+2025-12-16 03:26:57,075 [INFO] [__main__:190] HYPERPARAMETER SEARCH: Using 20% stratified sample for efficiency
+2025-12-16 03:26:57,075 [INFO] [__main__:191] ================================================================================
+2025-12-16 03:26:57,078 [INFO] [__main__:209] Hyperparameter search sample: 524 rows (20.0% of 2621 total)
+2025-12-16 03:26:57,078 [INFO] [__main__:210]   Sample train: 419, Sample val: 105
+2025-12-16 03:26:57,078 [INFO] [__main__:254] ================================================================================
+2025-12-16 03:26:57,078 [INFO] [__main__:255] Training XGBOOST
+2025-12-16 03:26:57,078 [INFO] [__main__:256] ================================================================================
+2025-12-16 03:26:57,079 [INFO] [__main__:263] Hyperparameter search: 64 combinations
+2025-12-16 03:26:57,079 [INFO] [__main__:276] Grid search 1/64: {'colsample_bytree': 0.8, 'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 100, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:26:58,844 [INFO] [__main__:276] Grid search 2/64: {'colsample_bytree': 0.8, 'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 100, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:26:58,881 [INFO] [__main__:276] Grid search 3/64: {'colsample_bytree': 0.8, 'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 100, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:26:58,919 [INFO] [__main__:276] Grid search 4/64: {'colsample_bytree': 0.8, 'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 100, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:26:58,956 [INFO] [__main__:276] Grid search 5/64: {'colsample_bytree': 0.8, 'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 200, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:26:59,025 [INFO] [__main__:276] Grid search 6/64: {'colsample_bytree': 0.8, 'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 200, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:26:59,094 [INFO] [__main__:276] Grid search 7/64: {'colsample_bytree': 0.8, 'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 200, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:26:59,163 [INFO] [__main__:276] Grid search 8/64: {'colsample_bytree': 0.8, 'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 200, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:26:59,232 [INFO] [__main__:276] Grid search 9/64: {'colsample_bytree': 0.8, 'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:26:59,305 [INFO] [__main__:276] Grid search 10/64: {'colsample_bytree': 0.8, 'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:26:59,380 [INFO] [__main__:276] Grid search 11/64: {'colsample_bytree': 0.8, 'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:26:59,453 [INFO] [__main__:276] Grid search 12/64: {'colsample_bytree': 0.8, 'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:26:59,528 [INFO] [__main__:276] Grid search 13/64: {'colsample_bytree': 0.8, 'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 200, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:26:59,664 [INFO] [__main__:276] Grid search 14/64: {'colsample_bytree': 0.8, 'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 200, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:26:59,808 [INFO] [__main__:276] Grid search 15/64: {'colsample_bytree': 0.8, 'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 200, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:26:59,946 [INFO] [__main__:276] Grid search 16/64: {'colsample_bytree': 0.8, 'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 200, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:00,090 [INFO] [__main__:276] Grid search 17/64: {'colsample_bytree': 0.8, 'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 100, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:00,127 [INFO] [__main__:276] Grid search 18/64: {'colsample_bytree': 0.8, 'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 100, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:00,164 [INFO] [__main__:276] Grid search 19/64: {'colsample_bytree': 0.8, 'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 100, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:00,201 [INFO] [__main__:276] Grid search 20/64: {'colsample_bytree': 0.8, 'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 100, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:00,239 [INFO] [__main__:276] Grid search 21/64: {'colsample_bytree': 0.8, 'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 200, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:00,305 [INFO] [__main__:276] Grid search 22/64: {'colsample_bytree': 0.8, 'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 200, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:00,372 [INFO] [__main__:276] Grid search 23/64: {'colsample_bytree': 0.8, 'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 200, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:00,440 [INFO] [__main__:276] Grid search 24/64: {'colsample_bytree': 0.8, 'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 200, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:00,508 [INFO] [__main__:276] Grid search 25/64: {'colsample_bytree': 0.8, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:00,573 [INFO] [__main__:276] Grid search 26/64: {'colsample_bytree': 0.8, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:00,639 [INFO] [__main__:276] Grid search 27/64: {'colsample_bytree': 0.8, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:00,706 [INFO] [__main__:276] Grid search 28/64: {'colsample_bytree': 0.8, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:00,773 [INFO] [__main__:276] Grid search 29/64: {'colsample_bytree': 0.8, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 200, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:00,884 [INFO] [__main__:276] Grid search 30/64: {'colsample_bytree': 0.8, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 200, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:00,998 [INFO] [__main__:276] Grid search 31/64: {'colsample_bytree': 0.8, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 200, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:01,115 [INFO] [__main__:276] Grid search 32/64: {'colsample_bytree': 0.8, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 200, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:01,233 [INFO] [__main__:276] Grid search 33/64: {'colsample_bytree': 1.0, 'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 100, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:01,279 [INFO] [__main__:276] Grid search 34/64: {'colsample_bytree': 1.0, 'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 100, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:01,325 [INFO] [__main__:276] Grid search 35/64: {'colsample_bytree': 1.0, 'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 100, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:01,371 [INFO] [__main__:276] Grid search 36/64: {'colsample_bytree': 1.0, 'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 100, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:01,418 [INFO] [__main__:276] Grid search 37/64: {'colsample_bytree': 1.0, 'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 200, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:01,503 [INFO] [__main__:276] Grid search 38/64: {'colsample_bytree': 1.0, 'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 200, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:01,589 [INFO] [__main__:276] Grid search 39/64: {'colsample_bytree': 1.0, 'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 200, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:01,675 [INFO] [__main__:276] Grid search 40/64: {'colsample_bytree': 1.0, 'learning_rate': 0.01, 'max_depth': 3, 'n_estimators': 200, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:01,762 [INFO] [__main__:276] Grid search 41/64: {'colsample_bytree': 1.0, 'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:01,849 [INFO] [__main__:276] Grid search 42/64: {'colsample_bytree': 1.0, 'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:01,941 [INFO] [__main__:276] Grid search 43/64: {'colsample_bytree': 1.0, 'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:02,028 [INFO] [__main__:276] Grid search 44/64: {'colsample_bytree': 1.0, 'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:02,123 [INFO] [__main__:276] Grid search 45/64: {'colsample_bytree': 1.0, 'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 200, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:02,291 [INFO] [__main__:276] Grid search 46/64: {'colsample_bytree': 1.0, 'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 200, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:02,465 [INFO] [__main__:276] Grid search 47/64: {'colsample_bytree': 1.0, 'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 200, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:02,636 [INFO] [__main__:276] Grid search 48/64: {'colsample_bytree': 1.0, 'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 200, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:02,815 [INFO] [__main__:276] Grid search 49/64: {'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 100, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:02,860 [INFO] [__main__:276] Grid search 50/64: {'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 100, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:02,906 [INFO] [__main__:276] Grid search 51/64: {'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 100, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:02,952 [INFO] [__main__:276] Grid search 52/64: {'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 100, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:02,998 [INFO] [__main__:276] Grid search 53/64: {'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 200, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:03,081 [INFO] [__main__:276] Grid search 54/64: {'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 200, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:03,165 [INFO] [__main__:276] Grid search 55/64: {'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 200, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:03,250 [INFO] [__main__:276] Grid search 56/64: {'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 200, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:03,336 [INFO] [__main__:276] Grid search 57/64: {'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:03,415 [INFO] [__main__:276] Grid search 58/64: {'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:03,498 [INFO] [__main__:276] Grid search 59/64: {'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:03,578 [INFO] [__main__:276] Grid search 60/64: {'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 100, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:03,663 [INFO] [__main__:276] Grid search 61/64: {'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 200, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:03,798 [INFO] [__main__:276] Grid search 62/64: {'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 200, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:03,942 [INFO] [__main__:276] Grid search 63/64: {'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 200, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 0.8}
+2025-12-16 03:27:04,080 [INFO] [__main__:276] Grid search 64/64: {'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 200, 'reg_alpha': 0.1, 'reg_lambda': 1.0, 'subsample': 1.0}
+2025-12-16 03:27:04,227 [INFO] [__main__:336] Best hyperparameters from 20% sample: {'colsample_bytree': 0.8, 'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 200, 'reg_alpha': 0, 'reg_lambda': 1.0, 'subsample': 0.8} (val_f1: 0.8491)
+2025-12-16 03:27:04,227 [INFO] [__main__:339] ================================================================================
+2025-12-16 03:27:04,227 [INFO] [__main__:340] FINAL TRAINING (XGBOOST): Using full dataset with best hyperparameters
+2025-12-16 03:27:04,227 [INFO] [__main__:341] ================================================================================
+2025-12-16 03:27:04,228 [INFO] [__main__:355] CV fold 1/5
+2025-12-16 03:27:04,401 [INFO] [__main__:355] CV fold 2/5
+2025-12-16 03:27:04,572 [INFO] [__main__:355] CV fold 3/5
+2025-12-16 03:27:04,742 [INFO] [__main__:355] CV fold 4/5
+2025-12-16 03:27:04,912 [INFO] [__main__:355] CV fold 5/5
+2025-12-16 03:27:05,085 [INFO] [__main__:432] CV F1: 0.9533 ± 0.0120
+2025-12-16 03:27:05,085 [INFO] [__main__:433] CV AUC: 0.9902 ± 0.0048
+2025-12-16 03:27:05,085 [INFO] [__main__:434] CV Precision: 0.9540 ± 0.0205
+2025-12-16 03:27:05,086 [INFO] [__main__:435] CV Recall: 0.9529 ± 0.0122
+2025-12-16 03:27:05,086 [INFO] [__main__:438] Training final model on full training+validation set...
+2025-12-16 03:27:05,272 [INFO] [__main__:482] Test F1: 0.9686
+2025-12-16 03:27:05,272 [INFO] [__main__:483] Test AUC: 0.9972
+2025-12-16 03:27:05,272 [INFO] [__main__:484] Test AP: 0.9974
+2025-12-16 03:27:05,272 [INFO] [__main__:485] Test Acc: 0.9680
+2025-12-16 03:27:05,272 [INFO] [__main__:486] Test Precision: 0.9701
+2025-12-16 03:27:05,272 [INFO] [__main__:487] Test Recall: 0.9672
+2025-12-16 03:27:05,272 [INFO] [__main__:488] Test Confusion Matrix:
+[[311  10]
+ [ 11 324]]
+2025-12-16 03:27:05,272 [INFO] [__main__:489] Test Class 0 - Precision: 0.9658, Recall: 0.9688, F1: 0.9673
+2025-12-16 03:27:05,272 [INFO] [__main__:490] Test Class 1 - Precision: 0.9701, Recall: 0.9672, F1: 0.9686
+2025-12-16 03:27:06,007 [INFO] [__main__:580] ✓ XGBOOST training complete
+2025-12-16 03:27:06,008 [INFO] [__main__:582] ================================================================================
+2025-12-16 03:27:06,008 [INFO] [__main__:583] GRADIENT BOOSTING TRAINING COMPLETE
+2025-12-16 03:27:06,008 [INFO] [__main__:584] ================================================================================
+2025-12-16 03:27:06,008 [INFO] [__main__:585] Training complete. Results saved to: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/gradient_boosting
+2025-12-16 03:27:06,008 [INFO] [__main__:586] ================================================================================
+2025-12-16 03:27:06,008 [INFO] [__main__:587] STAGE 5BETA TRAINING COMPLETED SUCCESSFULLY
+2025-12-16 03:27:06,008 [INFO] [__main__:588] ================================================================================

@@ -809,11 +809,6 @@ class VideoDataset(Dataset):
         label_value = row["label"]
         label_idx = self.label_to_idx[label_value]
         
-        # DEAD CODE (Stage 5): Pre-computed clip loading not used in Stage 5
-        # Stage 5 uses scaled videos from Stage 3, not pre-computed clips
-        # This code path is kept for backward compatibility but is not executed in Stage 5 pipeline
-        # Removed: 32 lines of pre-computed clip loading logic (lines 417-449)
-
         # Check if video file exists
         if not os.path.exists(video_path):
             raise FileNotFoundError(

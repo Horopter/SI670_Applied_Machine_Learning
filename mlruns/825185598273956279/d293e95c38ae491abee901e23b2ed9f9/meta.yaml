@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/d293e95c38ae491abee901e23b2ed9f9/artifacts
+end_time: 1765596574963
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: d293e95c38ae491abee901e23b2ed9f9
+run_name: orderly-sponge-316
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765596574099
+status: 3
+tags: []
+user_id: suzanef

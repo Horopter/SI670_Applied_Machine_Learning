@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/8eaf77414098463584071f6010e01c3c/artifacts
+end_time: 1765592037352
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 8eaf77414098463584071f6010e01c3c
+run_name: wise-koi-494
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592032159
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/21ace6e581584db78a7fe9b09e14ed09/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 21ace6e581584db78a7fe9b09e14ed09
+run_name: big-crane-482
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765567380536
+status: 1
+tags: []
+user_id: urvim

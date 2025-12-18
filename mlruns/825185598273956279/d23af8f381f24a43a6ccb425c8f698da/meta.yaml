@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/d23af8f381f24a43a6ccb425c8f698da/artifacts
+end_time: 1765597615220
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: d23af8f381f24a43a6ccb425c8f698da
+run_name: youthful-sow-659
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597614543
+status: 3
+tags: []
+user_id: suzanef

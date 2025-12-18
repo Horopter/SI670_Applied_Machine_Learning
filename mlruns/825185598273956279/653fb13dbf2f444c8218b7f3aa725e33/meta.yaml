@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/653fb13dbf2f444c8218b7f3aa725e33/artifacts
+end_time: 1765590595362
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 653fb13dbf2f444c8218b7f3aa725e33
+run_name: gifted-finch-385
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590590230
+status: 3
+tags: []
+user_id: suzanef

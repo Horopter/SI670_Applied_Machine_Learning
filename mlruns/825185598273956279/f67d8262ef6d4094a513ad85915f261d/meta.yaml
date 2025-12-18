@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/f67d8262ef6d4094a513ad85915f261d/artifacts
+end_time: 1765596645141
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: f67d8262ef6d4094a513ad85915f261d
+run_name: omniscient-duck-17
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765596640803
+status: 3
+tags: []
+user_id: suzanef

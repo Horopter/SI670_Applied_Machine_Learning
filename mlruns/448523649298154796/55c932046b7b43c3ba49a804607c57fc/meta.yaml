@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/55c932046b7b43c3ba49a804607c57fc/artifacts
+end_time: 1765609598446
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 55c932046b7b43c3ba49a804607c57fc
+run_name: defiant-boar-65
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609597751
+status: 3
+tags: []
+user_id: santoshd

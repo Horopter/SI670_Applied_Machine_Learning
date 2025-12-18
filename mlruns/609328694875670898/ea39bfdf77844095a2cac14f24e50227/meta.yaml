@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/ea39bfdf77844095a2cac14f24e50227/artifacts
+end_time: 1765588112654
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: ea39bfdf77844095a2cac14f24e50227
+run_name: dapper-cod-134
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588107453
+status: 3
+tags: []
+user_id: urvim

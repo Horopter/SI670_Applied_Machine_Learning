@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/7e46c60c1aa243a08504e29748692d1e/artifacts
+end_time: 1765760183021
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 7e46c60c1aa243a08504e29748692d1e
+run_name: blushing-midge-226
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765760107653
+status: 3
+tags: []
+user_id: urvim

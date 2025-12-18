@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/bfd9e61d8e914322bf4ad89159b5e12a/artifacts
+end_time: 1765588872993
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: bfd9e61d8e914322bf4ad89159b5e12a
+run_name: mysterious-dove-334
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588868116
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/93648c2564c2444f9d72a5c9d1b6b72c/artifacts
+end_time: 1765591884420
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 93648c2564c2444f9d72a5c9d1b6b72c
+run_name: delightful-slug-301
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591875579
+status: 3
+tags: []
+user_id: urvim

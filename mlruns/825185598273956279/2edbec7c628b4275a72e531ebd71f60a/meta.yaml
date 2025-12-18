@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/2edbec7c628b4275a72e531ebd71f60a/artifacts
+end_time: 1765588470280
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 2edbec7c628b4275a72e531ebd71f60a
+run_name: popular-moth-544
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588465580
+status: 3
+tags: []
+user_id: suzanef

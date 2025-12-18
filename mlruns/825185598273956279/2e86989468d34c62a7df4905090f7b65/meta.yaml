@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/2e86989468d34c62a7df4905090f7b65/artifacts
+end_time: 1765595356536
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 2e86989468d34c62a7df4905090f7b65
+run_name: rogue-finch-958
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765595355863
+status: 3
+tags: []
+user_id: suzanef

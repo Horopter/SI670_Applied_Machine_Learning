@@ -480,8 +480,70 @@ def train_sklearn_logreg(
         X_val_cv_scaled = X_val_cv
         
         # best_params already has l1_ratio removed for non-elasticnet
-        model_cv = LogisticRegression(**best_params, random_state=42, n_jobs=1)
+        # Use solver that supports warm_start for epoch-wise training
+        fit_params = best_params.copy()
+        if 'solver' not in fit_params:
+            fit_params['solver'] = 'saga'  # Supports warm_start
+        fit_params['warm_start'] = True
+        model_cv = LogisticRegression(**fit_params, random_state=42, n_jobs=1)
+        
+        # Create tracker for epoch-wise training
+        from lib.mlops.config import ExperimentTracker
+        from pathlib import Path
+        fold_output_dir = Path(output_dir) / f"fold_{fold_idx + 1}"
+        fold_output_dir.mkdir(parents=True, exist_ok=True)
+        tracker = ExperimentTracker(fold_output_dir)
+        
+        # Train iteratively for epoch-wise curves
+        num_epochs = 100
+        logger.info(f"Training LogisticRegression with {num_epochs} iterations (epoch-wise) for fold {fold_idx + 1}...")
+        
+        for epoch in range(num_epochs):
+            model_cv.max_iter = epoch + 1
+            model_cv.fit(X_train_cv_scaled, y_train_cv)
+            
+            # Evaluate on validation set
+            from sklearn.metrics import log_loss, accuracy_score, f1_score
+            val_probs_epoch = model_cv.predict_proba(X_val_cv_scaled)
+            val_preds_epoch = model_cv.predict(X_val_cv_scaled)
+            
+            val_loss = log_loss(y_val_cv, val_probs_epoch)
+            val_acc = accuracy_score(y_val_cv, val_preds_epoch)
+            val_f1 = f1_score(y_val_cv, val_preds_epoch, average='binary', zero_division=0)
+            
+            # Log validation metrics
+            tracker.log_epoch_metrics(
+                epoch + 1,
+                {
+                    "loss": float(val_loss),
+                    "accuracy": float(val_acc),
+                    "f1": float(val_f1)
+                },
+                phase="val"
+            )
+            
+            # Log training metrics periodically
+            if (epoch + 1) % 10 == 0 or epoch == 0:
+                train_probs_epoch = model_cv.predict_proba(X_train_cv_scaled)
+                train_preds_epoch = model_cv.predict(X_train_cv_scaled)
+                train_loss = log_loss(y_train_cv, train_probs_epoch)
+                train_acc = accuracy_score(y_train_cv, train_preds_epoch)
+                train_f1 = f1_score(y_train_cv, train_preds_epoch, average='binary', zero_division=0)
+                
+                tracker.log_epoch_metrics(
+                    epoch + 1,
+                    {
+                        "loss": float(train_loss),
+                        "accuracy": float(train_acc),
+                        "f1": float(train_f1)
+                    },
+                    phase="train"
+                )
+        
+        # Final fit with full iterations
+        model_cv.max_iter = num_epochs
         model_cv.fit(X_train_cv_scaled, y_train_cv)
+        logger.info(f"✓ Completed epoch-wise training for fold {fold_idx + 1}")
         
         val_probs_cv_full = model_cv.predict_proba(X_val_cv_scaled)
         if val_probs_cv_full.shape[1] != 2:

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/24fa58ed65944b11826593f3a0533668/artifacts
+end_time: 1765592884648
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 24fa58ed65944b11826593f3a0533668
+run_name: nebulous-bug-664
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592875823
+status: 3
+tags: []
+user_id: urvim

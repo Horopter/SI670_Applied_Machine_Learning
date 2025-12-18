@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/ea96442549f64285a95c54fb9e39f3d2/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: ea96442549f64285a95c54fb9e39f3d2
+run_name: gaudy-bass-335
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765761329952
+status: 1
+tags: []
+user_id: urvim

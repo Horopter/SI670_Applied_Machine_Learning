@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/3a2d4f9960934efd905a7b688e336d76/artifacts
+end_time: 1765740583704
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 3a2d4f9960934efd905a7b688e336d76
+run_name: amusing-fly-808
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765740566973
+status: 3
+tags: []
+user_id: urvim

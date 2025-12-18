@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/0cde647ef8bc4c14a09e22da91e7db3a/artifacts
+end_time: 1765590547299
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 0cde647ef8bc4c14a09e22da91e7db3a
+run_name: gentle-goose-798
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590537702
+status: 3
+tags: []
+user_id: urvim

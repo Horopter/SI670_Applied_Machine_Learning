@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/10170a460da44b58bacf1f255c9340dc/artifacts
+end_time: 1765596588380
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 10170a460da44b58bacf1f255c9340dc
+run_name: bold-steed-127
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765596587705
+status: 3
+tags: []
+user_id: suzanef

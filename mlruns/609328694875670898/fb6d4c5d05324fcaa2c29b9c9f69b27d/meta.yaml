@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/fb6d4c5d05324fcaa2c29b9c9f69b27d/artifacts
+end_time: 1765593461769
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: fb6d4c5d05324fcaa2c29b9c9f69b27d
+run_name: delightful-kite-403
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593451101
+status: 3
+tags: []
+user_id: urvim

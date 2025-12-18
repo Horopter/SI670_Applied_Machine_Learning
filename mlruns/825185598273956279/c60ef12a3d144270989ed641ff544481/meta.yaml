@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/c60ef12a3d144270989ed641ff544481/artifacts
+end_time: 1765590891396
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: c60ef12a3d144270989ed641ff544481
+run_name: loud-shark-615
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590886189
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/f6ac6eddbdda4be5b4e14bc869825d03/artifacts
+end_time: 1765587578638
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: f6ac6eddbdda4be5b4e14bc869825d03
+run_name: crawling-snake-702
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587574057
+status: 3
+tags: []
+user_id: urvim

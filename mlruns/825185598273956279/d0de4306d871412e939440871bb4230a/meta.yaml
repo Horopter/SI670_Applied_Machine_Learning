@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/d0de4306d871412e939440871bb4230a/artifacts
+end_time: 1765588385685
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: d0de4306d871412e939440871bb4230a
+run_name: aged-seal-278
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588381045
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/28d87dd37b764dcab13fddfda5b1082d/artifacts
+end_time: 1765604488456
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 28d87dd37b764dcab13fddfda5b1082d
+run_name: clumsy-lamb-863
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604488353
+status: 3
+tags: []
+user_id: suzanef

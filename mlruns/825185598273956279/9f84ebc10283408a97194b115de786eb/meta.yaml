@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/9f84ebc10283408a97194b115de786eb/artifacts
+end_time: 1765590781805
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 9f84ebc10283408a97194b115de786eb
+run_name: debonair-shoat-938
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590776455
+status: 3
+tags: []
+user_id: suzanef

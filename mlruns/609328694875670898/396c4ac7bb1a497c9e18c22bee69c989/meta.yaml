@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/396c4ac7bb1a497c9e18c22bee69c989/artifacts
+end_time: 1765588351860
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 396c4ac7bb1a497c9e18c22bee69c989
+run_name: clean-shark-206
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588346700
+status: 3
+tags: []
+user_id: urvim

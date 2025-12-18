@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/91b5197211cc4f2f89e821c4e7a5180b/artifacts
+end_time: 1765585041941
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 91b5197211cc4f2f89e821c4e7a5180b
+run_name: thundering-snail-420
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585027255
+status: 3
+tags: []
+user_id: urvim

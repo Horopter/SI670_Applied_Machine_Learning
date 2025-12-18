@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/296d0acf3fd749c39a60a29270ce3f45/artifacts
+end_time: 1765588001825
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 296d0acf3fd749c39a60a29270ce3f45
+run_name: adaptable-fawn-797
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587996622
+status: 3
+tags: []
+user_id: urvim

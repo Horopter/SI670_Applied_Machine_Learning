@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/72d7cff8404240fb8ca976ff07c15a68/artifacts
+end_time: 1765588582988
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 72d7cff8404240fb8ca976ff07c15a68
+run_name: gaudy-ram-341
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588578348
+status: 3
+tags: []
+user_id: suzanef

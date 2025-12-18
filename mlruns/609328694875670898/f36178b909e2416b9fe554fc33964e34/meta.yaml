@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/f36178b909e2416b9fe554fc33964e34/artifacts
+end_time: 1765584298069
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: f36178b909e2416b9fe554fc33964e34
+run_name: salty-mare-971
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584280111
+status: 3
+tags: []
+user_id: urvim

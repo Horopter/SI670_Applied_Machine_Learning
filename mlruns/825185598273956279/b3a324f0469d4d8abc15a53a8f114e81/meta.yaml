@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/b3a324f0469d4d8abc15a53a8f114e81/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: b3a324f0469d4d8abc15a53a8f114e81
+run_name: tasteful-sow-229
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765751807211
+status: 1
+tags: []
+user_id: suzanef

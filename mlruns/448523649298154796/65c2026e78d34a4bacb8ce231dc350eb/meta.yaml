@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/65c2026e78d34a4bacb8ce231dc350eb/artifacts
+end_time: 1765609623991
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 65c2026e78d34a4bacb8ce231dc350eb
+run_name: righteous-ant-686
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609623297
+status: 3
+tags: []
+user_id: santoshd

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/9d5ad1d4cf054c78ad6d76d85d478579/artifacts
+end_time: 1765591452634
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 9d5ad1d4cf054c78ad6d76d85d478579
+run_name: whimsical-squid-520
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591443606
+status: 3
+tags: []
+user_id: urvim

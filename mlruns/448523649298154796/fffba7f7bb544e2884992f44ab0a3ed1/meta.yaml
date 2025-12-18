@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/fffba7f7bb544e2884992f44ab0a3ed1/artifacts
+end_time: 1765609559294
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: fffba7f7bb544e2884992f44ab0a3ed1
+run_name: skittish-robin-313
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609558597
+status: 3
+tags: []
+user_id: santoshd

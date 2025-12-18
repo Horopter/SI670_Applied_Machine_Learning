@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/ae203fc06d0f44e8a02b0aa8edb7109e/artifacts
+end_time: 1765602641832
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: ae203fc06d0f44e8a02b0aa8edb7109e
+run_name: aged-pig-877
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602641156
+status: 3
+tags: []
+user_id: suzanef

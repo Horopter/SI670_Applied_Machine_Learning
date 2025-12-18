@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/94c4813359174f8b9a76bb6464cfd72b/artifacts
+end_time: 1765591874815
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 94c4813359174f8b9a76bb6464cfd72b
+run_name: unruly-hawk-905
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591859722
+status: 3
+tags: []
+user_id: urvim

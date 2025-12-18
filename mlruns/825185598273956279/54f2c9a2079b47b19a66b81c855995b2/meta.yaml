@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/54f2c9a2079b47b19a66b81c855995b2/artifacts
+end_time: 1765594566036
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 54f2c9a2079b47b19a66b81c855995b2
+run_name: fearless-panda-838
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594565366
+status: 3
+tags: []
+user_id: suzanef

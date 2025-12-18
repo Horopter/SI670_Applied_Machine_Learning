@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/c9eabeac5c7f458db440cfd316cc52c5/artifacts
+end_time: 1765609638105
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: c9eabeac5c7f458db440cfd316cc52c5
+run_name: awesome-goat-528
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609637412
+status: 3
+tags: []
+user_id: santoshd

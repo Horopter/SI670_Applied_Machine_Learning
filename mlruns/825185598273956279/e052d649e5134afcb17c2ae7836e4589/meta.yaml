@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/e052d649e5134afcb17c2ae7836e4589/artifacts
+end_time: 1765594599951
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: e052d649e5134afcb17c2ae7836e4589
+run_name: polite-goose-341
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594599281
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/3606f0f80e18487bb1c4e07a8fdb08d5/artifacts
+end_time: 1765587631827
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 3606f0f80e18487bb1c4e07a8fdb08d5
+run_name: abrasive-pug-900
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587626658
+status: 3
+tags: []
+user_id: urvim

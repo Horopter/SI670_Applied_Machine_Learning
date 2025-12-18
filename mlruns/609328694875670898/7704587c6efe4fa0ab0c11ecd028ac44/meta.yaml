@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/7704587c6efe4fa0ab0c11ecd028ac44/artifacts
+end_time: 1765587269784
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 7704587c6efe4fa0ab0c11ecd028ac44
+run_name: enthused-fowl-719
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587264550
+status: 3
+tags: []
+user_id: urvim

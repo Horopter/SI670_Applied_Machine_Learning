@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/cb883b56c3c94f00b108ca0ed9de3deb/artifacts
+end_time: 1765584754122
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: cb883b56c3c94f00b108ca0ed9de3deb
+run_name: auspicious-fowl-207
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584717922
+status: 3
+tags: []
+user_id: santoshd

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/ee253538448543ca88982207e7c05993/artifacts
+end_time: 1765761155594
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: ee253538448543ca88982207e7c05993
+run_name: thundering-bass-713
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765761089596
+status: 3
+tags: []
+user_id: urvim

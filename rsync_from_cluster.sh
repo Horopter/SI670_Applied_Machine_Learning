@@ -56,30 +56,33 @@ SSH_OPTS=(-o ControlMaster=yes -o ControlPath="$SSH_CONTROL_SOCKET" -o ControlPe
 # Fetch data/ directory (excluding augmented_videos and scaled_videos)
 echo "Fetching data/ directory (excluding augmented_videos and scaled_videos)..."
 rsync -avh --progress \
+  --relative \
   --exclude='augmented_videos' \
   --exclude='scaled_videos' \
   --exclude='.*' \
   -e "ssh ${SSH_OPTS[*]}" \
-  "$SOURCE_HOST:$SOURCE_PATH/data/" \
-  "$DEST_DIR/data/"
+  "$SOURCE_HOST:$SOURCE_PATH./data/" \
+  "$DEST_DIR/"
 
 # Fetch logs/ directory
 echo ""
 echo "Fetching logs/ directory..."
 rsync -avh --progress \
+  --relative \
   --exclude='.*' \
   -e "ssh ${SSH_OPTS[*]}" \
-  "$SOURCE_HOST:$SOURCE_PATH/logs/" \
-  "$DEST_DIR/logs/"
+  "$SOURCE_HOST:$SOURCE_PATH./logs/" \
+  "$DEST_DIR/"
 
 # Fetch mlruns/ directory
 echo ""
 echo "Fetching mlruns/ directory..."
 rsync -avh --progress \
+  --relative \
   --exclude='.*' \
   -e "ssh ${SSH_OPTS[*]}" \
-  "$SOURCE_HOST:$SOURCE_PATH/mlruns/" \
-  "$DEST_DIR/mlruns/"
+  "$SOURCE_HOST:$SOURCE_PATH./mlruns/" \
+  "$DEST_DIR/"
 
 echo ""
 echo "✓ Fetch complete!"

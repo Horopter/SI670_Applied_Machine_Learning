@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/8e8d01a5d16240d6b5f1384041ab311b/artifacts
+end_time: 1765585885405
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 8e8d01a5d16240d6b5f1384041ab311b
+run_name: resilient-fish-642
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585884318
+status: 3
+tags: []
+user_id: suzanef

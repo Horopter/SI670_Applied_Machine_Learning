@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/9eb89342e56446c985af48addd725248/artifacts
+end_time: 1765593703115
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 9eb89342e56446c985af48addd725248
+run_name: omniscient-seal-251
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593697963
+status: 3
+tags: []
+user_id: suzanef

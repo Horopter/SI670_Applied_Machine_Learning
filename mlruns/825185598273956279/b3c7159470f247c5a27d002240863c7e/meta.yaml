@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/b3c7159470f247c5a27d002240863c7e/artifacts
+end_time: 1765591179499
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: b3c7159470f247c5a27d002240863c7e
+run_name: indecisive-bee-11
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591174273
+status: 3
+tags: []
+user_id: suzanef

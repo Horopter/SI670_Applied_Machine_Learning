@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/f5df1a14a9ad4e34a10203fe9bcaafe3/artifacts
+end_time: 1765588334142
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: f5df1a14a9ad4e34a10203fe9bcaafe3
+run_name: indecisive-boar-631
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588328947
+status: 3
+tags: []
+user_id: urvim

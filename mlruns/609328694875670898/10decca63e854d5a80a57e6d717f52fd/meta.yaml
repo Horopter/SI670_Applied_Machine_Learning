@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/10decca63e854d5a80a57e6d717f52fd/artifacts
+end_time: 1765760921200
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 10decca63e854d5a80a57e6d717f52fd
+run_name: luxuriant-ape-785
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765760876741
+status: 3
+tags: []
+user_id: urvim

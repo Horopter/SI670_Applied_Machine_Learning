@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/ee2f754885444f5a9739740faf179a6c/artifacts
+end_time: 1765591228176
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: ee2f754885444f5a9739740faf179a6c
+run_name: debonair-wolf-404
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591219519
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/add9b58467694fe1ad3d5e6f5cbc9578/artifacts
+end_time: 1765591621499
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: add9b58467694fe1ad3d5e6f5cbc9578
+run_name: marvelous-snake-394
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591612593
+status: 3
+tags: []
+user_id: urvim

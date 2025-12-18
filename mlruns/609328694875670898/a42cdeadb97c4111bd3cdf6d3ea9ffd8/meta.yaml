@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/a42cdeadb97c4111bd3cdf6d3ea9ffd8/artifacts
+end_time: 1765749091000
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: a42cdeadb97c4111bd3cdf6d3ea9ffd8
+run_name: tasteful-sponge-579
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765749059270
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/fbc261477d4046d78e788c9d5568567b/artifacts
+end_time: 1765588153634
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: fbc261477d4046d78e788c9d5568567b
+run_name: traveling-frog-748
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588148458
+status: 3
+tags: []
+user_id: urvim

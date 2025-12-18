@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/01376e5d29664bdd9e74f4e0bb9fc512/artifacts
+end_time: 1765593664118
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 01376e5d29664bdd9e74f4e0bb9fc512
+run_name: nervous-mare-82
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593658952
+status: 3
+tags: []
+user_id: suzanef

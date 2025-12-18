@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/87fd8944f55c4ab09385940460afc7cf/artifacts
+end_time: 1765588305018
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 87fd8944f55c4ab09385940460afc7cf
+run_name: delightful-koi-987
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588299898
+status: 3
+tags: []
+user_id: urvim

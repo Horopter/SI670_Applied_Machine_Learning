@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/abab2d9f272e4fcdb281f9db70c00bf6/artifacts
+end_time: 1765609510146
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: abab2d9f272e4fcdb281f9db70c00bf6
+run_name: peaceful-carp-136
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609510031
+status: 3
+tags: []
+user_id: santoshd

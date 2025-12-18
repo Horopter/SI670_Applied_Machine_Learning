@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/bb1b54b4dd774421921854433183a928/artifacts
+end_time: 1765589939070
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: bb1b54b4dd774421921854433183a928
+run_name: flawless-grub-957
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589933961
+status: 3
+tags: []
+user_id: suzanef

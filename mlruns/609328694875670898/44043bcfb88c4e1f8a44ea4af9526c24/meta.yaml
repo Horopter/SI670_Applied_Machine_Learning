@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/44043bcfb88c4e1f8a44ea4af9526c24/artifacts
+end_time: 1765590466663
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 44043bcfb88c4e1f8a44ea4af9526c24
+run_name: intelligent-wolf-444
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590457651
+status: 3
+tags: []
+user_id: urvim

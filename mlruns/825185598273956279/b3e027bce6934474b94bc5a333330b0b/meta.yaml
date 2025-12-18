@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/b3e027bce6934474b94bc5a333330b0b/artifacts
+end_time: 1765584836942
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: b3e027bce6934474b94bc5a333330b0b
+run_name: suave-wren-680
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584835834
+status: 3
+tags: []
+user_id: suzanef

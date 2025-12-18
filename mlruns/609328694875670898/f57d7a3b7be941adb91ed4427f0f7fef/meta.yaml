@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/f57d7a3b7be941adb91ed4427f0f7fef/artifacts
+end_time: 1765591798639
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: f57d7a3b7be941adb91ed4427f0f7fef
+run_name: rebellious-swan-608
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591787090
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/4965d2f626194fdba5856e7656723f04/artifacts
+end_time: 1765738230591
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 4965d2f626194fdba5856e7656723f04
+run_name: thundering-tern-421
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765738229712
+status: 3
+tags: []
+user_id: urvim

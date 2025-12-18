@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/a5776646601d4f159465d8b66e7635a1/artifacts
+end_time: 1765584954218
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: a5776646601d4f159465d8b66e7635a1
+run_name: peaceful-shrew-760
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584937764
+status: 3
+tags: []
+user_id: urvim

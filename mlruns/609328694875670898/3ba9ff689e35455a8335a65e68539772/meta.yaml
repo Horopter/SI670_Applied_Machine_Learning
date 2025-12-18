@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/3ba9ff689e35455a8335a65e68539772/artifacts
+end_time: 1765587398538
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 3ba9ff689e35455a8335a65e68539772
+run_name: amusing-moth-363
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587393355
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/75d3277c8beb4d4fa6165920a1dbe683/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: 75d3277c8beb4d4fa6165920a1dbe683
+run_name: capricious-calf-760
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592324997
+status: 1
+tags: []
+user_id: santoshd

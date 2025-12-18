@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/71abbc370f2948cc82f5d8ab502e8a94/artifacts
+end_time: 1765603169574
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 71abbc370f2948cc82f5d8ab502e8a94
+run_name: capable-stoat-364
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603165415
+status: 3
+tags: []
+user_id: suzanef

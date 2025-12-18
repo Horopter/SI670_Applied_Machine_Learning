@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/6096ba4210b34f8b8dceb54dae1e8e50/artifacts
+end_time: 1765609538206
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 6096ba4210b34f8b8dceb54dae1e8e50
+run_name: thoughtful-doe-473
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609537451
+status: 3
+tags: []
+user_id: santoshd

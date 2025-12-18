@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/4b5c9238dd2f449f98dfbea8c10cc30d/artifacts
+end_time: 1765741822769
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 4b5c9238dd2f449f98dfbea8c10cc30d
+run_name: bold-asp-472
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765741802497
+status: 3
+tags: []
+user_id: urvim

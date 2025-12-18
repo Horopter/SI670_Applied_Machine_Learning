@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/617efb4e442c4baeb250403867427132/artifacts
+end_time: 1765597639683
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 617efb4e442c4baeb250403867427132
+run_name: nosy-lark-206
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597639004
+status: 3
+tags: []
+user_id: suzanef

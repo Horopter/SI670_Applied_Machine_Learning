@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/a97cf1cb51d347939a65e9048e71dab0/artifacts
+end_time: 1765603892266
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: a97cf1cb51d347939a65e9048e71dab0
+run_name: able-trout-957
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603891588
+status: 3
+tags: []
+user_id: suzanef

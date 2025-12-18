@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/dd989b1651e44048a8dfdf1c8be0fd28/artifacts
+end_time: 1765588509059
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: dd989b1651e44048a8dfdf1c8be0fd28
+run_name: bouncy-sponge-298
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588505016
+status: 3
+tags: []
+user_id: suzanef

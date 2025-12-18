@@ -1,0 +1,7 @@
+{"run_id": "run_20251218_021113_d42a9fac", "timestamp": "2025-12-18T02:11:35.742779", "step": 1, "epoch": 1, "phase": "val", "metric": "accuracy", "value": 0.6071428571428571}
+{"run_id": "run_20251218_021113_d42a9fac", "timestamp": "2025-12-18T02:11:35.743118", "step": 1, "epoch": 1, "phase": "val", "metric": "f1", "value": 0.6325167037861915}
+{"run_id": "run_20251218_021113_d42a9fac", "timestamp": "2025-12-18T02:11:42.604697", "step": 0, "epoch": 0, "phase": "val", "metric": "loss", "value": 0.6667866780717655}
+{"run_id": "run_20251218_021113_d42a9fac", "timestamp": "2025-12-18T02:11:42.604908", "step": 0, "epoch": 0, "phase": "val", "metric": "accuracy", "value": 0.5771428571428572}
+{"run_id": "run_20251218_021113_d42a9fac", "timestamp": "2025-12-18T02:11:42.605018", "step": 0, "epoch": 0, "phase": "val", "metric": "f1", "value": 0.5992779783393501}
+{"run_id": "run_20251218_021113_d42a9fac", "timestamp": "2025-12-18T02:11:42.605115", "step": 0, "epoch": 0, "phase": "val", "metric": "precision", "value": 0.5804195804195804}
+{"run_id": "run_20251218_021113_d42a9fac", "timestamp": "2025-12-18T02:11:42.605209", "step": 0, "epoch": 0, "phase": "val", "metric": "recall", "value": 0.6194029850746269}

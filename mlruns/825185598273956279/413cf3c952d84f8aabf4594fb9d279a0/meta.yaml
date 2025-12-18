@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/413cf3c952d84f8aabf4594fb9d279a0/artifacts
+end_time: 1765603029204
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 413cf3c952d84f8aabf4594fb9d279a0
+run_name: monumental-shoat-966
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603028530
+status: 3
+tags: []
+user_id: suzanef

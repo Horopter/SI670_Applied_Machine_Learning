@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/1a21ac9602644300bee895e4d1c2ed7f/artifacts
+end_time: 1765594374271
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 1a21ac9602644300bee895e4d1c2ed7f
+run_name: rare-crow-679
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594373603
+status: 3
+tags: []
+user_id: suzanef

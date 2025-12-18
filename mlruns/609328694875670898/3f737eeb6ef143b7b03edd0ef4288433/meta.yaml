@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/3f737eeb6ef143b7b03edd0ef4288433/artifacts
+end_time: 1765588986618
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 3f737eeb6ef143b7b03edd0ef4288433
+run_name: selective-bass-236
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588981814
+status: 3
+tags: []
+user_id: urvim

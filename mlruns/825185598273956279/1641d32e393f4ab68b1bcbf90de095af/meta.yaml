@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/1641d32e393f4ab68b1bcbf90de095af/artifacts
+end_time: 1765591841717
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 1641d32e393f4ab68b1bcbf90de095af
+run_name: bold-bee-567
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591836417
+status: 3
+tags: []
+user_id: suzanef

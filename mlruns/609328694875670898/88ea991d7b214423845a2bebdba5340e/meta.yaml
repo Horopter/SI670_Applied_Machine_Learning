@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/88ea991d7b214423845a2bebdba5340e/artifacts
+end_time: 1765587491553
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 88ea991d7b214423845a2bebdba5340e
+run_name: gaudy-squirrel-130
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587486930
+status: 3
+tags: []
+user_id: urvim

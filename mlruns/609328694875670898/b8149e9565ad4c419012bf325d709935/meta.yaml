@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/b8149e9565ad4c419012bf325d709935/artifacts
+end_time: 1765756338918
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: b8149e9565ad4c419012bf325d709935
+run_name: industrious-duck-244
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765756284883
+status: 3
+tags: []
+user_id: urvim

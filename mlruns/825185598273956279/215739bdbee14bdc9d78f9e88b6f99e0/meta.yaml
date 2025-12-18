@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/215739bdbee14bdc9d78f9e88b6f99e0/artifacts
+end_time: 1765604128236
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 215739bdbee14bdc9d78f9e88b6f99e0
+run_name: wistful-skunk-518
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604127557
+status: 3
+tags: []
+user_id: suzanef

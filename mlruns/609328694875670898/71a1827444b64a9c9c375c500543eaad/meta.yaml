@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/71a1827444b64a9c9c375c500543eaad/artifacts
+end_time: 1765593786576
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 71a1827444b64a9c9c375c500543eaad
+run_name: valuable-shrew-228
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593778328
+status: 3
+tags: []
+user_id: urvim

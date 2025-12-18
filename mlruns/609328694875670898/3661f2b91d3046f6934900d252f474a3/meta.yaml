@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/3661f2b91d3046f6934900d252f474a3/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 3661f2b91d3046f6934900d252f474a3
+run_name: capricious-cod-398
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586918582
+status: 1
+tags: []
+user_id: urvim

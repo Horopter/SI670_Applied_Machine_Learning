@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/4d55fda0276146bb9948bd09e99bd1a7/artifacts
+end_time: 1765588089220
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 4d55fda0276146bb9948bd09e99bd1a7
+run_name: nimble-snipe-328
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588083879
+status: 3
+tags: []
+user_id: urvim

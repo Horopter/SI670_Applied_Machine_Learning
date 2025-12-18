@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/b8a7ac4f37e8407a99ecd77a011b7e60/artifacts
+end_time: 1765594283895
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: b8a7ac4f37e8407a99ecd77a011b7e60
+run_name: smiling-croc-489
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594279056
+status: 3
+tags: []
+user_id: urvim

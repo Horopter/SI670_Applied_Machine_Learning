@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/715d497785224c90851f3f4dc8da9657/artifacts
+end_time: 1765584593759
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 715d497785224c90851f3f4dc8da9657
+run_name: fun-kite-432
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584572269
+status: 3
+tags: []
+user_id: urvim

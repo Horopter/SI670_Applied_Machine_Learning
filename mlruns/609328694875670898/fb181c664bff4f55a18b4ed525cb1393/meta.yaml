@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/fb181c664bff4f55a18b4ed525cb1393/artifacts
+end_time: 1765587386731
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: fb181c664bff4f55a18b4ed525cb1393
+run_name: carefree-boar-862
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587381589
+status: 3
+tags: []
+user_id: urvim

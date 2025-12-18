@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/c03c22d13a57458b8c1a18ade178c883/artifacts
+end_time: 1765587602468
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: c03c22d13a57458b8c1a18ade178c883
+run_name: respected-bass-433
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587597275
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/fe3663c6dfef43c6bdcda58caef1fef1/artifacts
+end_time: 1765604056607
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: fe3663c6dfef43c6bdcda58caef1fef1
+run_name: big-yak-609
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604056507
+status: 3
+tags: []
+user_id: suzanef

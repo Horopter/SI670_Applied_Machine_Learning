@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/1f6df2083e934fd7b766f857652ae1aa/artifacts
+end_time: 1765744816236
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 1f6df2083e934fd7b766f857652ae1aa
+run_name: languid-calf-451
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765744815221
+status: 3
+tags: []
+user_id: urvim

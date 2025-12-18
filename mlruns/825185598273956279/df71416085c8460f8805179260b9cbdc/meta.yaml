@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/df71416085c8460f8805179260b9cbdc/artifacts
+end_time: 1765585805762
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: df71416085c8460f8805179260b9cbdc
+run_name: stately-duck-317
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585804077
+status: 3
+tags: []
+user_id: suzanef

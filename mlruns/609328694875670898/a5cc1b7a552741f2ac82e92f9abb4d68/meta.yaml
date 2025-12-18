@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/a5cc1b7a552741f2ac82e92f9abb4d68/artifacts
+end_time: 1765592677622
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: a5cc1b7a552741f2ac82e92f9abb4d68
+run_name: resilient-doe-155
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592668840
+status: 3
+tags: []
+user_id: urvim

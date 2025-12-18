@@ -1,0 +1,508 @@
+2025-12-17 13:08:17 [INFO] [__main__:310] ================================================================================
+2025-12-17 13:08:17 [INFO] [__main__:311] STAGE 5: MODEL TRAINING
+2025-12-17 13:08:17 [INFO] [__main__:312] ================================================================================
+2025-12-17 13:08:17 [INFO] [__main__:313] Project root: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc
+2025-12-17 13:08:17 [INFO] [__main__:314] Scaled metadata: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/scaled_videos/scaled_metadata.arrow
+2025-12-17 13:08:17 [INFO] [__main__:315] Features Stage 2: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage2/features_metadata.arrow
+2025-12-17 13:08:17 [INFO] [__main__:316] Features Stage 4: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage4/features_scaled_metadata.arrow
+2025-12-17 13:08:17 [INFO] [__main__:317] Model types: ['xgboost_i3d']
+2025-12-17 13:08:17 [INFO] [__main__:318] K-fold splits: 5
+2025-12-17 13:08:17 [INFO] [__main__:319] Number of frames: 1000
+2025-12-17 13:08:17 [INFO] [__main__:320] Output directory: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5
+2025-12-17 13:08:17 [INFO] [__main__:321] Experiment tracking: Enabled
+2025-12-17 13:08:17 [INFO] [__main__:324] Delete existing: True
+2025-12-17 13:08:17 [INFO] [__main__:325] Resume mode: True
+2025-12-17 13:08:17 [INFO] [__main__:326] Log file: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/logs/stage5_training_1765994897.log
+2025-12-17 13:08:17 [INFO] [__main__:333] ================================================================================
+2025-12-17 13:08:17 [INFO] [__main__:334] Checking prerequisites...
+2025-12-17 13:08:17 [INFO] [__main__:335] ================================================================================
+2025-12-17 13:08:17 [INFO] [__main__:342] ✓ Scaled metadata file found: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/scaled_videos/scaled_metadata.arrow
+2025-12-17 13:08:17 [INFO] [__main__:352] ✓ All model types are valid
+2025-12-17 13:08:17 [INFO] [__main__:358] ================================================================================
+2025-12-17 13:08:17 [INFO] [__main__:359] Initial memory statistics:
+2025-12-17 13:08:17 [INFO] [__main__:360] ================================================================================
+2025-12-17 13:08:17 [INFO] [lib.utils.memory:91] Memory stats (Stage 5: before training): {'cpu_memory_mb': 736.53125, 'cpu_memory_gb': 0.719268798828125, 'cpu_vms_mb': 10218.171875, 'gpu_allocated_gb': 0.0, 'gpu_reserved_gb': 0.0, 'gpu_total_gb': 16.928342016, 'gpu_free_gb': 16.928342016}
+2025-12-17 13:08:17 [INFO] [__main__:364] ================================================================================
+2025-12-17 13:08:17 [INFO] [__main__:365] Starting Stage 5: Model Training
+2025-12-17 13:08:17 [INFO] [__main__:366] ================================================================================
+2025-12-17 13:08:17 [INFO] [__main__:367] Training 1 model(s) with 5-fold cross-validation
+2025-12-17 13:08:17 [INFO] [__main__:368] This may take a while depending on dataset size and model complexity...
+2025-12-17 13:08:17 [INFO] [__main__:369] Progress will be logged in real-time
+2025-12-17 13:08:17 [INFO] [__main__:370] ================================================================================
+2025-12-17 13:08:17 [INFO] [__main__:375] Calling Stage 5 training pipeline...
+2025-12-17 13:08:17 [INFO] [__main__:376] This may take a while - progress will be logged in real-time
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:1443] Applied global PyTorch memory optimizations at pipeline start
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:1446] ================================================================================
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:1447] Stage 5: Model Training Pipeline Started
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:1448] ================================================================================
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:1449] Model types: ['xgboost_i3d']
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:1450] K-fold splits: 5
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:1451] Frames per video: 1000
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:1452] Output directory: data/stage5
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:1453] Initializing pipeline...
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:246] ================================================================================
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:247] STAGE 5 PREREQUISITE VALIDATION
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:248] ================================================================================
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:250] 
+[1/3] Checking Stage 3 (scaled videos) - REQUIRED for all models...
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:259] ✓ Stage 3 metadata found: 3278 scaled videos
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:260]   Path: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/scaled_videos/scaled_metadata.arrow
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:262] 
+[2/3] Checking Stage 2 (features) - REQUIRED for *_stage2 models...
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:270] ✓ Stage 2 metadata found: 3278 feature rows
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:271]   Path: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage2/features_metadata.arrow
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:273] 
+[3/3] Checking Stage 4 (scaled features) - REQUIRED for *_stage2_stage4 models...
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:281] ✓ Stage 4 metadata found: 3277 feature rows
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:282]   Path: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage4/features_scaled_metadata.arrow
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:284] 
+================================================================================
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:285] MODEL REQUIREMENTS CHECK
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:286] ================================================================================
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:305] ✓ xgboost_i3d: CAN RUN
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:307] 
+================================================================================
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:308] VALIDATION SUMMARY
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:309] ================================================================================
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:310] Stage 3 (scaled videos): ✓ Available
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:311]   Count: 3278 videos
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:312] Stage 2 (features): ✓ Available
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:313]   Count: 3278 feature rows
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:314] Stage 4 (scaled features): ✓ Available
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:315]   Count: 3277 feature rows
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:316] 
+Runnable models: 1/1
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:317]   ['xgboost_i3d']
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:324] ================================================================================
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:1534] 
+Stage 5: Loading metadata...
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:1558] Loaded metadata: 3278 rows
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:1568] ✓ Data validation passed: 3278 rows (> 3000 required)
+2025-12-17 13:08:17 [WARNING] [lib.utils.guardrails:171] Disk usage high: free=762710.68GB, used=1737129.32GB (69.5%)
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:1589] Loading Stage 2 and Stage 4 features (required for feature-based models)...
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:1599] Stage 5: Found 3278 scaled videos
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:1602] ================================================================================
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:1603] STAGE 5: VALIDATING VIDEOS (checking for corruption and empty videos)
+2025-12-17 13:08:17 [INFO] [lib.training.pipeline:1604] ================================================================================
+2025-12-17 13:08:17 [INFO] [lib.data.loading:156] Checking file existence for 3278 videos...
+2025-12-17 13:08:20 [INFO] [lib.data.loading:166] Found 3278 existing video files (filtered out 0 missing files)
+2025-12-17 13:08:20 [INFO] [lib.data.loading:170] Checking for corrupted videos (moov atom errors, etc.)...
+2025-12-17 13:08:20 [INFO] [lib.data.loading:92] Loaded validation cache from /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/.video_validation_cache/validation_0192be168a40eb7e_corruptTrue_framesTrue.parquet (3278 entries)
+2025-12-17 13:08:20 [INFO] [lib.data.loading:194] Cache hit: 3278 videos, Cache miss: 0 videos
+2025-12-17 13:08:20 [WARNING] [lib.data.loading:306] Filtered out 1 corrupted videos and 0 empty videos. Keeping 3277 valid videos.
+2025-12-17 13:08:20 [WARNING] [lib.data.loading:311] Sample of invalid videos:
+2025-12-17 13:08:20 [WARNING] [lib.data.loading:313]   data/scaled_videos/FX5aeuJFQ64_aug1_scaled_aug1.mp4: Corrupted video: moov atom not found
+2025-12-17 13:08:20 [INFO] [lib.data.loading:323] Found /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/skip_frame_check.txt - skipping frame check as requested.
+2025-12-17 13:08:20 [WARNING] [lib.data.loading:387] Filtered out 1 invalid videos (corrupted). Keeping 3277 valid videos.
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1613] ✓ Video validation complete: 3277 valid videos ready for training
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1614] ================================================================================
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1700] Frame caching enabled (default): cache_dir=data/.frame_cache. This will cache processed frames to disk to speed up training. First epoch will be slower (building cache), subsequent epochs will be faster. To disable, set FVC_USE_FRAME_CACHE=0
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1773] Overriding num_frames to 400 for xgboost_i3d. Original num_frames was 1000.
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1801] Stage 5: Deleting existing model results (clean mode)...
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1809] Deleted existing results for xgboost_i3d
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1812] Stage 5: Deleted 1 existing model directories
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1816] 
+================================================================================
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1817] Stage 5: Training model: xgboost_i3d
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1818] ================================================================================
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1836] Overriding model_config num_frames to 400 for xgboost_i3d (XGBoost pretrained model with enhanced feature extraction) to improve feature quality.
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1854] Grid search: 1 hyperparameter combinations to try
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1862] ================================================================================
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1863] HYPERPARAMETER SEARCH: Using 10.0% stratified sample for efficiency
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1864] ================================================================================
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1873] Hyperparameter search sample: 327 rows (10.0% of 3277 total)
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1874] To change sample size, set FVC_GRID_SEARCH_SAMPLE_SIZE environment variable (current: 0.1)
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1886] Using 5-fold stratified cross-validation on 10.0% sample for hyperparameter search
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1897] 
+================================================================================
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1898] Grid Search: Hyperparameter combination 1/1
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1899] Parameters: {'n_estimators': 100, 'max_depth': 5, 'learning_rate': 0.1, 'subsample': 0.8, 'colsample_bytree': 0.8}
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1900] ================================================================================
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:1918] 
+Hyperparameter Search - xgboost_i3d - Fold 1/5 (10.0% sample)
+2025-12-17 13:08:20 [INFO] [lib.training.pipeline:448] Training XGBoost model xgboost_i3d on fold 1...
+2025-12-17 13:08:20 [INFO] [lib.training._xgboost_pretrained:704] Training XGBoost on features from i3d...
+2025-12-17 13:08:20 [INFO] [lib.training._xgboost_pretrained:705] Processing 261 videos...
+2025-12-17 13:08:20 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-17 13:08:20 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+Downloading: "https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/I3D_8x8_R50.pyth" to /home/urvim/.cache/torch/hub/checkpoints/I3D_8x8_R50.pyth
+  0%|          | 0.00/214M [00:00<?, ?B/s]  5%|▌         | 11.0M/214M [00:00<00:01, 115MB/s] 10%|█         | 22.2M/214M [00:00<00:01, 117MB/s] 16%|█▌        | 33.5M/214M [00:00<00:01, 117MB/s] 21%|██        | 44.8M/214M [00:00<00:01, 117MB/s] 26%|██▌       | 56.0M/214M [00:00<00:01, 117MB/s] 31%|███▏      | 67.2M/214M [00:00<00:01, 117MB/s] 37%|███▋      | 78.5M/214M [00:00<00:01, 117MB/s] 42%|████▏     | 89.8M/214M [00:00<00:01, 117MB/s] 47%|████▋     | 101M/214M [00:00<00:01, 117MB/s]  52%|█████▏    | 112M/214M [00:01<00:00, 117MB/s] 58%|█████▊    | 124M/214M [00:01<00:00, 117MB/s] 63%|██████▎   | 135M/214M [00:01<00:00, 117MB/s] 68%|██████▊   | 146M/214M [00:01<00:00, 117MB/s] 73%|███████▎  | 157M/214M [00:01<00:00, 117MB/s] 79%|███████▊  | 168M/214M [00:01<00:00, 117MB/s] 84%|████████▍ | 180M/214M [00:01<00:00, 117MB/s] 89%|████████▉ | 191M/214M [00:01<00:00, 117MB/s] 94%|█████████▍| 202M/214M [00:01<00:00, 117MB/s]100%|█████████▉| 214M/214M [00:01<00:00, 117MB/s]100%|██████████| 214M/214M [00:01<00:00, 117MB/s]
+2025-12-17 13:08:30 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-17 13:08:30 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-17 13:08:31 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-17 13:08:31 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-17 13:08:31 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-17 13:22:26 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (261, 9216)
+2025-12-17 13:22:26 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-17 13:22:27 [INFO] [lib.training._xgboost_pretrained:728] Removing collinear features...
+2025-12-17 13:22:27 [INFO] [lib.training.feature_preprocessing:77] Removed 2022 features with zero variance
+2025-12-17 13:22:32 [INFO] [lib.training.feature_preprocessing:141] Removed 2060 collinear features (correlation >= 0.95)
+2025-12-17 13:22:32 [INFO] [lib.training.feature_preprocessing:162] Final feature count: 5134/9216 (55.7% retained)
+2025-12-17 13:22:32 [INFO] [lib.training._xgboost_pretrained:735] Using 5134 features after collinearity removal
+2025-12-17 13:22:32 [INFO] [lib.training._xgboost_pretrained:751] Class distribution: Class 0=128, Class 1=133, scale_pos_weight=0.962
+2025-12-17 13:22:32 [INFO] [lib.training._xgboost_pretrained:769] Training XGBoost: 208 train samples, 53 validation samples for early stopping
+2025-12-17 13:22:32 [INFO] [lib.training._xgboost_pretrained:772] Training XGBoost with improved architecture (multi-layer + temporal pooling + class weights + early stopping)...
+2025-12-17 13:22:47 [INFO] [lib.training._xgboost_pretrained:838] Early stopping: Best iteration = 185 (out of 200)
+2025-12-17 13:22:47 [INFO] [lib.training._xgboost_pretrained:840] ✓ XGBoost trained on pretrained model features with enhanced feature extraction
+2025-12-17 13:22:47 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-17 13:22:47 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-17 13:22:49 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-17 13:22:49 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-17 13:22:49 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-17 13:22:49 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-17 13:22:49 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-17 13:26:45 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (66, 9216)
+2025-12-17 13:26:46 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-17 13:26:46 [INFO] [lib.training.pipeline:500] Fold 1 - Val Loss: 0.4981, Val Acc: 0.8182, Val F1: 0.8235, Val Precision: 0.8235, Val Recall: 0.8235
+2025-12-17 13:26:46 [INFO] [lib.training.pipeline:505]   Class 0 - Precision: 0.8125, Recall: 0.8125, F1: 0.8125
+2025-12-17 13:26:46 [INFO] [lib.training.pipeline:509]   Class 1 - Precision: 0.8235, Recall: 0.8235, F1: 0.8235
+2025-12-17 13:26:46 [INFO] [lib.training._xgboost_pretrained:908] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_1
+2025-12-17 13:26:46 [INFO] [lib.training.pipeline:516] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_1
+2025-12-17 13:26:49 [INFO] [lib.training.visualization:480] Generated fold 1 plots: ROC/PR curves and confusion matrix
+2025-12-17 13:26:50 [INFO] [lib.training.pipeline:1918] 
+Hyperparameter Search - xgboost_i3d - Fold 2/5 (10.0% sample)
+2025-12-17 13:26:50 [INFO] [lib.training.pipeline:448] Training XGBoost model xgboost_i3d on fold 2...
+2025-12-17 13:26:50 [INFO] [lib.training._xgboost_pretrained:704] Training XGBoost on features from i3d...
+2025-12-17 13:26:50 [INFO] [lib.training._xgboost_pretrained:705] Processing 261 videos...
+2025-12-17 13:26:50 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-17 13:26:50 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-17 13:26:51 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-17 13:26:51 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-17 13:26:51 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-17 13:26:52 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-17 13:26:52 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-17 13:40:24 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (261, 9216)
+2025-12-17 13:40:24 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-17 13:40:24 [INFO] [lib.training._xgboost_pretrained:728] Removing collinear features...
+2025-12-17 13:40:24 [INFO] [lib.training.feature_preprocessing:77] Removed 2021 features with zero variance
+2025-12-17 13:40:30 [INFO] [lib.training.feature_preprocessing:141] Removed 2084 collinear features (correlation >= 0.95)
+2025-12-17 13:40:30 [INFO] [lib.training.feature_preprocessing:162] Final feature count: 5111/9216 (55.5% retained)
+2025-12-17 13:40:30 [INFO] [lib.training._xgboost_pretrained:735] Using 5111 features after collinearity removal
+2025-12-17 13:40:30 [INFO] [lib.training._xgboost_pretrained:751] Class distribution: Class 0=128, Class 1=133, scale_pos_weight=0.962
+2025-12-17 13:40:30 [INFO] [lib.training._xgboost_pretrained:769] Training XGBoost: 208 train samples, 53 validation samples for early stopping
+2025-12-17 13:40:30 [INFO] [lib.training._xgboost_pretrained:772] Training XGBoost with improved architecture (multi-layer + temporal pooling + class weights + early stopping)...
+2025-12-17 13:40:38 [INFO] [lib.training._xgboost_pretrained:838] Early stopping: Best iteration = 62 (out of 200)
+2025-12-17 13:40:38 [INFO] [lib.training._xgboost_pretrained:840] ✓ XGBoost trained on pretrained model features with enhanced feature extraction
+2025-12-17 13:40:39 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-17 13:40:39 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-17 13:40:40 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-17 13:40:40 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-17 13:40:40 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-17 13:40:41 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-17 13:40:41 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-17 13:44:15 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (66, 9216)
+2025-12-17 13:44:16 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-17 13:44:16 [INFO] [lib.training.pipeline:500] Fold 2 - Val Loss: 0.4553, Val Acc: 0.7879, Val F1: 0.7879, Val Precision: 0.8125, Val Recall: 0.7647
+2025-12-17 13:44:16 [INFO] [lib.training.pipeline:505]   Class 0 - Precision: 0.7647, Recall: 0.8125, F1: 0.7879
+2025-12-17 13:44:16 [INFO] [lib.training.pipeline:509]   Class 1 - Precision: 0.8125, Recall: 0.7647, F1: 0.7879
+2025-12-17 13:44:16 [INFO] [lib.training._xgboost_pretrained:908] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_2
+2025-12-17 13:44:16 [INFO] [lib.training.pipeline:516] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_2
+2025-12-17 13:44:17 [INFO] [lib.training.visualization:480] Generated fold 2 plots: ROC/PR curves and confusion matrix
+2025-12-17 13:44:17 [INFO] [lib.training.pipeline:1918] 
+Hyperparameter Search - xgboost_i3d - Fold 3/5 (10.0% sample)
+2025-12-17 13:44:17 [INFO] [lib.training.pipeline:448] Training XGBoost model xgboost_i3d on fold 3...
+2025-12-17 13:44:17 [INFO] [lib.training._xgboost_pretrained:704] Training XGBoost on features from i3d...
+2025-12-17 13:44:17 [INFO] [lib.training._xgboost_pretrained:705] Processing 262 videos...
+2025-12-17 13:44:17 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-17 13:44:17 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-17 13:44:19 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-17 13:44:19 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-17 13:44:19 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-17 13:44:19 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-17 13:44:19 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-17 13:58:53 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (262, 9216)
+2025-12-17 13:58:54 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-17 13:58:54 [INFO] [lib.training._xgboost_pretrained:728] Removing collinear features...
+2025-12-17 13:58:54 [INFO] [lib.training.feature_preprocessing:77] Removed 2026 features with zero variance
+2025-12-17 13:58:59 [INFO] [lib.training.feature_preprocessing:141] Removed 2034 collinear features (correlation >= 0.95)
+2025-12-17 13:58:59 [INFO] [lib.training.feature_preprocessing:162] Final feature count: 5156/9216 (55.9% retained)
+2025-12-17 13:58:59 [INFO] [lib.training._xgboost_pretrained:735] Using 5156 features after collinearity removal
+2025-12-17 13:58:59 [INFO] [lib.training._xgboost_pretrained:751] Class distribution: Class 0=128, Class 1=134, scale_pos_weight=0.955
+2025-12-17 13:58:59 [INFO] [lib.training._xgboost_pretrained:769] Training XGBoost: 209 train samples, 53 validation samples for early stopping
+2025-12-17 13:58:59 [INFO] [lib.training._xgboost_pretrained:772] Training XGBoost with improved architecture (multi-layer + temporal pooling + class weights + early stopping)...
+2025-12-17 13:59:08 [INFO] [lib.training._xgboost_pretrained:838] Early stopping: Best iteration = 60 (out of 200)
+2025-12-17 13:59:08 [INFO] [lib.training._xgboost_pretrained:840] ✓ XGBoost trained on pretrained model features with enhanced feature extraction
+2025-12-17 13:59:08 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-17 13:59:08 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-17 13:59:10 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-17 13:59:10 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-17 13:59:10 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-17 13:59:10 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-17 13:59:10 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-17 14:02:41 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (65, 9216)
+2025-12-17 14:02:41 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-17 14:02:42 [INFO] [lib.training.pipeline:500] Fold 3 - Val Loss: 0.4604, Val Acc: 0.8154, Val F1: 0.8125, Val Precision: 0.8387, Val Recall: 0.7879
+2025-12-17 14:02:42 [INFO] [lib.training.pipeline:505]   Class 0 - Precision: 0.7941, Recall: 0.8438, F1: 0.8182
+2025-12-17 14:02:42 [INFO] [lib.training.pipeline:509]   Class 1 - Precision: 0.8387, Recall: 0.7879, F1: 0.8125
+2025-12-17 14:02:42 [INFO] [lib.training._xgboost_pretrained:908] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_3
+2025-12-17 14:02:42 [INFO] [lib.training.pipeline:516] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_3
+2025-12-17 14:02:43 [INFO] [lib.training.visualization:480] Generated fold 3 plots: ROC/PR curves and confusion matrix
+2025-12-17 14:02:43 [INFO] [lib.training.pipeline:1918] 
+Hyperparameter Search - xgboost_i3d - Fold 4/5 (10.0% sample)
+2025-12-17 14:02:43 [INFO] [lib.training.pipeline:448] Training XGBoost model xgboost_i3d on fold 4...
+2025-12-17 14:02:43 [INFO] [lib.training._xgboost_pretrained:704] Training XGBoost on features from i3d...
+2025-12-17 14:02:43 [INFO] [lib.training._xgboost_pretrained:705] Processing 262 videos...
+2025-12-17 14:02:43 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-17 14:02:43 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-17 14:02:45 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-17 14:02:45 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-17 14:02:45 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-17 14:02:45 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-17 14:02:45 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-17 14:17:11 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (262, 9216)
+2025-12-17 14:17:11 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-17 14:17:11 [INFO] [lib.training._xgboost_pretrained:728] Removing collinear features...
+2025-12-17 14:17:11 [INFO] [lib.training.feature_preprocessing:77] Removed 2027 features with zero variance
+2025-12-17 14:17:17 [INFO] [lib.training.feature_preprocessing:141] Removed 2065 collinear features (correlation >= 0.95)
+2025-12-17 14:17:17 [INFO] [lib.training.feature_preprocessing:162] Final feature count: 5124/9216 (55.6% retained)
+2025-12-17 14:17:17 [INFO] [lib.training._xgboost_pretrained:735] Using 5124 features after collinearity removal
+2025-12-17 14:17:17 [INFO] [lib.training._xgboost_pretrained:751] Class distribution: Class 0=128, Class 1=134, scale_pos_weight=0.955
+2025-12-17 14:17:17 [INFO] [lib.training._xgboost_pretrained:769] Training XGBoost: 209 train samples, 53 validation samples for early stopping
+2025-12-17 14:17:17 [INFO] [lib.training._xgboost_pretrained:772] Training XGBoost with improved architecture (multi-layer + temporal pooling + class weights + early stopping)...
+2025-12-17 14:17:24 [INFO] [lib.training._xgboost_pretrained:838] Early stopping: Best iteration = 41 (out of 200)
+2025-12-17 14:17:24 [INFO] [lib.training._xgboost_pretrained:840] ✓ XGBoost trained on pretrained model features with enhanced feature extraction
+2025-12-17 14:17:24 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-17 14:17:24 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-17 14:17:26 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-17 14:17:26 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-17 14:17:26 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-17 14:17:26 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-17 14:17:26 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-17 14:20:43 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (65, 9216)
+2025-12-17 14:20:43 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-17 14:20:43 [INFO] [lib.training.pipeline:500] Fold 4 - Val Loss: 0.5762, Val Acc: 0.6615, Val F1: 0.7105, Val Precision: 0.6279, Val Recall: 0.8182
+2025-12-17 14:20:43 [INFO] [lib.training.pipeline:505]   Class 0 - Precision: 0.7273, Recall: 0.5000, F1: 0.5926
+2025-12-17 14:20:43 [INFO] [lib.training.pipeline:509]   Class 1 - Precision: 0.6279, Recall: 0.8182, F1: 0.7105
+2025-12-17 14:20:43 [INFO] [lib.training._xgboost_pretrained:908] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_4
+2025-12-17 14:20:43 [INFO] [lib.training.pipeline:516] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_4
+2025-12-17 14:20:45 [INFO] [lib.training.visualization:480] Generated fold 4 plots: ROC/PR curves and confusion matrix
+2025-12-17 14:20:45 [INFO] [lib.training.pipeline:1918] 
+Hyperparameter Search - xgboost_i3d - Fold 5/5 (10.0% sample)
+2025-12-17 14:20:45 [INFO] [lib.training.pipeline:448] Training XGBoost model xgboost_i3d on fold 5...
+2025-12-17 14:20:45 [INFO] [lib.training._xgboost_pretrained:704] Training XGBoost on features from i3d...
+2025-12-17 14:20:45 [INFO] [lib.training._xgboost_pretrained:705] Processing 262 videos...
+2025-12-17 14:20:45 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-17 14:20:45 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-17 14:20:46 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-17 14:20:46 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-17 14:20:47 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-17 14:20:47 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-17 14:20:47 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-17 14:35:40 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (262, 9216)
+2025-12-17 14:35:40 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-17 14:35:40 [INFO] [lib.training._xgboost_pretrained:728] Removing collinear features...
+2025-12-17 14:35:40 [INFO] [lib.training.feature_preprocessing:77] Removed 2020 features with zero variance
+2025-12-17 14:35:46 [INFO] [lib.training.feature_preprocessing:141] Removed 2050 collinear features (correlation >= 0.95)
+2025-12-17 14:35:46 [INFO] [lib.training.feature_preprocessing:162] Final feature count: 5146/9216 (55.8% retained)
+2025-12-17 14:35:46 [INFO] [lib.training._xgboost_pretrained:735] Using 5146 features after collinearity removal
+2025-12-17 14:35:46 [INFO] [lib.training._xgboost_pretrained:751] Class distribution: Class 0=128, Class 1=134, scale_pos_weight=0.955
+2025-12-17 14:35:46 [INFO] [lib.training._xgboost_pretrained:769] Training XGBoost: 209 train samples, 53 validation samples for early stopping
+2025-12-17 14:35:46 [INFO] [lib.training._xgboost_pretrained:772] Training XGBoost with improved architecture (multi-layer + temporal pooling + class weights + early stopping)...
+2025-12-17 14:35:54 [INFO] [lib.training._xgboost_pretrained:838] Early stopping: Best iteration = 51 (out of 200)
+2025-12-17 14:35:54 [INFO] [lib.training._xgboost_pretrained:840] ✓ XGBoost trained on pretrained model features with enhanced feature extraction
+2025-12-17 14:35:54 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-17 14:35:54 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-17 14:35:55 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-17 14:35:55 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-17 14:35:55 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-17 14:35:56 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-17 14:35:56 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-17 14:39:08 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (65, 9216)
+2025-12-17 14:39:09 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-17 14:39:09 [INFO] [lib.training.pipeline:500] Fold 5 - Val Loss: 0.5518, Val Acc: 0.7538, Val F1: 0.7576, Val Precision: 0.7576, Val Recall: 0.7576
+2025-12-17 14:39:09 [INFO] [lib.training.pipeline:505]   Class 0 - Precision: 0.7500, Recall: 0.7500, F1: 0.7500
+2025-12-17 14:39:09 [INFO] [lib.training.pipeline:509]   Class 1 - Precision: 0.7576, Recall: 0.7576, F1: 0.7576
+2025-12-17 14:39:09 [INFO] [lib.training._xgboost_pretrained:908] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_5
+2025-12-17 14:39:09 [INFO] [lib.training.pipeline:516] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_5
+2025-12-17 14:39:10 [INFO] [lib.training.visualization:480] Generated fold 5 plots: ROC/PR curves and confusion matrix
+2025-12-17 14:39:10 [INFO] [lib.training.pipeline:2079] Parameter combination 1 - Mean F1: 0.7784, Mean Acc: 0.7674
+2025-12-17 14:39:10 [INFO] [lib.training.pipeline:2091] Using single parameter combination: {'n_estimators': 100, 'max_depth': 5, 'learning_rate': 0.1, 'subsample': 0.8, 'colsample_bytree': 0.8}
+2025-12-17 14:39:10 [INFO] [lib.training.pipeline:2094] ================================================================================
+2025-12-17 14:39:10 [INFO] [lib.training.pipeline:2095] FINAL TRAINING: Using full dataset with best hyperparameters
+2025-12-17 14:39:10 [INFO] [lib.training.pipeline:2096] ================================================================================
+2025-12-17 14:39:10 [INFO] [lib.training.pipeline:2109] Final training: Using 5-fold stratified cross-validation on full dataset (3277 rows)
+2025-12-17 14:39:10 [INFO] [lib.training.pipeline:2117] Final training using best hyperparameters: {'n_estimators': 100, 'max_depth': 5, 'learning_rate': 0.1, 'subsample': 0.8, 'colsample_bytree': 0.8}
+2025-12-17 14:39:10 [INFO] [lib.training.pipeline:2123] 
+Final Training - xgboost_i3d - Fold 1/5 (full dataset)
+2025-12-17 14:39:10 [INFO] [lib.training.pipeline:2131] Deleted existing final training fold 1 directory (clean mode)
+2025-12-17 14:39:10 [INFO] [lib.training.pipeline:448] Training XGBoost model xgboost_i3d on fold 1...
+2025-12-17 14:39:10 [INFO] [lib.training._xgboost_pretrained:704] Training XGBoost on features from i3d...
+2025-12-17 14:39:10 [INFO] [lib.training._xgboost_pretrained:705] Processing 2621 videos...
+2025-12-17 14:39:10 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-17 14:39:10 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-17 14:39:12 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-17 14:39:12 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-17 14:39:12 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-17 14:39:12 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-17 14:39:12 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-17 17:20:44 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (2621, 9216)
+2025-12-17 17:20:45 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-17 17:20:45 [INFO] [lib.training._xgboost_pretrained:728] Removing collinear features...
+2025-12-17 17:20:45 [INFO] [lib.training.feature_preprocessing:77] Removed 1919 features with zero variance
+2025-12-17 17:20:53 [INFO] [lib.training.feature_preprocessing:141] Removed 1945 collinear features (correlation >= 0.95)
+2025-12-17 17:20:53 [INFO] [lib.training.feature_preprocessing:162] Final feature count: 5352/9216 (58.1% retained)
+2025-12-17 17:20:53 [INFO] [lib.training._xgboost_pretrained:735] Using 5352 features after collinearity removal
+2025-12-17 17:20:53 [INFO] [lib.training._xgboost_pretrained:751] Class distribution: Class 0=1284, Class 1=1337, scale_pos_weight=0.960
+2025-12-17 17:20:53 [INFO] [lib.training._xgboost_pretrained:769] Training XGBoost: 2096 train samples, 525 validation samples for early stopping
+2025-12-17 17:20:53 [INFO] [lib.training._xgboost_pretrained:772] Training XGBoost with improved architecture (multi-layer + temporal pooling + class weights + early stopping)...
+2025-12-17 17:22:49 [INFO] [lib.training._xgboost_pretrained:838] Early stopping: Best iteration = 200 (out of 200)
+2025-12-17 17:22:49 [INFO] [lib.training._xgboost_pretrained:840] ✓ XGBoost trained on pretrained model features with enhanced feature extraction
+2025-12-17 17:22:50 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-17 17:22:50 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-17 17:22:51 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-17 17:22:51 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-17 17:22:51 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-17 17:22:52 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-17 17:22:52 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-17 17:56:42 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (656, 9216)
+2025-12-17 17:56:43 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-17 17:56:43 [INFO] [lib.training.pipeline:500] Fold 1 - Val Loss: 0.1233, Val Acc: 0.9649, Val F1: 0.9655, Val Precision: 0.9699, Val Recall: 0.9612
+2025-12-17 17:56:43 [INFO] [lib.training._xgboost_pretrained:908] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_1
+2025-12-17 17:56:43 [INFO] [lib.training.pipeline:516] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_1
+2025-12-17 17:56:44 [INFO] [lib.training.visualization:480] Generated fold 1 plots: ROC/PR curves and confusion matrix
+2025-12-17 17:56:45 [INFO] [lib.training.pipeline:2123] 
+Final Training - xgboost_i3d - Fold 2/5 (full dataset)
+2025-12-17 17:56:45 [INFO] [lib.training.pipeline:2131] Deleted existing final training fold 2 directory (clean mode)
+2025-12-17 17:56:45 [INFO] [lib.training.pipeline:448] Training XGBoost model xgboost_i3d on fold 2...
+2025-12-17 17:56:45 [INFO] [lib.training._xgboost_pretrained:704] Training XGBoost on features from i3d...
+2025-12-17 17:56:45 [INFO] [lib.training._xgboost_pretrained:705] Processing 2621 videos...
+2025-12-17 17:56:45 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-17 17:56:45 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-17 17:56:46 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-17 17:56:46 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-17 17:56:46 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-17 17:56:47 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-17 17:56:47 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-17 20:26:22 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (2621, 9216)
+2025-12-17 20:26:23 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-17 20:26:23 [INFO] [lib.training._xgboost_pretrained:728] Removing collinear features...
+2025-12-17 20:26:24 [INFO] [lib.training.feature_preprocessing:77] Removed 1915 features with zero variance
+2025-12-17 20:26:31 [INFO] [lib.training.feature_preprocessing:141] Removed 1949 collinear features (correlation >= 0.95)
+2025-12-17 20:26:31 [INFO] [lib.training.feature_preprocessing:162] Final feature count: 5352/9216 (58.1% retained)
+2025-12-17 20:26:31 [INFO] [lib.training._xgboost_pretrained:735] Using 5352 features after collinearity removal
+2025-12-17 20:26:31 [INFO] [lib.training._xgboost_pretrained:751] Class distribution: Class 0=1284, Class 1=1337, scale_pos_weight=0.960
+2025-12-17 20:26:32 [INFO] [lib.training._xgboost_pretrained:769] Training XGBoost: 2096 train samples, 525 validation samples for early stopping
+2025-12-17 20:26:32 [INFO] [lib.training._xgboost_pretrained:772] Training XGBoost with improved architecture (multi-layer + temporal pooling + class weights + early stopping)...
+2025-12-17 20:28:29 [INFO] [lib.training._xgboost_pretrained:838] Early stopping: Best iteration = 200 (out of 200)
+2025-12-17 20:28:29 [INFO] [lib.training._xgboost_pretrained:840] ✓ XGBoost trained on pretrained model features with enhanced feature extraction
+2025-12-17 20:28:30 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-17 20:28:30 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-17 20:28:31 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-17 20:28:31 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-17 20:28:31 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-17 20:28:32 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-17 20:28:32 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-17 21:08:57 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (656, 9216)
+2025-12-17 21:08:57 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-17 21:08:57 [INFO] [lib.training.pipeline:500] Fold 2 - Val Loss: 0.1054, Val Acc: 0.9756, Val F1: 0.9760, Val Precision: 0.9819, Val Recall: 0.9701
+2025-12-17 21:08:57 [INFO] [lib.training._xgboost_pretrained:908] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_2
+2025-12-17 21:08:57 [INFO] [lib.training.pipeline:516] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_2
+2025-12-17 21:09:00 [INFO] [lib.training.visualization:480] Generated fold 2 plots: ROC/PR curves and confusion matrix
+2025-12-17 21:09:00 [INFO] [lib.training.pipeline:2123] 
+Final Training - xgboost_i3d - Fold 3/5 (full dataset)
+2025-12-17 21:09:00 [INFO] [lib.training.pipeline:2131] Deleted existing final training fold 3 directory (clean mode)
+2025-12-17 21:09:00 [INFO] [lib.training.pipeline:448] Training XGBoost model xgboost_i3d on fold 3...
+2025-12-17 21:09:00 [INFO] [lib.training._xgboost_pretrained:704] Training XGBoost on features from i3d...
+2025-12-17 21:09:00 [INFO] [lib.training._xgboost_pretrained:705] Processing 2622 videos...
+2025-12-17 21:09:00 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-17 21:09:00 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-17 21:09:01 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-17 21:09:01 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-17 21:09:01 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-17 21:09:02 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-17 21:09:02 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-17 23:51:35 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (2622, 9216)
+2025-12-17 23:51:35 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-17 23:51:36 [INFO] [lib.training._xgboost_pretrained:728] Removing collinear features...
+2025-12-17 23:51:36 [INFO] [lib.training.feature_preprocessing:77] Removed 1925 features with zero variance
+2025-12-17 23:51:44 [INFO] [lib.training.feature_preprocessing:141] Removed 1942 collinear features (correlation >= 0.95)
+2025-12-17 23:51:44 [INFO] [lib.training.feature_preprocessing:162] Final feature count: 5349/9216 (58.0% retained)
+2025-12-17 23:51:44 [INFO] [lib.training._xgboost_pretrained:735] Using 5349 features after collinearity removal
+2025-12-17 23:51:44 [INFO] [lib.training._xgboost_pretrained:751] Class distribution: Class 0=1284, Class 1=1338, scale_pos_weight=0.960
+2025-12-17 23:51:44 [INFO] [lib.training._xgboost_pretrained:769] Training XGBoost: 2097 train samples, 525 validation samples for early stopping
+2025-12-17 23:51:44 [INFO] [lib.training._xgboost_pretrained:772] Training XGBoost with improved architecture (multi-layer + temporal pooling + class weights + early stopping)...
+2025-12-17 23:53:40 [INFO] [lib.training._xgboost_pretrained:838] Early stopping: Best iteration = 200 (out of 200)
+2025-12-17 23:53:40 [INFO] [lib.training._xgboost_pretrained:840] ✓ XGBoost trained on pretrained model features with enhanced feature extraction
+2025-12-17 23:53:41 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-17 23:53:41 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-17 23:53:42 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-17 23:53:42 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-17 23:53:42 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-17 23:53:43 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-17 23:53:43 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-18 00:33:20 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (655, 9216)
+2025-12-18 00:33:21 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-18 00:33:21 [INFO] [lib.training.pipeline:500] Fold 3 - Val Loss: 0.1070, Val Acc: 0.9786, Val F1: 0.9787, Val Precision: 0.9938, Val Recall: 0.9641
+2025-12-18 00:33:21 [INFO] [lib.training._xgboost_pretrained:908] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_3
+2025-12-18 00:33:21 [INFO] [lib.training.pipeline:516] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_3
+2025-12-18 00:33:22 [INFO] [lib.training.visualization:480] Generated fold 3 plots: ROC/PR curves and confusion matrix
+2025-12-18 00:33:23 [INFO] [lib.training.pipeline:2123] 
+Final Training - xgboost_i3d - Fold 4/5 (full dataset)
+2025-12-18 00:33:23 [INFO] [lib.training.pipeline:2131] Deleted existing final training fold 4 directory (clean mode)
+2025-12-18 00:33:23 [INFO] [lib.training.pipeline:448] Training XGBoost model xgboost_i3d on fold 4...
+2025-12-18 00:33:23 [INFO] [lib.training._xgboost_pretrained:704] Training XGBoost on features from i3d...
+2025-12-18 00:33:23 [INFO] [lib.training._xgboost_pretrained:705] Processing 2622 videos...
+2025-12-18 00:33:23 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-18 00:33:23 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-18 00:33:24 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-18 00:33:24 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-18 00:33:24 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-18 00:33:24 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-18 00:33:25 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-18 03:00:16 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (2622, 9216)
+2025-12-18 03:00:16 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-18 03:00:17 [INFO] [lib.training._xgboost_pretrained:728] Removing collinear features...
+2025-12-18 03:00:17 [INFO] [lib.training.feature_preprocessing:77] Removed 1930 features with zero variance
+2025-12-18 03:00:25 [INFO] [lib.training.feature_preprocessing:141] Removed 1955 collinear features (correlation >= 0.95)
+2025-12-18 03:00:25 [INFO] [lib.training.feature_preprocessing:162] Final feature count: 5331/9216 (57.8% retained)
+2025-12-18 03:00:25 [INFO] [lib.training._xgboost_pretrained:735] Using 5331 features after collinearity removal
+2025-12-18 03:00:25 [INFO] [lib.training._xgboost_pretrained:751] Class distribution: Class 0=1284, Class 1=1338, scale_pos_weight=0.960
+2025-12-18 03:00:25 [INFO] [lib.training._xgboost_pretrained:769] Training XGBoost: 2097 train samples, 525 validation samples for early stopping
+2025-12-18 03:00:25 [INFO] [lib.training._xgboost_pretrained:772] Training XGBoost with improved architecture (multi-layer + temporal pooling + class weights + early stopping)...
+2025-12-18 03:02:21 [INFO] [lib.training._xgboost_pretrained:838] Early stopping: Best iteration = 200 (out of 200)
+2025-12-18 03:02:21 [INFO] [lib.training._xgboost_pretrained:840] ✓ XGBoost trained on pretrained model features with enhanced feature extraction
+2025-12-18 03:02:21 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-18 03:02:21 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-18 03:02:23 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-18 03:02:23 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-18 03:02:23 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-18 03:02:23 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-18 03:02:23 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-18 03:38:37 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (655, 9216)
+2025-12-18 03:38:38 [INFO] [lib.training._xgboost_pretrained:690] Cleared i3d model from GPU after feature extraction
+2025-12-18 03:38:38 [INFO] [lib.training.pipeline:500] Fold 4 - Val Loss: 0.1152, Val Acc: 0.9695, Val F1: 0.9698, Val Precision: 0.9787, Val Recall: 0.9611
+2025-12-18 03:38:38 [INFO] [lib.training._xgboost_pretrained:908] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_4
+2025-12-18 03:38:38 [INFO] [lib.training.pipeline:516] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_i3d/fold_4
+2025-12-18 03:38:40 [INFO] [lib.training.visualization:480] Generated fold 4 plots: ROC/PR curves and confusion matrix
+2025-12-18 03:38:40 [INFO] [lib.training.pipeline:2123] 
+Final Training - xgboost_i3d - Fold 5/5 (full dataset)
+2025-12-18 03:38:40 [INFO] [lib.training.pipeline:2131] Deleted existing final training fold 5 directory (clean mode)
+2025-12-18 03:38:40 [INFO] [lib.training.pipeline:448] Training XGBoost model xgboost_i3d on fold 5...
+2025-12-18 03:38:40 [INFO] [lib.training._xgboost_pretrained:704] Training XGBoost on features from i3d...
+2025-12-18 03:38:40 [INFO] [lib.training._xgboost_pretrained:705] Processing 2622 videos...
+2025-12-18 03:38:40 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: i3d (num_frames=400)
+2025-12-18 03:38:40 [INFO] [lib.training.i3d:34] Loading I3D R50 from PyTorch Hub (facebookresearch/pytorchvideo)...
+Using cache found in /home/urvim/.cache/torch/hub/facebookresearch_pytorchvideo_main
+2025-12-18 03:38:42 [INFO] [lib.training.i3d:59] ✓ Loaded I3D from PyTorch Hub (pytorchvideo)
+2025-12-18 03:38:42 [INFO] [lib.training.i3d:129] ✓ Verified I3D model structure: Net
+2025-12-18 03:38:42 [INFO] [lib.training._xgboost_pretrained:605] Loaded i3d model to GPU, cleared cache
+2025-12-18 03:38:42 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using i3d (num_frames=400)...
+2025-12-18 03:38:42 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction

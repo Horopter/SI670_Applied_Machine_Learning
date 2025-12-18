@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/c0c3347c50b04dbdaa894087c0dc0043/artifacts
+end_time: 1765586367274
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: c0c3347c50b04dbdaa894087c0dc0043
+run_name: valuable-lark-227
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586365361
+status: 3
+tags: []
+user_id: suzanef

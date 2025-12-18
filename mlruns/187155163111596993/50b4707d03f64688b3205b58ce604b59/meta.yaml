@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/50b4707d03f64688b3205b58ce604b59/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: 50b4707d03f64688b3205b58ce604b59
+run_name: gregarious-shad-815
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590402240
+status: 1
+tags: []
+user_id: santoshd

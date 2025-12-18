@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/9592100f69b043198fdce14a9c239484/artifacts
+end_time: 1765592640437
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 9592100f69b043198fdce14a9c239484
+run_name: powerful-lamb-497
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592635336
+status: 3
+tags: []
+user_id: suzanef

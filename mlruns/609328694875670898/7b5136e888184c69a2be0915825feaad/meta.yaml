@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/7b5136e888184c69a2be0915825feaad/artifacts
+end_time: 1765591611832
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 7b5136e888184c69a2be0915825feaad
+run_name: abrasive-gnat-248
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591602635
+status: 3
+tags: []
+user_id: urvim

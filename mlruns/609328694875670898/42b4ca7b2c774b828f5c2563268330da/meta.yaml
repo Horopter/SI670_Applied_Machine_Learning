@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/42b4ca7b2c774b828f5c2563268330da/artifacts
+end_time: 1765750272662
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 42b4ca7b2c774b828f5c2563268330da
+run_name: overjoyed-skunk-693
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765750248698
+status: 3
+tags: []
+user_id: urvim

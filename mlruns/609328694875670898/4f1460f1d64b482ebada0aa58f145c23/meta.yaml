@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/4f1460f1d64b482ebada0aa58f145c23/artifacts
+end_time: 1765590222715
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 4f1460f1d64b482ebada0aa58f145c23
+run_name: overjoyed-stoat-897
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590213079
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/94616da860d048fdbfa1d00140e3a23b/artifacts
+end_time: 1765593657594
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 94616da860d048fdbfa1d00140e3a23b
+run_name: handsome-kit-506
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593652954
+status: 3
+tags: []
+user_id: suzanef

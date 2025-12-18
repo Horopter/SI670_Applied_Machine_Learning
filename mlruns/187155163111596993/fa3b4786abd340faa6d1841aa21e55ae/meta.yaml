@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/fa3b4786abd340faa6d1841aa21e55ae/artifacts
+end_time: 1765586462237
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: fa3b4786abd340faa6d1841aa21e55ae
+run_name: unruly-worm-109
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586337247
+status: 3
+tags: []
+user_id: santoshd

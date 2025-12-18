@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/e7fa9e494d784ac5a9f75e3c07c1c188/artifacts
+end_time: 1765588284026
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: e7fa9e494d784ac5a9f75e3c07c1c188
+run_name: legendary-elk-764
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588279944
+status: 3
+tags: []
+user_id: suzanef

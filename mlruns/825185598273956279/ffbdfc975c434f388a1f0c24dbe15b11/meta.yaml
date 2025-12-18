@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/ffbdfc975c434f388a1f0c24dbe15b11/artifacts
+end_time: 1765594466634
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: ffbdfc975c434f388a1f0c24dbe15b11
+run_name: loud-sheep-354
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594465966
+status: 3
+tags: []
+user_id: suzanef

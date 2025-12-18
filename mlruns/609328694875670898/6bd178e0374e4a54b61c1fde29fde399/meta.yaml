@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/6bd178e0374e4a54b61c1fde29fde399/artifacts
+end_time: 1765588767169
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 6bd178e0374e4a54b61c1fde29fde399
+run_name: upset-crab-246
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588762990
+status: 3
+tags: []
+user_id: urvim

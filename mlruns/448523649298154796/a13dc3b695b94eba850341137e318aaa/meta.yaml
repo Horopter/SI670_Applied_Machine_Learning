@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/a13dc3b695b94eba850341137e318aaa/artifacts
+end_time: 1765609540206
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: a13dc3b695b94eba850341137e318aaa
+run_name: luxuriant-cat-444
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609539329
+status: 3
+tags: []
+user_id: santoshd

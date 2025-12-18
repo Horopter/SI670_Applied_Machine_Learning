@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/5f25e16038c74842a22e9c58b521467c/artifacts
+end_time: 1765586164595
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 5f25e16038c74842a22e9c58b521467c
+run_name: chill-grub-12
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586162838
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/df5974ebab1749eca6b5b000ba49843b/artifacts
+end_time: 1765753132253
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: df5974ebab1749eca6b5b000ba49843b
+run_name: loud-roo-786
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765753076084
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/d2bbc16d40ea43f59be4e1b2b7b864b1/artifacts
+end_time: 1765758965988
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: d2bbc16d40ea43f59be4e1b2b7b864b1
+run_name: colorful-snail-103
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765758881211
+status: 3
+tags: []
+user_id: urvim

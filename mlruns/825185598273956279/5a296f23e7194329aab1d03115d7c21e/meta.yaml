@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/5a296f23e7194329aab1d03115d7c21e/artifacts
+end_time: 1765586112965
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 5a296f23e7194329aab1d03115d7c21e
+run_name: capable-smelt-977
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586111209
+status: 3
+tags: []
+user_id: suzanef

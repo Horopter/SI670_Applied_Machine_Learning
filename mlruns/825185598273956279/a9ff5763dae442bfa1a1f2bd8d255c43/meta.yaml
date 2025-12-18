@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/a9ff5763dae442bfa1a1f2bd8d255c43/artifacts
+end_time: 1765603907362
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: a9ff5763dae442bfa1a1f2bd8d255c43
+run_name: fortunate-flea-579
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603906684
+status: 3
+tags: []
+user_id: suzanef

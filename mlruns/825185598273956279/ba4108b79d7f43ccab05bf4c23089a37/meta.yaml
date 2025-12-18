@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/ba4108b79d7f43ccab05bf4c23089a37/artifacts
+end_time: 1765589278526
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: ba4108b79d7f43ccab05bf4c23089a37
+run_name: victorious-yak-157
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589273395
+status: 3
+tags: []
+user_id: suzanef

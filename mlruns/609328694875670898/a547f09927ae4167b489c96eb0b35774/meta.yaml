@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/a547f09927ae4167b489c96eb0b35774/artifacts
+end_time: 1765587468273
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: a547f09927ae4167b489c96eb0b35774
+run_name: spiffy-whale-397
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765587463096
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/ce3532c4194f42e5b3ebcc0838c8166f/artifacts
+end_time: 1765744568676
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: ce3532c4194f42e5b3ebcc0838c8166f
+run_name: chill-owl-585
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765744567775
+status: 3
+tags: []
+user_id: suzanef

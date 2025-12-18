@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/4384bb4d53ee447f95459e7cdab6ac63/artifacts
+end_time: 1765585177533
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 4384bb4d53ee447f95459e7cdab6ac63
+run_name: thoughtful-bass-236
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585158751
+status: 3
+tags: []
+user_id: urvim

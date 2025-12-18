@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/9c2295df2d6b4fe1b50129727c42b620/artifacts
+end_time: 1765757395850
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 9c2295df2d6b4fe1b50129727c42b620
+run_name: spiffy-snake-228
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765757375974
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/51b7e04fda544f78a81645e9514c83d4/artifacts
+end_time: 1765584473010
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 51b7e04fda544f78a81645e9514c83d4
+run_name: polite-sheep-782
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584471341
+status: 3
+tags: []
+user_id: suzanef

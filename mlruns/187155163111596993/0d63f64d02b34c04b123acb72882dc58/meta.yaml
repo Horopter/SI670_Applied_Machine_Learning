@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/0d63f64d02b34c04b123acb72882dc58/artifacts
+end_time: 1765588194745
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: 0d63f64d02b34c04b123acb72882dc58
+run_name: dashing-cub-352
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588003817
+status: 3
+tags: []
+user_id: santoshd

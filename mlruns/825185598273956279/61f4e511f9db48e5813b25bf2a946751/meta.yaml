@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/61f4e511f9db48e5813b25bf2a946751/artifacts
+end_time: 1765590511688
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 61f4e511f9db48e5813b25bf2a946751
+run_name: persistent-asp-231
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590507148
+status: 3
+tags: []
+user_id: suzanef

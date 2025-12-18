@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/aa1d61b6c9f841ab863e21876a9f29de/artifacts
+end_time: 1765592142272
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: aa1d61b6c9f841ab863e21876a9f29de
+run_name: bustling-fox-371
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592137174
+status: 3
+tags: []
+user_id: suzanef

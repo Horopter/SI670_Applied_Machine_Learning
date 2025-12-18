@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/4f16c9d31ebb4eb7a743e25b7e61831d/artifacts
+end_time: 1765585838094
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 4f16c9d31ebb4eb7a743e25b7e61831d
+run_name: rebellious-whale-832
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585837008
+status: 3
+tags: []
+user_id: suzanef

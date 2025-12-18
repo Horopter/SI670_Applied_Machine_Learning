@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/0f9f3970738b479999ef781866bea4c3/artifacts
+end_time: 1765589014405
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 0f9f3970738b479999ef781866bea4c3
+run_name: amusing-donkey-163
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589009579
+status: 3
+tags: []
+user_id: urvim

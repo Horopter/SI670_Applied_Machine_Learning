@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/872f46af1d654788a3380a29e958c2fc/artifacts
+end_time: 1765589564037
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 872f46af1d654788a3380a29e958c2fc
+run_name: carefree-perch-439
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589558769
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/7d002073ce8c4d0a907f1d5041b0b16b/artifacts
+end_time: 1765597587965
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 7d002073ce8c4d0a907f1d5041b0b16b
+run_name: unleashed-snail-69
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597587283
+status: 3
+tags: []
+user_id: suzanef

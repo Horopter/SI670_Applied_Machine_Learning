@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/4915b7d5ad784e84bb27dfeca3057d2f/artifacts
+end_time: 1765584219241
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 4915b7d5ad784e84bb27dfeca3057d2f
+run_name: unique-mare-579
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584202838
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/d904246b0d8a457c9901e5eb62690a98/artifacts
+end_time: 1765585112152
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: d904246b0d8a457c9901e5eb62690a98
+run_name: grandiose-wren-195
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585099166
+status: 3
+tags: []
+user_id: urvim

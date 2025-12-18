@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/b935b3d3de534464a5be9818e570dd32/artifacts
+end_time: 1765602949261
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: b935b3d3de534464a5be9818e570dd32
+run_name: chill-loon-614
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602948587
+status: 3
+tags: []
+user_id: suzanef

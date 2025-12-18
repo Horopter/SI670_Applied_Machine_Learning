@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/5fba409c57444e528f18d2914e573edc/artifacts
+end_time: 1765584491900
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 5fba409c57444e528f18d2914e573edc
+run_name: beautiful-eel-802
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584490088
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/f5d7eee37560446f8278f20091bcb2bc/artifacts
+end_time: 1765588476001
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: f5d7eee37560446f8278f20091bcb2bc
+run_name: likeable-shrew-875
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588471359
+status: 3
+tags: []
+user_id: suzanef

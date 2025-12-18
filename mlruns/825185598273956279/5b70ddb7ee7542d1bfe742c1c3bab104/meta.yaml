@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/5b70ddb7ee7542d1bfe742c1c3bab104/artifacts
+end_time: 1765603630935
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 5b70ddb7ee7542d1bfe742c1c3bab104
+run_name: receptive-yak-92
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603630257
+status: 3
+tags: []
+user_id: suzanef

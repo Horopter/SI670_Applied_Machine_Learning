@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/3cdb959e761d47a3a747404254fee4e7/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 3cdb959e761d47a3a747404254fee4e7
+run_name: able-ram-16
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590172060
+status: 1
+tags: []
+user_id: suzanef

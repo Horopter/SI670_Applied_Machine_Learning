@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/690fc9c69d3549cb87010ff4bab13576/artifacts
+end_time: 1765597562616
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 690fc9c69d3549cb87010ff4bab13576
+run_name: capable-stag-570
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597561934
+status: 3
+tags: []
+user_id: suzanef

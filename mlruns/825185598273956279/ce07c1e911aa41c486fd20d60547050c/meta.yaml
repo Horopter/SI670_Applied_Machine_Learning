@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/ce07c1e911aa41c486fd20d60547050c/artifacts
+end_time: 1765591191922
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: ce07c1e911aa41c486fd20d60547050c
+run_name: sneaky-owl-296
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591186698
+status: 3
+tags: []
+user_id: suzanef

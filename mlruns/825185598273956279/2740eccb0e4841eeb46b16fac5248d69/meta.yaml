@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/2740eccb0e4841eeb46b16fac5248d69/artifacts
+end_time: 1765603431902
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 2740eccb0e4841eeb46b16fac5248d69
+run_name: unruly-mole-596
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603431227
+status: 3
+tags: []
+user_id: suzanef

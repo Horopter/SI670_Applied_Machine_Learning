@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/5c6d36b72c6c4019ac16b5161ac6d05f/artifacts
+end_time: 1765596375959
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 5c6d36b72c6c4019ac16b5161ac6d05f
+run_name: glamorous-ox-43
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765596375280
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/46a5653dfeca44048ed1acbeaefd9674/artifacts
+end_time: 1765603866560
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 46a5653dfeca44048ed1acbeaefd9674
+run_name: brawny-midge-327
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603865836
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/c7d64a9f060c414d85bf515dd4a3983b/artifacts
+end_time: 1765604460926
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: c7d64a9f060c414d85bf515dd4a3983b
+run_name: hilarious-calf-575
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604460825
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/a92632a65d7f4e4a9112e272ec9381ef/artifacts
+end_time: 1765594457036
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: a92632a65d7f4e4a9112e272ec9381ef
+run_name: nervous-panda-640
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594456366
+status: 3
+tags: []
+user_id: suzanef

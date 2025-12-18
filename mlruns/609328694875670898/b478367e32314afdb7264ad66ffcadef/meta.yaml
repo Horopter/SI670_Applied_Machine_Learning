@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/b478367e32314afdb7264ad66ffcadef/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: b478367e32314afdb7264ad66ffcadef
+run_name: illustrious-mole-228
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588416343
+status: 1
+tags: []
+user_id: urvim

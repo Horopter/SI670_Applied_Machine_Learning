@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/c522ddced44949e6b2467fa52d12ba15/artifacts
+end_time: 1765586591651
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: c522ddced44949e6b2467fa52d12ba15
+run_name: welcoming-mink-678
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586577298
+status: 3
+tags: []
+user_id: urvim

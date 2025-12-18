@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/f7b5e80681b249d1a0535944dbbb4be9/artifacts
+end_time: 1765595452391
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: f7b5e80681b249d1a0535944dbbb4be9
+run_name: suave-sponge-509
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765595451718
+status: 3
+tags: []
+user_id: suzanef

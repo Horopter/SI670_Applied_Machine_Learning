@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/4b7808d9958a4a558abe5c0200a1c3dd/artifacts
+end_time: 1765589507199
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 4b7808d9958a4a558abe5c0200a1c3dd
+run_name: colorful-eel-315
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589502040
+status: 3
+tags: []
+user_id: suzanef

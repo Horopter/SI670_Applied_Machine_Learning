@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/5170c7ae9900472a92630b0871b2b4f9/artifacts
+end_time: 1765757395554
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 5170c7ae9900472a92630b0871b2b4f9
+run_name: sincere-carp-302
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765757345386
+status: 3
+tags: []
+user_id: urvim

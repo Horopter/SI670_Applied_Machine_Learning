@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/b26e95e52e1c49abb71eeab0a0bd186c/artifacts
+end_time: 1765584893834
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: b26e95e52e1c49abb71eeab0a0bd186c
+run_name: caring-smelt-943
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584892187
+status: 3
+tags: []
+user_id: suzanef

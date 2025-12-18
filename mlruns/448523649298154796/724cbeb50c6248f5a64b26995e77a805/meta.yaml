@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/724cbeb50c6248f5a64b26995e77a805/artifacts
+end_time: 1765609677311
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 724cbeb50c6248f5a64b26995e77a805
+run_name: lyrical-bass-77
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609676436
+status: 3
+tags: []
+user_id: santoshd

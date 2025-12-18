@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/22bf6903abea49299baa4c597bd797f2/artifacts
+end_time: 1765596569365
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 22bf6903abea49299baa4c597bd797f2
+run_name: wistful-pig-432
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765596568687
+status: 3
+tags: []
+user_id: suzanef

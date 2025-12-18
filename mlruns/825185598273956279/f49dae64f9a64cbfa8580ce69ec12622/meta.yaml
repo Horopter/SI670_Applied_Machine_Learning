@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/f49dae64f9a64cbfa8580ce69ec12622/artifacts
+end_time: 1765584851203
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: f49dae64f9a64cbfa8580ce69ec12622
+run_name: bittersweet-elk-805
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584849579
+status: 3
+tags: []
+user_id: suzanef

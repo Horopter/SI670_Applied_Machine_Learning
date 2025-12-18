@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/04c10054d7664abeb25d08ac7c6e9d5d/artifacts
+end_time: 1765584508092
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: 04c10054d7664abeb25d08ac7c6e9d5d
+run_name: righteous-elk-838
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584486177
+status: 3
+tags: []
+user_id: santoshd

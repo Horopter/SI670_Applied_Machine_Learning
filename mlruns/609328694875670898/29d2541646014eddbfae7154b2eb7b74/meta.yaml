@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/29d2541646014eddbfae7154b2eb7b74/artifacts
+end_time: 1765588141599
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 29d2541646014eddbfae7154b2eb7b74
+run_name: nervous-bat-385
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588136427
+status: 3
+tags: []
+user_id: urvim

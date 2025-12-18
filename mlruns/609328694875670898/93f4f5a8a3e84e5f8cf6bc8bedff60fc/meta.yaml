@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/93f4f5a8a3e84e5f8cf6bc8bedff60fc/artifacts
+end_time: 1765593348843
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 93f4f5a8a3e84e5f8cf6bc8bedff60fc
+run_name: nosy-snail-523
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765593339883
+status: 3
+tags: []
+user_id: urvim

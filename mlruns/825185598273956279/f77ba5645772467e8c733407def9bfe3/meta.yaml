@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/f77ba5645772467e8c733407def9bfe3/artifacts
+end_time: 1765603058593
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: f77ba5645772467e8c733407def9bfe3
+run_name: gifted-crow-889
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603057916
+status: 3
+tags: []
+user_id: suzanef

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/7ab9b07fb76d4ac4a2010b0a508c4324/artifacts
+end_time: 1765589195528
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 7ab9b07fb76d4ac4a2010b0a508c4324
+run_name: enchanting-slug-71
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589190383
+status: 3
+tags: []
+user_id: suzanef

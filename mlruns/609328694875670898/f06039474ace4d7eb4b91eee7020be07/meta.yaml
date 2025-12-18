@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/f06039474ace4d7eb4b91eee7020be07/artifacts
+end_time: 1765759852816
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: f06039474ace4d7eb4b91eee7020be07
+run_name: caring-tern-468
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765759818946
+status: 3
+tags: []
+user_id: urvim

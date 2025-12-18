@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/186ad6f47138445886aa4b179a0afe3a/artifacts
+end_time: 1765585674259
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 186ad6f47138445886aa4b179a0afe3a
+run_name: likeable-goat-632
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585657023
+status: 3
+tags: []
+user_id: urvim

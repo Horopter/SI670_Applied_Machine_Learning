@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/7ba9158c0e2441d493f6869dfafded04/artifacts
+end_time: 1765595402538
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 7ba9158c0e2441d493f6869dfafded04
+run_name: upbeat-sloth-458
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765595401864
+status: 3
+tags: []
+user_id: suzanef

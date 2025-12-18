@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/bd09f3b5f7904cad887db06575b49f8d/artifacts
+end_time: 1765597730169
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: bd09f3b5f7904cad887db06575b49f8d
+run_name: exultant-squid-75
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597729489
+status: 3
+tags: []
+user_id: suzanef

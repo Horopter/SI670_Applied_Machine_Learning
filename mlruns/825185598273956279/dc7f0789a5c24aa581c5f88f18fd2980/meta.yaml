@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/dc7f0789a5c24aa581c5f88f18fd2980/artifacts
+end_time: 1765596342873
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: dc7f0789a5c24aa581c5f88f18fd2980
+run_name: melodic-fox-179
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765596342153
+status: 3
+tags: []
+user_id: suzanef

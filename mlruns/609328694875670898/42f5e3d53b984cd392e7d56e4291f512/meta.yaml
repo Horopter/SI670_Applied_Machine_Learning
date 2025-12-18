@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/42f5e3d53b984cd392e7d56e4291f512/artifacts
+end_time: 1765590211869
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 42f5e3d53b984cd392e7d56e4291f512
+run_name: bold-skunk-236
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590201950
+status: 3
+tags: []
+user_id: urvim

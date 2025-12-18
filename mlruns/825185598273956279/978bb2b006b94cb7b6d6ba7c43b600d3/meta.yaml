@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/978bb2b006b94cb7b6d6ba7c43b600d3/artifacts
+end_time: 1765744560001
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 978bb2b006b94cb7b6d6ba7c43b600d3
+run_name: languid-doe-785
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765744555775
+status: 3
+tags: []
+user_id: suzanef

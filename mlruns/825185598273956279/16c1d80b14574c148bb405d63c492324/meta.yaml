@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/16c1d80b14574c148bb405d63c492324/artifacts
+end_time: 1765591057301
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 16c1d80b14574c148bb405d63c492324
+run_name: bedecked-shrew-566
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591052732
+status: 3
+tags: []
+user_id: suzanef

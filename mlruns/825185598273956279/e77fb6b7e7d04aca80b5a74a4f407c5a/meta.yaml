@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/e77fb6b7e7d04aca80b5a74a4f407c5a/artifacts
+end_time: 1765594057827
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: e77fb6b7e7d04aca80b5a74a4f407c5a
+run_name: invincible-rat-483
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594052478
+status: 3
+tags: []
+user_id: suzanef

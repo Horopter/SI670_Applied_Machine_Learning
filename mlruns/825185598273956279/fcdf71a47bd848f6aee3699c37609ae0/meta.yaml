@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/fcdf71a47bd848f6aee3699c37609ae0/artifacts
+end_time: 1765594032149
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: fcdf71a47bd848f6aee3699c37609ae0
+run_name: merciful-bird-492
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594026996
+status: 3
+tags: []
+user_id: suzanef

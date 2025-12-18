@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/d5c606c1c61c4e3c91823543f35cfc07/artifacts
+end_time: 1765604670318
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: d5c606c1c61c4e3c91823543f35cfc07
+run_name: caring-vole-737
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604669633
+status: 3
+tags: []
+user_id: suzanef

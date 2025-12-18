@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/be76756148734cb3a7ebd40d8da35683/artifacts
+end_time: 1765594635745
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: be76756148734cb3a7ebd40d8da35683
+run_name: serious-grouse-424
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594634308
+status: 3
+tags: []
+user_id: suzanef

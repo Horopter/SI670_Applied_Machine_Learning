@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/7519708c3a0e4474968164742851d9a4/artifacts
+end_time: 1765983243336
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 7519708c3a0e4474968164742851d9a4
+run_name: debonair-grouse-936
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765983173431
+status: 3
+tags: []
+user_id: suzanef

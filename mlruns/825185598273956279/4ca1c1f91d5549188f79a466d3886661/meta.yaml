@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/4ca1c1f91d5549188f79a466d3886661/artifacts
+end_time: 1765602649088
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 4ca1c1f91d5549188f79a466d3886661
+run_name: defiant-quail-161
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602648996
+status: 3
+tags: []
+user_id: suzanef

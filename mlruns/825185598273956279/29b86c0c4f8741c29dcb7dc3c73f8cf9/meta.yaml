@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/29b86c0c4f8741c29dcb7dc3c73f8cf9/artifacts
+end_time: 1765590453619
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 29b86c0c4f8741c29dcb7dc3c73f8cf9
+run_name: kindly-whale-549
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590448386
+status: 3
+tags: []
+user_id: suzanef

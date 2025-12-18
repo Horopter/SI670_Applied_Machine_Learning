@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/c3f6b62dd3a5419394f89713a6328cd5/artifacts
+end_time: 1765602505375
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: c3f6b62dd3a5419394f89713a6328cd5
+run_name: sassy-sheep-219
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602504702
+status: 3
+tags: []
+user_id: suzanef

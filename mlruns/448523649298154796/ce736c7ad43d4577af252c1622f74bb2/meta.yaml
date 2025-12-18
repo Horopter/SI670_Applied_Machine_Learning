@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/ce736c7ad43d4577af252c1622f74bb2/artifacts
+end_time: 1765609665043
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: ce736c7ad43d4577af252c1622f74bb2
+run_name: trusting-eel-467
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609664938
+status: 3
+tags: []
+user_id: santoshd

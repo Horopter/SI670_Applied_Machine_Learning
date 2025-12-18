@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/0e93417ea1994b61aaa54cfbd4c5c2d0/artifacts
+end_time: 1765591601877
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 0e93417ea1994b61aaa54cfbd4c5c2d0
+run_name: bright-grouse-937
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765591590518
+status: 3
+tags: []
+user_id: urvim

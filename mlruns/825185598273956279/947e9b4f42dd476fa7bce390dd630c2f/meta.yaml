@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/947e9b4f42dd476fa7bce390dd630c2f/artifacts
+end_time: 1765586353199
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 947e9b4f42dd476fa7bce390dd630c2f
+run_name: nervous-jay-152
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586351485
+status: 3
+tags: []
+user_id: suzanef

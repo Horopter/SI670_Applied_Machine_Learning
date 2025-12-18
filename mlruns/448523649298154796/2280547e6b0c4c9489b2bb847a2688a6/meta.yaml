@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/2280547e6b0c4c9489b2bb847a2688a6/artifacts
+end_time: 1765609711481
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 2280547e6b0c4c9489b2bb847a2688a6
+run_name: rare-colt-973
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609710604
+status: 3
+tags: []
+user_id: santoshd

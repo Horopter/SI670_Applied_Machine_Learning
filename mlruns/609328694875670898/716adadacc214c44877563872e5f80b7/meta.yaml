@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/716adadacc214c44877563872e5f80b7/artifacts
+end_time: 1765590043643
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 716adadacc214c44877563872e5f80b7
+run_name: learned-carp-8
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590034213
+status: 3
+tags: []
+user_id: urvim

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/463c69c813d242f8a5dd5c33dda7e701/artifacts
+end_time: 1765609646714
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 463c69c813d242f8a5dd5c33dda7e701
+run_name: crawling-dolphin-593
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609646017
+status: 3
+tags: []
+user_id: santoshd

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/ccb29e730a9f498aacef1fed25139cfb/artifacts
+end_time: 1765588633535
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: ccb29e730a9f498aacef1fed25139cfb
+run_name: rare-panda-600
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588628752
+status: 3
+tags: []
+user_id: suzanef

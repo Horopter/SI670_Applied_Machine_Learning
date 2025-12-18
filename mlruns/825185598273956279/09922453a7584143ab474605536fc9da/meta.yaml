@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/09922453a7584143ab474605536fc9da/artifacts
+end_time: 1765597840578
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 09922453a7584143ab474605536fc9da
+run_name: whimsical-bug-110
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597839897
+status: 3
+tags: []
+user_id: suzanef

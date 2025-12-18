@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/d69996b8ca9b4aebbe3174f1623e3995/artifacts
+end_time: 1765589157071
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: d69996b8ca9b4aebbe3174f1623e3995
+run_name: mysterious-lynx-435
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589151888
+status: 3
+tags: []
+user_id: suzanef

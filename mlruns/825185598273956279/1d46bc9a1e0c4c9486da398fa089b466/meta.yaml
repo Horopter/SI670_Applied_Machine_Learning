@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/1d46bc9a1e0c4c9486da398fa089b466/artifacts
+end_time: 1765603448264
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 1d46bc9a1e0c4c9486da398fa089b466
+run_name: puzzled-jay-427
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603447497
+status: 3
+tags: []
+user_id: suzanef

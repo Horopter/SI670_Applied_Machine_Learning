@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/b58a32ff695a465d98acb7d2caefed27/artifacts
+end_time: 1765603393004
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: b58a32ff695a465d98acb7d2caefed27
+run_name: melodic-carp-110
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603392327
+status: 3
+tags: []
+user_id: suzanef

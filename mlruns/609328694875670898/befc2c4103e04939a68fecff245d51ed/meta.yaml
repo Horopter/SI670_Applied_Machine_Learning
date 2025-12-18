@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/befc2c4103e04939a68fecff245d51ed/artifacts
+end_time: 1765588811702
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: befc2c4103e04939a68fecff245d51ed
+run_name: bright-bass-541
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588806674
+status: 3
+tags: []
+user_id: urvim

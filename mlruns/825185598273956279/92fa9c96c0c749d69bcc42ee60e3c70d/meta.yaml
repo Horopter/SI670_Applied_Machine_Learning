@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/92fa9c96c0c749d69bcc42ee60e3c70d/artifacts
+end_time: 1765592327242
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 92fa9c96c0c749d69bcc42ee60e3c70d
+run_name: industrious-moth-193
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592322127
+status: 3
+tags: []
+user_id: suzanef

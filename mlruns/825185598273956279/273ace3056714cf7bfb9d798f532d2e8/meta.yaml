@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/273ace3056714cf7bfb9d798f532d2e8/artifacts
+end_time: 1765585664072
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 273ace3056714cf7bfb9d798f532d2e8
+run_name: industrious-shad-920
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585662391
+status: 3
+tags: []
+user_id: suzanef

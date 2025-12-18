@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/cfd53560eb4440c8ac903f618e7ab44c/artifacts
+end_time: 1765588328203
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: cfd53560eb4440c8ac903f618e7ab44c
+run_name: dazzling-gnat-236
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588323075
+status: 3
+tags: []
+user_id: urvim

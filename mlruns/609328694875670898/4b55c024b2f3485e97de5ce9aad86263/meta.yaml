@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/4b55c024b2f3485e97de5ce9aad86263/artifacts
+end_time: 1765586786928
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 4b55c024b2f3485e97de5ce9aad86263
+run_name: trusting-robin-98
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765586773468
+status: 3
+tags: []
+user_id: urvim

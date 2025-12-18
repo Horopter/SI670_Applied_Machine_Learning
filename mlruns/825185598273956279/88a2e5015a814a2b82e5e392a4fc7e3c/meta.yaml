@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/88a2e5015a814a2b82e5e392a4fc7e3c/artifacts
+end_time: 1765590434547
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 88a2e5015a814a2b82e5e392a4fc7e3c
+run_name: polite-rat-763
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765590429320
+status: 3
+tags: []
+user_id: suzanef

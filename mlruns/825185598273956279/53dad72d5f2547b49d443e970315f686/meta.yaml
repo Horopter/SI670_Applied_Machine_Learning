@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/53dad72d5f2547b49d443e970315f686/artifacts
+end_time: 1765597653464
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 53dad72d5f2547b49d443e970315f686
+run_name: merciful-finch-890
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765597652785
+status: 3
+tags: []
+user_id: suzanef

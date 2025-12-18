@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/187155163111596993/ceb51e0f74da4e7c899b68c1401fb481/artifacts
+end_time: 1765584195798
+entry_point_name: ''
+experiment_id: '187155163111596993'
+lifecycle_stage: active
+run_id: ceb51e0f74da4e7c899b68c1401fb481
+run_name: debonair-trout-57
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765584137667
+status: 3
+tags: []
+user_id: santoshd

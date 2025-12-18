@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/9ecbd7e2c14a456ab1011e21a8558de1/artifacts
+end_time: 1765594546660
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 9ecbd7e2c14a456ab1011e21a8558de1
+run_name: thoughtful-flea-163
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765594545990
+status: 3
+tags: []
+user_id: suzanef

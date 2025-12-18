@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/4c96a70b8df14dc3be77cfc395a17466/artifacts
+end_time: 1765585923182
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 4c96a70b8df14dc3be77cfc395a17466
+run_name: upset-asp-602
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765585921466
+status: 3
+tags: []
+user_id: suzanef

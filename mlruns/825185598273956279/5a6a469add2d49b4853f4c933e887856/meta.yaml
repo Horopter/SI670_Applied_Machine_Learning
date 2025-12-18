@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/5a6a469add2d49b4853f4c933e887856/artifacts
+end_time: 1765604444489
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 5a6a469add2d49b4853f4c933e887856
+run_name: spiffy-rat-493
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604443808
+status: 3
+tags: []
+user_id: suzanef

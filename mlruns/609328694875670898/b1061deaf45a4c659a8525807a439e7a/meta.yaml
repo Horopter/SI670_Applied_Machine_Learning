@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/b1061deaf45a4c659a8525807a439e7a/artifacts
+end_time: 1765588673562
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: b1061deaf45a4c659a8525807a439e7a
+run_name: charming-eel-644
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765588668829
+status: 3
+tags: []
+user_id: urvim

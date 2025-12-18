@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/e3684a1857ae4df38d2ca5f3d75d0110/artifacts
+end_time: 1765603975946
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: e3684a1857ae4df38d2ca5f3d75d0110
+run_name: mysterious-frog-752
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603975267
+status: 3
+tags: []
+user_id: suzanef

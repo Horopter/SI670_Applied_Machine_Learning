@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/d73a603ffa4c422cb61552a6834134f2/artifacts
+end_time: 1765602404214
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: d73a603ffa4c422cb61552a6834134f2
+run_name: intelligent-bird-200
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602403539
+status: 3
+tags: []
+user_id: suzanef

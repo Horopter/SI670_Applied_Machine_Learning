@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/cb6b432dd3c04bb8ba5a18f0f0325cec/artifacts
+end_time: 1765589316672
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: cb6b432dd3c04bb8ba5a18f0f0325cec
+run_name: welcoming-bird-879
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765589311550
+status: 3
+tags: []
+user_id: suzanef

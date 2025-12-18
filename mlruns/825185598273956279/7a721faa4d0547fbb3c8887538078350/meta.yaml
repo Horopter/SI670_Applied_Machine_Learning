@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/7a721faa4d0547fbb3c8887538078350/artifacts
+end_time: 1765603383709
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 7a721faa4d0547fbb3c8887538078350
+run_name: welcoming-gnat-804
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765603383034
+status: 3
+tags: []
+user_id: suzanef

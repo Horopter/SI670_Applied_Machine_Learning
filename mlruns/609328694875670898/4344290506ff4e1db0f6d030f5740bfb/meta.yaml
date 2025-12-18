@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/4344290506ff4e1db0f6d030f5740bfb/artifacts
+end_time: 1765759818921
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 4344290506ff4e1db0f6d030f5740bfb
+run_name: nebulous-squid-263
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765759775079
+status: 3
+tags: []
+user_id: urvim

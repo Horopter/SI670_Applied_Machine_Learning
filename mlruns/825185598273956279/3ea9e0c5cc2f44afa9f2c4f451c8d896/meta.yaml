@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/3ea9e0c5cc2f44afa9f2c4f451c8d896/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 3ea9e0c5cc2f44afa9f2c4f451c8d896
+run_name: sneaky-kite-17
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765750231796
+status: 1
+tags: []
+user_id: suzanef

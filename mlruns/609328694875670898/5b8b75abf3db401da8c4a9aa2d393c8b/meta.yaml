@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/5b8b75abf3db401da8c4a9aa2d393c8b/artifacts
+end_time: 1765592946376
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 5b8b75abf3db401da8c4a9aa2d393c8b
+run_name: awesome-goose-591
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592937319
+status: 3
+tags: []
+user_id: urvim

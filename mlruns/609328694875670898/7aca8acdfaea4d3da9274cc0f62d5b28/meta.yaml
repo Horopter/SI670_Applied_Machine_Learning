@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/7aca8acdfaea4d3da9274cc0f62d5b28/artifacts
+end_time: 1765762568089
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 7aca8acdfaea4d3da9274cc0f62d5b28
+run_name: resilient-crow-780
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765762499595
+status: 3
+tags: []
+user_id: urvim

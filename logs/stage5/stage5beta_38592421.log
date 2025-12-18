@@ -1,0 +1,42 @@
+==========================================
+STAGE 5BETA LOG FILE INITIALIZED
+Timestamp: Thu Dec 18 02:13:49 EST 2025
+Log file: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/logs/stage5/stage5beta_38592421.log
+==========================================
+Executing command...
+Python: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/venv/bin/python3
+Script: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/src/scripts/train_gradient_boosting.py
+Arguments: --project-root /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc --scaled-metadata /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/scaled_videos/scaled_metadata.arrow --features-stage2 /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage2/features_metadata.arrow --features-stage4 /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage4/features_scaled_metadata.arrow --output-dir data/stage5/gradient_boosting --n-splits 5 --models xgboost --delete-existing
+==========================================
+2025-12-18 02:16:44,669 [INFO] [__main__:44] ================================================================================
+2025-12-18 02:16:44,669 [INFO] [__main__:45] STAGE 5BETA: Gradient Boosting Training Script Starting
+2025-12-18 02:16:44,669 [INFO] [__main__:46] ================================================================================
+2025-12-18 02:16:44,670 [WARNING] [__main__:63] LightGBM not available
+2025-12-18 02:16:44,670 [WARNING] [__main__:70] CatBoost not available
+2025-12-18 02:16:44,671 [INFO] [__main__:628] Parsing command line arguments...
+2025-12-18 02:16:44,675 [INFO] [__main__:649] Arguments parsed successfully:
+2025-12-18 02:16:44,675 [INFO] [__main__:650]   project-root: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc
+2025-12-18 02:16:44,676 [INFO] [__main__:651]   scaled-metadata: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/scaled_videos/scaled_metadata.arrow
+2025-12-18 02:16:44,676 [INFO] [__main__:652]   features-stage2: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage2/features_metadata.arrow
+2025-12-18 02:16:44,676 [INFO] [__main__:653]   features-stage4: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/features_stage4/features_scaled_metadata.arrow
+2025-12-18 02:16:44,676 [INFO] [__main__:654]   output-dir: data/stage5/gradient_boosting
+2025-12-18 02:16:44,676 [INFO] [__main__:655]   n-splits: 5
+2025-12-18 02:16:44,676 [INFO] [__main__:656]   models: ['xgboost']
+2025-12-18 02:16:44,676 [INFO] [__main__:657]   delete-existing: True
+2025-12-18 02:16:44,676 [CRITICAL] [__main__:678] Training failed with exception: UnboundLocalError: cannot access local variable 'Path' where it is not associated with a value
+Traceback (most recent call last):
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/src/scripts/train_gradient_boosting.py", line 667, in main
+    train_gradient_boosting(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/src/scripts/train_gradient_boosting.py", line 98, in train_gradient_boosting
+    project_root_path = Path(project_root).resolve()
+                        ^^^^
+UnboundLocalError: cannot access local variable 'Path' where it is not associated with a value
+Traceback (most recent call last):
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/src/scripts/train_gradient_boosting.py", line 685, in <module>
+    main()
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/src/scripts/train_gradient_boosting.py", line 667, in main
+    train_gradient_boosting(
+  File "/gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/src/scripts/train_gradient_boosting.py", line 98, in train_gradient_boosting
+    project_root_path = Path(project_root).resolve()
+                        ^^^^
+UnboundLocalError: cannot access local variable 'Path' where it is not associated with a value

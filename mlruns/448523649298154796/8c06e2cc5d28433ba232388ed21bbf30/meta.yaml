@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/8c06e2cc5d28433ba232388ed21bbf30/artifacts
+end_time: 1765609610748
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 8c06e2cc5d28433ba232388ed21bbf30
+run_name: shivering-hog-164
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765609610055
+status: 3
+tags: []
+user_id: santoshd

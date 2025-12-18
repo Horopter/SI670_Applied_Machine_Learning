@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/7c079864383044718b81db89345aaac6/artifacts
+end_time: 1765984476339
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 7c079864383044718b81db89345aaac6
+run_name: valuable-goose-780
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765984381402
+status: 3
+tags: []
+user_id: suzanef

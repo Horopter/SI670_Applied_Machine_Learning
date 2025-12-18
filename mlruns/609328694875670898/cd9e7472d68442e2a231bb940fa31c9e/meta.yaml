@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/cd9e7472d68442e2a231bb940fa31c9e/artifacts
+end_time: 1765762431883
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: cd9e7472d68442e2a231bb940fa31c9e
+run_name: amusing-skink-819
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765762356521
+status: 3
+tags: []
+user_id: urvim

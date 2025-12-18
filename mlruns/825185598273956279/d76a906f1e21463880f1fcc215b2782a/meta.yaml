@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/d76a906f1e21463880f1fcc215b2782a/artifacts
+end_time: 1765602575198
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: d76a906f1e21463880f1fcc215b2782a
+run_name: casual-donkey-484
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765602574522
+status: 3
+tags: []
+user_id: suzanef

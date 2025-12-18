@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/b68eba7016064161823be36f6f06d6e9/artifacts
+end_time: 1765592417105
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: b68eba7016064161823be36f6f06d6e9
+run_name: adaptable-asp-172
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765592411802
+status: 3
+tags: []
+user_id: suzanef

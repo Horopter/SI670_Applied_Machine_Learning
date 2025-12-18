@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/d16c1604f99540bd889bb1fd54ec6247/artifacts
+end_time: 1765595263441
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: d16c1604f99540bd889bb1fd54ec6247
+run_name: hilarious-goose-719
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765595263343
+status: 3
+tags: []
+user_id: suzanef

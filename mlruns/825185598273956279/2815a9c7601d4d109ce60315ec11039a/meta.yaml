@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/2815a9c7601d4d109ce60315ec11039a/artifacts
+end_time: 1765604655319
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 2815a9c7601d4d109ce60315ec11039a
+run_name: classy-finch-810
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765604654633
+status: 3
+tags: []
+user_id: suzanef
