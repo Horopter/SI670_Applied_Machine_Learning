@@ -6,13 +6,33 @@ This module provides shared functions for all notebooks to avoid code duplicatio
 
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
+try:
+    from typing import Protocol
+except ImportError:
+    # Python < 3.8 compatibility
+    from typing_extensions import Protocol
+from dataclasses import dataclass, field
+from abc import ABC, abstractmethod
 import json
 import re
+
 import numpy as np
 import pandas as pd
 from datetime import datetime
 import time
+from collections import Counter, defaultdict
+import tempfile
+import os
 
+
+# Optional imports for IPython display
+try:
+    from IPython.display import Image, display
+    IPYTHON_AVAILABLE = True
+except ImportError:
+    IPYTHON_AVAILABLE = False
+    Image = None
+    display = None
 
 # Optional imports for plotting functions
 try:
@@ -33,6 +53,19 @@ MODEL_TYPE_MAPPING = {
     "5f": "xgboost_pretrained_inception",
     "5g": "xgboost_i3d",
     "5h": "xgboost_r2plus1d"
+}
+
+# Mapping from notebook model_type to MLflow model_type tag
+# MLflow uses different tag names than the data directory structure
+MLFLOW_MODEL_TYPE_MAPPING = {
+    "xgboost_pretrained_inception": "pretrained_inception",
+    "xgboost_i3d": "x3d",
+    "xgboost_r2plus1d": "slowfast",
+    # For models that use the same name in both
+    "logistic_regression": "logistic_regression",
+    "svm": "svm",
+    "sklearn_logreg": "sklearn_logreg",
+    "gradient_boosting/xgboost": "gradient_boosting/xgboost"
 }
 
 
@@ -267,9 +300,10 @@ def load_mlflow_metrics_by_model_type(
     
     Note: MLflow doesn't use job_id tags. Instead, it uses model_type and fold tags.
     This function loads all runs for a given model_type and aggregates them.
+    Automatically converts model_type to MLflow tag using MLFLOW_MODEL_TYPE_MAPPING.
     
     Args:
-        model_type: Model type (e.g., "logistic_regression", "svm")
+        model_type: Model type (e.g., "xgboost_pretrained_inception", "logistic_regression", "svm")
         mlruns_path: Path to mlruns directory
         project_root: Project root directory
     
@@ -285,6 +319,9 @@ def load_mlflow_metrics_by_model_type(
             if parent == project_root:
                 break
             project_root = parent
+    
+    # Convert model_type to MLflow tag if mapping exists
+    mlflow_model_type = MLFLOW_MODEL_TYPE_MAPPING.get(model_type, model_type)
     
     mlruns_dir = project_root / mlruns_path
     if not mlruns_dir.exists():
@@ -325,7 +362,7 @@ def load_mlflow_metrics_by_model_type(
             try:
                 with open(model_type_tag) as f:
                     tag_value = f.read().strip()
-                if tag_value != model_type:
+                if tag_value != mlflow_model_type:
                     continue
             except Exception as e:
                 continue
@@ -864,23 +901,22 @@ def find_roc_pr_curve_files(
 
 def display_roc_pr_curve_images(
     curve_files: Dict[str, List[Path]],
-    model_name: str,
-    curve_type: str = "ROC/PR"
+    model_name: str
 ) -> bool:
     """
     Display ROC/PR curve images from PNG files.
     
+    Note: The PNG files contain both ROC and PR curves in a single image,
+    so this function displays all found files once.
+    
     Args:
         curve_files: Dictionary from find_roc_pr_curve_files().
         model_name: Model name for display.
-        curve_type: Type of curves ("ROC/PR", "ROC", or "PR").
     
     Returns:
         True if images displayed, False otherwise.
     """
-    try:
-        from IPython.display import Image, display
-    except ImportError:
+    if not IPYTHON_AVAILABLE:
         return False
     
     displayed = False
@@ -1322,7 +1358,7 @@ def plot_roc_curves_comprehensive(
     
     if (curve_files.get('per_fold') or curve_files.get('test_set') or
             curve_files.get('root_level')):
-                if display_roc_pr_curve_images(curve_files, model_name, "ROC"):
+                if display_roc_pr_curve_images(curve_files, model_name):
                     return None
     
     print(f"[WARN] No ROC curve PNG files found for {model_name}")
@@ -1358,9 +1394,7 @@ def plot_pr_curves_comprehensive(
     
     if (curve_files.get('per_fold') or curve_files.get('test_set') or
             curve_files.get('root_level')):
-        if display_roc_pr_curve_images(
-            curve_files, model_name, "Precision-Recall"
-        ):
+        if display_roc_pr_curve_images(curve_files, model_name):
             return None
     
     print(f"[WARN] No PR curve PNG files found for {model_name}")
@@ -1751,7 +1785,17 @@ def plot_training_curves(
                     print(f"[INFO] Loaded training curves from log file: {log_files[0].name}")
     
     if not history:
-        print(f"[WARN] No training history found in {metrics_file}")
+        # Check if this is an XGBoost model (which doesn't train iteratively)
+        # XGBoost models: 5f, 5g, 5h, 5beta
+        # Try to infer model type from path
+        model_path = metrics_file.parent.parent if 'fold_' in str(metrics_file.parent) else metrics_file.parent
+        if model_path.exists():
+            model_type = model_path.name
+            xgboost_models = ['xgboost_pretrained_inception', 'xgboost_i3d', 'xgboost_r2plus1d', 'gradient_boosting/xgboost']
+            if model_type in xgboost_models:
+                # This is expected - XGBoost doesn't train iteratively, no warning needed
+                return None
+        # For other models, suppress warning as it's handled by the informative message below
         return None
     
     # Check if we have actual training epochs (epoch > 0)
@@ -2166,7 +2210,7 @@ def plot_training_curves_from_history(
 
 
 def plot_validation_metrics_across_folds(
-    metrics: Dict[str, Any],
+    metrics: Any,  # Accept MetricsData or dict for backward compatibility
     model_name: str,
     figsize: Tuple[int, int] = (16, 10)
 ) -> Optional[Any]:
@@ -2177,7 +2221,7 @@ def plot_validation_metrics_across_folds(
     this plots validation metrics (loss, accuracy, F1, etc.) across folds.
     
     Args:
-        metrics: Metrics dictionary with fold_results or cv_fold_results.
+        metrics: MetricsData object or metrics dictionary with fold_results or cv_fold_results.
         model_name: Model name for display.
         figsize: Figure size tuple.
     
@@ -2188,31 +2232,27 @@ def plot_validation_metrics_across_folds(
         print("[WARN] Matplotlib not available for plotting")
         return None
     
-    if not metrics or not isinstance(metrics, dict):
+    # Normalize input to MetricsData
+    metrics_data = _normalize_metrics_input(metrics)
+    if metrics_data is None:
         print(f"[WARN] No metrics data found for {model_name}")
         return None
     
-    fold_results = (
-        metrics.get('fold_results', []) or
-        metrics.get('cv_fold_results', []) or
-        []
-    )
-    
-    if not fold_results:
+    if not metrics_data.fold_metrics:
         print(f"[WARN] No fold results found for {model_name}")
         return None
     
-    # Extract metrics across folds
-    folds = [r.get('fold', i+1) for i, r in enumerate(fold_results)]
-    val_losses = [r.get('val_loss', 0.0) for r in fold_results]
-    val_accs = [r.get('val_acc', 0.0) for r in fold_results]
-    val_f1s = [r.get('val_f1', 0.0) for r in fold_results]
-    val_precisions = [r.get('val_precision', 0.0) for r in fold_results]
-    val_recalls = [r.get('val_recall', 0.0) for r in fold_results]
+    # Extract metrics across folds using MetricsData
+    folds = [fm.fold for fm in metrics_data.fold_metrics]
+    val_losses = [fm.val_loss or 0.0 for fm in metrics_data.fold_metrics]
+    val_accs = [fm.val_acc or 0.0 for fm in metrics_data.fold_metrics]
+    val_f1s = [fm.val_f1 or 0.0 for fm in metrics_data.fold_metrics]
+    val_precisions = [fm.val_precision or 0.0 for fm in metrics_data.fold_metrics]
+    val_recalls = [fm.val_recall or 0.0 for fm in metrics_data.fold_metrics]
     
     # Filter out NaN values
     valid_indices = [
-        i for i in range(len(fold_results))
+        i for i in range(len(metrics_data.fold_metrics))
         if not (np.isnan(val_losses[i]) or np.isnan(val_accs[i]))
     ]
     
@@ -2318,6 +2358,357 @@ def plot_validation_metrics_across_folds(
     return figures[-1] if figures else None
 
 
+# ============================================================================
+# SOLID Principles: Data Models and Repository Pattern
+# ============================================================================
+
+@dataclass
+class FoldMetrics:
+    """Encapsulates metrics for a single fold (SRP)."""
+    fold: int
+    val_loss: Optional[float] = None
+    val_acc: Optional[float] = None
+    val_f1: Optional[float] = None
+    val_precision: Optional[float] = None
+    val_recall: Optional[float] = None
+    val_f1_class0: Optional[float] = None
+    val_precision_class0: Optional[float] = None
+    val_recall_class0: Optional[float] = None
+    val_f1_class1: Optional[float] = None
+    val_precision_class1: Optional[float] = None
+    val_recall_class1: Optional[float] = None
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'FoldMetrics':
+        """Create FoldMetrics from dictionary (factory method)."""
+        # Handle both 'fold' and 'fold_idx' keys for backward compatibility
+        fold = data.get('fold') or data.get('fold_idx')
+        if fold is None:
+            raise ValueError("Missing 'fold' or 'fold_idx' in data")
+        return cls(
+            fold=int(fold),
+            val_loss=data.get('val_loss'),
+            val_acc=data.get('val_acc'),
+            val_f1=data.get('val_f1'),
+            val_precision=data.get('val_precision'),
+            val_recall=data.get('val_recall'),
+            val_f1_class0=data.get('val_f1_class0'),
+            val_precision_class0=data.get('val_precision_class0'),
+            val_recall_class0=data.get('val_recall_class0'),
+            val_f1_class1=data.get('val_f1_class1'),
+            val_precision_class1=data.get('val_precision_class1'),
+            val_recall_class1=data.get('val_recall_class1'),
+        )
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for backward compatibility."""
+        return {
+            'fold': self.fold,
+            'val_loss': self.val_loss,
+            'val_acc': self.val_acc,
+            'val_f1': self.val_f1,
+            'val_precision': self.val_precision,
+            'val_recall': self.val_recall,
+            'val_f1_class0': self.val_f1_class0,
+            'val_precision_class0': self.val_precision_class0,
+            'val_recall_class0': self.val_recall_class0,
+            'val_f1_class1': self.val_f1_class1,
+            'val_precision_class1': self.val_precision_class1,
+            'val_recall_class1': self.val_recall_class1,
+        }
+
+
+@dataclass
+class AggregatedMetrics:
+    """Encapsulates aggregated statistics (SRP)."""
+    mean_val_acc: Optional[float] = None
+    std_val_acc: Optional[float] = None
+    mean_val_f1: Optional[float] = None
+    std_val_f1: Optional[float] = None
+    mean_val_precision: Optional[float] = None
+    std_val_precision: Optional[float] = None
+    mean_val_recall: Optional[float] = None
+    std_val_recall: Optional[float] = None
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'AggregatedMetrics':
+        """Create AggregatedMetrics from dictionary."""
+        return cls(
+            mean_val_acc=data.get('mean_val_acc'),
+            std_val_acc=data.get('std_val_acc'),
+            mean_val_f1=data.get('mean_val_f1'),
+            std_val_f1=data.get('std_val_f1'),
+            mean_val_precision=data.get('mean_val_precision'),
+            std_val_precision=data.get('std_val_precision'),
+            mean_val_recall=data.get('mean_val_recall'),
+            std_val_recall=data.get('std_val_recall'),
+        )
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for backward compatibility."""
+        return {
+            'mean_val_acc': self.mean_val_acc,
+            'std_val_acc': self.std_val_acc,
+            'mean_val_f1': self.mean_val_f1,
+            'std_val_f1': self.std_val_f1,
+            'mean_val_precision': self.mean_val_precision,
+            'std_val_precision': self.std_val_precision,
+            'mean_val_recall': self.mean_val_recall,
+            'std_val_recall': self.std_val_recall,
+        }
+
+
+@dataclass
+class MetricsData:
+    """
+    Encapsulates all metrics data for a model (SRP).
+    Provides a clean interface for accessing metrics without exposing implementation details.
+    """
+    model_type: str
+    fold_metrics: List[FoldMetrics] = field(default_factory=list)
+    aggregated: Optional[AggregatedMetrics] = None
+    
+    @property
+    def num_folds(self) -> int:
+        """Number of folds."""
+        return len(self.fold_metrics)
+    
+    @property
+    def fold_results(self) -> List[Dict[str, Any]]:
+        """Get fold results as dictionaries (for backward compatibility)."""
+        return [fm.to_dict() for fm in self.fold_metrics]
+    
+    def get_fold_metrics(self, fold: int) -> Optional[FoldMetrics]:
+        """Get metrics for a specific fold."""
+        for fm in self.fold_metrics:
+            if fm.fold == fold:
+                return fm
+        return None
+    
+    def get_metric_values(self, metric_name: str) -> List[float]:
+        """Extract values for a specific metric across all folds."""
+        values = []
+        for fm in self.fold_metrics:
+            value = getattr(fm, metric_name, None)
+            if value is not None:
+                values.append(value)
+        return values
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for backward compatibility."""
+        return {
+            'model_type': self.model_type,
+            'fold_results': self.fold_results,
+            'aggregated': self.aggregated.to_dict() if self.aggregated else {},
+            'num_folds': self.num_folds
+        }
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'MetricsData':
+        """Create MetricsData from dictionary."""
+        fold_metrics = []
+        for fold_data in data.get('fold_results', []):
+            try:
+                fold_metrics.append(FoldMetrics.from_dict(fold_data))
+            except (ValueError, KeyError) as e:
+                # Skip invalid fold data
+                continue
+        
+        aggregated = None
+        if data.get('aggregated'):
+            aggregated = AggregatedMetrics.from_dict(data['aggregated'])
+        
+        return cls(
+            model_type=data.get('model_type', ''),
+            fold_metrics=fold_metrics,
+            aggregated=aggregated
+        )
+
+
+class MetricsRepository(Protocol):
+    """
+    Protocol for metrics repository (DIP - Dependency Inversion Principle).
+    High-level modules depend on this abstraction, not concrete implementations.
+    """
+    def get_metrics(self, model_id: str, project_root: Path) -> Optional[MetricsData]:
+        """Retrieve metrics for a model."""
+        ...
+
+
+class DuckDBMetricsRepository:
+    """
+    DuckDB implementation of MetricsRepository (SRP, OCP).
+    Handles all DuckDB-specific data access logic.
+    """
+    def __init__(self, db_path: str = "data/stage5_metrics.duckdb", 
+                 model_type_mapping: Optional[Dict[str, str]] = None):
+        """
+        Initialize repository.
+        
+        Args:
+            db_path: Path to DuckDB database file (relative to project root)
+            model_type_mapping: Optional model type mapping dict
+        """
+        self.db_path = db_path
+        self.model_type_mapping = model_type_mapping or MODEL_TYPE_MAPPING
+        self._cache: Dict[str, MetricsData] = {}  # Simple in-memory cache
+    
+    def get_metrics(self, model_id: str, project_root: Path) -> Optional[MetricsData]:
+        """
+        Retrieve metrics for a model (with caching).
+        
+        Args:
+            model_id: Model identifier
+            project_root: Project root directory
+        
+        Returns:
+            MetricsData object or None if unavailable
+        """
+        # Check cache first
+        cache_key = f"{model_id}_{project_root}"
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+        
+        model_type = self.model_type_mapping.get(model_id)
+        if not model_type:
+            print(f"[WARN] Unknown model_id: {model_id}")
+            return None
+        
+        db_file = project_root / self.db_path
+        if not db_file.exists():
+            print(f"[WARN] DuckDB database not found: {db_file}")
+            return None
+        
+        try:
+            import duckdb
+        except ImportError:
+            print("[WARN] DuckDB not available. Install with: pip install duckdb")
+            return None
+        
+        try:
+            metrics_data = self._query_database(duckdb, db_file, model_type)
+            if metrics_data:
+                # Cache the result
+                self._cache[cache_key] = metrics_data
+            return metrics_data
+        except Exception as e:
+            print(f"[WARN] Failed to query DuckDB: {e}")
+            return None
+    
+    def _query_database(self, duckdb_module, db_file: Path, model_type: str) -> Optional[MetricsData]:
+        """
+        Query database and transform results (SRP - single responsibility).
+        Separated from connection logic for testability.
+        """
+        conn = duckdb_module.connect(str(db_file))
+        
+        try:
+            # Query fold-level metrics
+            fold_query = """
+                SELECT 
+                fold_idx,
+                val_loss,
+                val_acc,
+                val_f1,
+                val_precision,
+                val_recall,
+                val_f1_class0,
+                val_precision_class0,
+                val_recall_class0,
+                val_f1_class1,
+                val_precision_class1,
+                val_recall_class1
+                FROM training_metrics
+                WHERE model_type = ?
+                ORDER BY fold_idx
+            """
+            
+            results = conn.execute(fold_query, [model_type]).fetchall()
+            columns = ['fold_idx', 'val_loss', 'val_acc', 'val_f1', 'val_precision', 
+                      'val_recall', 'val_f1_class0', 'val_precision_class0', 
+                      'val_recall_class0', 'val_f1_class1', 'val_precision_class1', 
+                      'val_recall_class1']
+            
+            if not results:
+                return None
+            
+            # Transform to FoldMetrics objects
+            fold_metrics = []
+            for row in results:
+                fold_data = dict(zip(columns, row))
+                # Rename fold_idx to fold for consistency
+                fold_data['fold'] = fold_data.pop('fold_idx')
+                try:
+                    fold_metrics.append(FoldMetrics.from_dict(fold_data))
+                except (ValueError, KeyError):
+                    continue
+            
+            # Query aggregated statistics
+            agg_query = """
+                SELECT 
+                AVG(val_acc) as mean_val_acc,
+                STDDEV(val_acc) as std_val_acc,
+                AVG(val_f1) as mean_val_f1,
+                STDDEV(val_f1) as std_val_f1,
+                AVG(val_precision) as mean_val_precision,
+                STDDEV(val_precision) as std_val_precision,
+                AVG(val_recall) as mean_val_recall,
+                STDDEV(val_recall) as std_val_recall
+                FROM training_metrics
+                WHERE model_type = ?
+            """
+            
+            agg_results = conn.execute(agg_query, [model_type]).fetchone()
+            
+            aggregated = None
+            if agg_results:
+                aggregated = AggregatedMetrics(
+                    mean_val_acc=agg_results[0],
+                    std_val_acc=agg_results[1],
+                    mean_val_f1=agg_results[2],
+                    std_val_f1=agg_results[3],
+                    mean_val_precision=agg_results[4],
+                    std_val_precision=agg_results[5],
+                    mean_val_recall=agg_results[6],
+                    std_val_recall=agg_results[7]
+                )
+            
+            return MetricsData(
+                model_type=model_type,
+                fold_metrics=fold_metrics,
+                aggregated=aggregated
+            )
+        finally:
+            conn.close()
+    
+    def clear_cache(self):
+        """Clear the cache (useful for testing or when data is updated)."""
+        self._cache.clear()
+
+
+# Global repository instance (can be replaced for testing)
+_default_repository: Optional[DuckDBMetricsRepository] = None
+
+
+def get_metrics_repository() -> MetricsRepository:
+    """
+    Factory function to get metrics repository (DIP).
+    Allows dependency injection for testing.
+    """
+    global _default_repository
+    if _default_repository is None:
+        _default_repository = DuckDBMetricsRepository()
+    return _default_repository
+
+
+def set_metrics_repository(repository: MetricsRepository):
+    """
+    Set custom repository (for testing or alternative implementations).
+    """
+    global _default_repository
+    _default_repository = repository
+
+
 def query_duckdb_metrics(
     model_id: str,
     project_root: Path,
@@ -2325,7 +2716,10 @@ def query_duckdb_metrics(
     db_path: str = "data/stage5_metrics.duckdb"
 ) -> Optional[Dict[str, Any]]:
     """
-    Query DuckDB database for model metrics.
+    Query DuckDB database for model metrics (backward compatibility wrapper).
+    
+    This function now uses the repository pattern internally but returns a dict
+    for backward compatibility with existing code.
     
     Args:
         model_id: Model identifier.
@@ -2336,103 +2730,647 @@ def query_duckdb_metrics(
     Returns:
         Dictionary with query results or None if unavailable.
     """
-    try:
-        import duckdb
-    except ImportError:
-        print("[WARN] DuckDB not available. Install with: pip install duckdb")
+    # Create repository with custom settings if provided
+    if model_type_mapping is not None or db_path != "data/stage5_metrics.duckdb":
+        repository = DuckDBMetricsRepository(db_path=db_path, model_type_mapping=model_type_mapping)
+    else:
+        repository = get_metrics_repository()
+    
+    metrics_data = repository.get_metrics(model_id, project_root)
+    
+    if metrics_data is None:
         return None
     
-    db_file = project_root / db_path
-    if not db_file.exists():
-        print(f"[WARN] DuckDB database not found: {db_file}")
-        return None
-    
-    if model_type_mapping is None:
-        model_type_mapping = MODEL_TYPE_MAPPING
-    
-    model_type = model_type_mapping.get(model_id)
-    if not model_type:
-        print(f"[WARN] Unknown model_id: {model_id}")
-        return None
-    
-    try:
-        conn = duckdb.connect(str(db_file))
-                
-        # Query metrics for this model type
-        query = """
-            SELECT 
-            fold_idx,
-            val_loss,
-            val_acc,
-            val_f1,
-            val_precision,
-            val_recall,
-            val_f1_class0,
-            val_precision_class0,
-            val_recall_class0,
-            val_f1_class1,
-            val_precision_class1,
-            val_recall_class1
-            FROM training_metrics
-            WHERE model_type = ?
-            ORDER BY fold_idx
-        """
-        
-        results = conn.execute(query, [model_type]).fetchall()
-        columns = ['fold_idx', 'val_loss', 'val_acc', 'val_f1', 'val_precision', 
-                   'val_recall', 'val_f1_class0', 'val_precision_class0', 
-                   'val_recall_class0', 'val_f1_class1', 'val_precision_class1', 
-                   'val_recall_class1']
-        
-        if not results:
-            conn.close()
-            return None
-        
-        # Convert to dictionary format
-        fold_results = []
-        for row in results:
-            fold_data = dict(zip(columns, row))
-            fold_results.append(fold_data)
-        
-        # Get aggregated statistics
-        agg_query = """
-            SELECT 
-            AVG(val_acc) as mean_val_acc,
-            STDDEV(val_acc) as std_val_acc,
-            AVG(val_f1) as mean_val_f1,
-            STDDEV(val_f1) as std_val_f1,
-            AVG(val_precision) as mean_val_precision,
-            STDDEV(val_precision) as std_val_precision,
-            AVG(val_recall) as mean_val_recall,
-            STDDEV(val_recall) as std_val_recall
-            FROM training_metrics
-            WHERE model_type = ?
-        """
-        
-        agg_results = conn.execute(agg_query, [model_type]).fetchone()
-        conn.close()
-        
-        if agg_results:
-            aggregated = {
-            'mean_val_acc': agg_results[0],
-            'std_val_acc': agg_results[1],
-            'mean_val_f1': agg_results[2],
-            'std_val_f1': agg_results[3],
-            'mean_val_precision': agg_results[4],
-            'std_val_precision': agg_results[5],
-            'mean_val_recall': agg_results[6],
-            'std_val_recall': agg_results[7]
-            }
-        else:
-            aggregated = {}
-        
-        return {
-            'model_type': model_type,
-            'fold_results': fold_results,
-            'aggregated': aggregated,
-            'num_folds': len(fold_results)
-        }
-    except Exception as e:
-        print(f"[WARN] Failed to query DuckDB: {e}")
-        return None
+    # Return as dict for backward compatibility
+    return metrics_data.to_dict()
 
+
+def get_metrics_data(
+    model_id: str,
+    project_root: Path,
+    repository: Optional[MetricsRepository] = None
+) -> Optional[MetricsData]:
+    """
+    Get metrics data as MetricsData object (preferred method for new code).
+    
+    Args:
+        model_id: Model identifier
+        project_root: Project root directory
+        repository: Optional repository instance (for dependency injection)
+    
+    Returns:
+        MetricsData object or None if unavailable
+    """
+    if repository is None:
+        repository = get_metrics_repository()
+    
+    return repository.get_metrics(model_id, project_root)
+
+
+def get_project_root() -> Path:
+    """
+    Find project root directory by searching for lib/ directory.
+    
+    Returns:
+        Path to project root directory
+    """
+    current = Path.cwd()
+    for _ in range(10):
+        if (current / "lib").exists() and (current / "lib" / "__init__.py").exists():
+            return current
+        parent = current.parent
+        if parent == current:
+            break
+        current = parent
+    return Path.cwd()
+
+
+def display_duckdb_metrics_summary(metrics_data: Optional[MetricsData], model_id: Optional[str] = None) -> None:
+    """
+    Display comprehensive DuckDB metrics summary (SRP - single responsibility).
+    Extracted from duplicated notebook code.
+    
+    Args:
+        metrics_data: MetricsData object or None
+        model_id: Optional model ID to check if metrics are expected
+    """
+    if metrics_data is None or not metrics_data.fold_metrics:
+        # Some models (5alpha, 5beta) may not have DuckDB metrics - this is expected
+        models_without_duckdb = ['5alpha', '5beta']
+        if model_id in models_without_duckdb:
+            print(f"  [INFO] No DuckDB metrics found (expected for {model_id})")
+        else:
+            print(f"  [WARN] No DuckDB metrics found")
+        return
+    
+    print(f"  ✓ Retrieved DuckDB metrics")
+    print(f"    - {metrics_data.num_folds} fold results")
+    
+    # Calculate min/max across folds
+    val_f1_values = metrics_data.get_metric_values('val_f1')
+    val_acc_values = metrics_data.get_metric_values('val_acc')
+    val_prec_values = metrics_data.get_metric_values('val_precision')
+    val_recall_values = metrics_data.get_metric_values('val_recall')
+    
+    if val_f1_values:
+        print(f"    - F1 Score:     min={min(val_f1_values):.4f}, max={max(val_f1_values):.4f}")
+    if val_acc_values:
+        print(f"    - Accuracy:     min={min(val_acc_values):.4f}, max={max(val_acc_values):.4f}")
+    if val_prec_values:
+        print(f"    - Precision:    min={min(val_prec_values):.4f}, max={max(val_prec_values):.4f}")
+    if val_recall_values:
+        print(f"    - Recall:       min={min(val_recall_values):.4f}, max={max(val_recall_values):.4f}")
+    
+    # Display aggregated metrics
+    if metrics_data.aggregated:
+        agg = metrics_data.aggregated
+        print(f"\n    Aggregated Metrics (Mean ± Std):")
+        if agg.mean_val_f1 is not None:
+            print(f"      F1 Score:     {agg.mean_val_f1:.4f} ± {agg.std_val_f1:.4f}")
+        if agg.mean_val_acc is not None:
+            print(f"      Accuracy:     {agg.mean_val_acc:.4f} ± {agg.std_val_acc:.4f}")
+        if agg.mean_val_precision is not None:
+            print(f"      Precision:    {agg.mean_val_precision:.4f} ± {agg.std_val_precision:.4f}")
+        if agg.mean_val_recall is not None:
+            print(f"      Recall:       {agg.mean_val_recall:.4f} ± {agg.std_val_recall:.4f}")
+        
+        # Display per-class metrics if available
+        class0_f1_values = metrics_data.get_metric_values('val_f1_class0')
+        class1_f1_values = metrics_data.get_metric_values('val_f1_class1')
+        if class0_f1_values:
+            print(f"      Class 0 F1:    {np.mean(class0_f1_values):.4f} ± {np.std(class0_f1_values):.4f}")
+        if class1_f1_values:
+            print(f"      Class 1 F1:    {np.mean(class1_f1_values):.4f} ± {np.std(class1_f1_values):.4f}")
+
+
+def _normalize_metrics_input(metrics: Any) -> Optional[MetricsData]:
+    """
+    Normalize metrics input to MetricsData (helper for backward compatibility).
+    
+    Args:
+        metrics: MetricsData object or dict
+    
+    Returns:
+        MetricsData object or None
+    """
+    if metrics is None:
+        return None
+    
+    if isinstance(metrics, MetricsData):
+        return metrics
+    
+    if isinstance(metrics, dict):
+        try:
+            return MetricsData.from_dict(metrics)
+        except Exception:
+            # If conversion fails, return None
+            return None
+    
+    return None
+
+
+
+def analyze_mlflow_experiment_structure(
+    project_root: Path,
+    mlflow_model_type: str,
+    mlruns_dir: Optional[Path] = None
+) -> Dict[str, Any]:
+    """
+    Analyze MLflow experiment structure by collecting metadata from all runs.
+    
+    Args:
+        project_root: Project root directory
+        mlflow_model_type: MLflow model_type tag to filter runs
+        mlruns_dir: Path to mlruns directory (defaults to project_root / "mlruns")
+    
+    Returns:
+        Dictionary containing experiment structure data:
+        - folds: List of fold numbers
+        - param_combos: List of parameter combinations
+        - batch_sizes: List of batch sizes
+        - num_frames_list: List of num_frames values
+        - gradient_accum_steps: List of gradient accumulation steps
+        - mlflow_runs_map: Dictionary mapping (fold, param_combo) to run metadata
+    """
+    if mlruns_dir is None:
+        mlruns_dir = project_root / "mlruns"
+    
+    if not mlruns_dir.exists():
+        return {}
+    
+    folds = []
+    param_combos = []
+    batch_sizes = []
+    num_frames_list = []
+    gradient_accum_steps = []
+    mlflow_runs_map = {}  # {(fold, param_combo): [run_metadata_dicts]}
+    
+    for exp_dir in mlruns_dir.iterdir():
+        if not exp_dir.is_dir() or not exp_dir.name.isdigit():
+            continue
+        for run_dir in exp_dir.iterdir():
+            if not run_dir.is_dir() or not (run_dir / "tags").exists():
+                continue
+            tags_dir = run_dir / "tags"
+            if (tags_dir / "model_type").exists():
+                with open(tags_dir / "model_type") as f:
+                    if f.read().strip() == mlflow_model_type:
+                        run_id = run_dir.name
+                        fold = None
+                        param_combo = None
+                        
+                        if (tags_dir / "fold").exists():
+                            with open(tags_dir / "fold") as f:
+                                fold = int(f.read().strip())
+                                folds.append(fold)
+                        
+                        if (tags_dir / "param_combination").exists():
+                            with open(tags_dir / "param_combination") as f:
+                                param_combo = f.read().strip()
+                                param_combos.append(param_combo)
+                        
+                        # Get hyperparameters
+                        params_dir = run_dir / "params"
+                        hyperparams = {}
+                        if params_dir.exists():
+                            for param_file in params_dir.iterdir():
+                                if param_file.is_file():
+                                    try:
+                                        with open(param_file) as f:
+                                            hyperparams[param_file.name] = f.read().strip()
+                                        if param_file.name == "batch_size":
+                                            batch_sizes.append(int(hyperparams[param_file.name]))
+                                        elif param_file.name == "num_frames":
+                                            num_frames_list.append(int(hyperparams[param_file.name]))
+                                        elif param_file.name == "gradient_accumulation_steps":
+                                            gradient_accum_steps.append(int(hyperparams[param_file.name]))
+                                    except Exception:
+                                        pass
+                        
+                        key = (fold, param_combo)
+                        if key not in mlflow_runs_map:
+                            mlflow_runs_map[key] = []
+                        mlflow_runs_map[key].append({
+                            'run_id': run_id,
+                            'fold': fold,
+                            'param_combination': param_combo,
+                            'hyperparams': hyperparams
+                        })
+    
+    return {
+        'folds': folds,
+        'param_combos': param_combos,
+        'batch_sizes': batch_sizes,
+        'num_frames_list': num_frames_list,
+        'gradient_accum_steps': gradient_accum_steps,
+        'mlflow_runs_map': mlflow_runs_map
+    }
+
+
+def plot_mlflow_experiment_structure(
+    structure_data: Dict[str, Any],
+    model_name: str
+) -> Optional[Any]:
+    """
+    Plot MLflow experiment structure (folds, param combos, batch sizes).
+    
+    Args:
+        structure_data: Dictionary from analyze_mlflow_experiment_structure
+        model_name: Model name for plot titles
+    
+    Returns:
+        Figure object if plotting is available, None otherwise
+    """
+    if not PLOTTING_AVAILABLE:
+        return None
+    
+    folds = structure_data.get('folds', [])
+    param_combos = structure_data.get('param_combos', [])
+    batch_sizes = structure_data.get('batch_sizes', [])
+    
+    if not (folds or param_combos or batch_sizes):
+        return None
+    
+    fig, axes = plt.subplots(1, min(3, sum([bool(folds), bool(param_combos), bool(batch_sizes)])), 
+                             figsize=(15, 4))
+    if not isinstance(axes, np.ndarray):
+        axes = [axes]
+    
+    plot_idx = 0
+    
+    # Fold distribution
+    if folds:
+        fold_counts = Counter(folds)
+        axes[plot_idx].bar(sorted(fold_counts.keys()), [fold_counts[f] for f in sorted(fold_counts.keys())], 
+                          color='steelblue', alpha=0.7)
+        axes[plot_idx].set_xlabel('Fold', fontweight='bold')
+        axes[plot_idx].set_ylabel('Number of Runs', fontweight='bold')
+        axes[plot_idx].set_title(f'{model_name} - MLflow Runs by Fold', fontweight='bold', fontsize=12)
+        axes[plot_idx].grid(True, alpha=0.3, axis='y')
+        for fold, count in sorted(fold_counts.items()):
+            axes[plot_idx].text(fold, count, str(count), ha='center', va='bottom', fontweight='bold')
+        plot_idx += 1
+    
+    # Param combination distribution
+    if param_combos and plot_idx < len(axes):
+        param_counts = Counter(param_combos)
+        sorted_params = sorted(param_counts.keys(), key=int)
+        axes[plot_idx].bar(range(len(sorted_params)), [param_counts[p] for p in sorted_params], 
+                          color='coral', alpha=0.7)
+        axes[plot_idx].set_xlabel('Param Combination', fontweight='bold')
+        axes[plot_idx].set_ylabel('Number of Runs', fontweight='bold')
+        axes[plot_idx].set_title(f'{model_name} - MLflow Runs by Param Combination', fontweight='bold', fontsize=12)
+        axes[plot_idx].set_xticks(range(len(sorted_params)))
+        axes[plot_idx].set_xticklabels(sorted_params, rotation=45, ha='right')
+        axes[plot_idx].grid(True, alpha=0.3, axis='y')
+        plot_idx += 1
+    
+    # Batch size distribution
+    if batch_sizes and plot_idx < len(axes):
+        batch_counts = Counter(batch_sizes)
+        axes[plot_idx].bar(sorted(batch_counts.keys()), [batch_counts[b] for b in sorted(batch_counts.keys())], 
+                          color='mediumseagreen', alpha=0.7)
+        axes[plot_idx].set_xlabel('Batch Size', fontweight='bold')
+        axes[plot_idx].set_ylabel('Number of Runs', fontweight='bold')
+        axes[plot_idx].set_title(f'{model_name} - MLflow Runs by Batch Size', fontweight='bold', fontsize=12)
+        axes[plot_idx].grid(True, alpha=0.3, axis='y')
+        for bs, count in sorted(batch_counts.items()):
+            axes[plot_idx].text(bs, count, str(count), ha='center', va='bottom', fontweight='bold')
+    
+    plt.tight_layout()
+    
+    # Save plot to temporary file and display it (for nbconvert compatibility)
+    if IPYTHON_AVAILABLE:
+        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
+            tmp_path = tmp.name
+        fig.savefig(tmp_path, dpi=150, bbox_inches='tight')
+        plt.close(fig)
+        # Display the image - read file data into Image object before deleting file
+        # This ensures the image data is in memory when displayed
+        with open(tmp_path, 'rb') as f:
+            img_data = f.read()
+        img = Image(img_data)
+        display(img)
+        # Now safe to delete the file
+        try:
+            os.unlink(tmp_path)
+        except:
+            pass  # Ignore cleanup errors
+        return None  # Already displayed
+    else:
+        return fig
+
+
+def analyze_and_visualize_mlflow_performance(
+    structure_data: Dict[str, Any],
+    duckdb_metrics: Any,  # Accept MetricsData or dict for backward compatibility
+    model_name: str
+) -> Dict[str, Any]:
+    """
+    Analyze and visualize MLflow performance metrics by combining MLflow metadata with DuckDB metrics.
+    
+    Args:
+        structure_data: Dictionary from analyze_mlflow_experiment_structure
+        duckdb_metrics: MetricsData object or dictionary from query_duckdb_metrics
+        model_name: Model name for plot titles
+    
+    Returns:
+        Dictionary containing:
+        - runs_metrics: List of combined run metrics
+        - param_perf: Performance by parameter combination
+        - fold_perf: Performance by fold
+    """
+    mlflow_runs_map = structure_data.get('mlflow_runs_map', {})
+    folds = structure_data.get('folds', [])
+    param_combos = structure_data.get('param_combos', [])
+    
+    runs_metrics = []
+    param_perf = defaultdict(list)
+    fold_perf = defaultdict(list)
+    
+    # Normalize metrics input to MetricsData
+    metrics_data = _normalize_metrics_input(duckdb_metrics)
+    
+    # Cross-reference MLflow runs with DuckDB metrics
+    if metrics_data and metrics_data.fold_metrics:
+        for fold_metric in metrics_data.fold_metrics:
+            fold_num = fold_metric.fold
+            matched = False
+            
+            # Match DuckDB fold results with MLflow runs by fold number
+            for (mlflow_fold, param_combo), mlflow_runs in mlflow_runs_map.items():
+                if mlflow_fold == fold_num:
+                    # Use DuckDB metrics (actual performance) with MLflow metadata
+                    for mlflow_run in mlflow_runs:
+                        run_metrics = {
+                            'run_id': mlflow_run['run_id'],
+                            'fold': mlflow_run['fold'],
+                            'param_combination': mlflow_run['param_combination'],
+                            'val_f1': fold_metric.val_f1,
+                            'val_acc': fold_metric.val_acc,
+                            'val_loss': fold_metric.val_loss,
+                            'val_precision': fold_metric.val_precision,
+                            'val_recall': fold_metric.val_recall,
+                            **mlflow_run['hyperparams']
+                        }
+                        runs_metrics.append(run_metrics)
+                    matched = True
+                    break
+            
+            # If no MLflow match, still add DuckDB data (fold-only analysis)
+            if not matched:
+                run_metrics = {
+                    'run_id': f'duckdb_fold_{fold_num}',
+                    'fold': fold_num,
+                    'param_combination': None,
+                    'val_f1': fold_metric.val_f1,
+                    'val_acc': fold_metric.val_acc,
+                    'val_loss': fold_metric.val_loss,
+                    'val_precision': fold_metric.val_precision,
+                    'val_recall': fold_metric.val_recall,
+                }
+                runs_metrics.append(run_metrics)
+    
+    if runs_metrics:
+        # Extract key metrics
+        val_f1s = [r.get('val_f1') for r in runs_metrics if r.get('val_f1') is not None]
+        val_accs = [r.get('val_acc') for r in runs_metrics if r.get('val_acc') is not None]
+        val_losses = [r.get('val_loss') for r in runs_metrics if r.get('val_loss') is not None]
+        
+        # Print overall statistics
+        if val_f1s:
+            print(f"\n    Overall Performance Statistics:")
+            print(f"      Val F1:    {np.mean(val_f1s):.4f} ± {np.std(val_f1s):.4f} (min={np.min(val_f1s):.4f}, max={np.max(val_f1s):.4f})")
+        if val_accs:
+            print(f"      Val Acc:   {np.mean(val_accs):.4f} ± {np.std(val_accs):.4f} (min={np.min(val_accs):.4f}, max={np.max(val_accs):.4f})")
+        if val_losses:
+            print(f"      Val Loss:  {np.mean(val_losses):.4f} ± {np.std(val_losses):.4f} (min={np.min(val_losses):.4f}, max={np.max(val_losses):.4f})")
+        
+        # Best performing run
+        if val_f1s:
+            best_f1_idx = np.argmax(val_f1s)
+            best_run = runs_metrics[best_f1_idx]
+            print(f"\n    🏆 Best Performing Run (F1={best_run.get('val_f1', 0):.4f}):")
+            print(f"      Run ID: {best_run.get('run_id', 'N/A')}")
+            print(f"      Fold: {best_run.get('fold', 'N/A')}")
+            print(f"      Param Combination: {best_run.get('param_combination', 'N/A')}")
+            if best_run.get('val_acc'):
+                print(f"      Val Acc: {best_run.get('val_acc'):.4f}")
+            if best_run.get('val_loss'):
+                print(f"      Val Loss: {best_run.get('val_loss'):.4f}")
+        
+        # Performance by param combination
+        if param_combos:
+            for r in runs_metrics:
+                if r.get('param_combination') and r.get('val_f1') is not None:
+                    param_perf[r['param_combination']].append(r['val_f1'])
+            
+            if param_perf:
+                print(f"\n    Performance by Param Combination (Top 5):")
+                param_means = {p: np.mean(vals) for p, vals in param_perf.items()}
+                sorted_params = sorted(param_means.items(), key=lambda x: x[1], reverse=True)[:5]
+                for param, mean_f1 in sorted_params:
+                    std_f1 = np.std(param_perf[param])
+                    count = len(param_perf[param])
+                    print(f"      Param {param}: F1={mean_f1:.4f} ± {std_f1:.4f} (n={count})")
+        
+        # Performance by fold
+        if folds:
+            for r in runs_metrics:
+                if r.get('fold') is not None and r.get('val_f1') is not None:
+                    fold_perf[r['fold']].append(r['val_f1'])
+            
+            if fold_perf:
+                print(f"\n    Performance by Fold:")
+                for fold in sorted(fold_perf.keys()):
+                    mean_f1 = np.mean(fold_perf[fold])
+                    std_f1 = np.std(fold_perf[fold])
+                    print(f"      Fold {fold}: F1={mean_f1:.4f} ± {std_f1:.4f} (n={len(fold_perf[fold])})")
+        
+        # Create comprehensive performance visualizations
+        if val_f1s or val_accs or val_losses:
+            print(f"\n    📈 Generating performance visualizations...")
+            
+            # Figure 1: Metrics distributions
+            if PLOTTING_AVAILABLE:
+                fig, axes = plt.subplots(1, min(3, sum([bool(val_f1s), bool(val_accs), bool(val_losses)])), 
+                                        figsize=(15, 5))
+                if not isinstance(axes, np.ndarray):
+                    axes = [axes]
+                
+                plot_idx = 0
+                if val_f1s:
+                    axes[plot_idx].hist(val_f1s, bins=20, color='green', alpha=0.7, edgecolor='black')
+                    axes[plot_idx].axvline(np.mean(val_f1s), color='red', linestyle='--', linewidth=2, label=f'Mean: {np.mean(val_f1s):.4f}')
+                    axes[plot_idx].set_xlabel('Validation F1 Score', fontweight='bold')
+                    axes[plot_idx].set_ylabel('Frequency', fontweight='bold')
+                    axes[plot_idx].set_title(f'{model_name} - Val F1 Distribution', fontweight='bold', fontsize=12)
+                    axes[plot_idx].legend()
+                    axes[plot_idx].grid(True, alpha=0.3, axis='y')
+                    plot_idx += 1
+                
+                if val_accs and plot_idx < len(axes):
+                    axes[plot_idx].hist(val_accs, bins=20, color='blue', alpha=0.7, edgecolor='black')
+                    axes[plot_idx].axvline(np.mean(val_accs), color='red', linestyle='--', linewidth=2, label=f'Mean: {np.mean(val_accs):.4f}')
+                    axes[plot_idx].set_xlabel('Validation Accuracy', fontweight='bold')
+                    axes[plot_idx].set_ylabel('Frequency', fontweight='bold')
+                    axes[plot_idx].set_title(f'{model_name} - Val Accuracy Distribution', fontweight='bold', fontsize=12)
+                    axes[plot_idx].legend()
+                    axes[plot_idx].grid(True, alpha=0.3, axis='y')
+                    plot_idx += 1
+                
+                if val_losses and plot_idx < len(axes):
+                    axes[plot_idx].hist(val_losses, bins=20, color='red', alpha=0.7, edgecolor='black')
+                    axes[plot_idx].axvline(np.mean(val_losses), color='blue', linestyle='--', linewidth=2, label=f'Mean: {np.mean(val_losses):.4f}')
+                    axes[plot_idx].set_xlabel('Validation Loss', fontweight='bold')
+                    axes[plot_idx].set_ylabel('Frequency', fontweight='bold')
+                    axes[plot_idx].set_title(f'{model_name} - Val Loss Distribution', fontweight='bold', fontsize=12)
+                    axes[plot_idx].legend()
+                    axes[plot_idx].grid(True, alpha=0.3, axis='y')
+                
+                plt.tight_layout()
+                if IPYTHON_AVAILABLE:
+                    with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
+                        tmp_path = tmp.name
+                    fig.savefig(tmp_path, dpi=150, bbox_inches='tight')
+                    plt.close(fig)
+                    # Display the image - read file data into Image object before deleting file
+                    # This ensures the image data is in memory when displayed
+                    with open(tmp_path, 'rb') as f:
+                        img_data = f.read()
+                    img = Image(img_data)
+                    display(img)
+                    # Now safe to delete the file
+                    try:
+                        os.unlink(tmp_path)
+                    except:
+                        pass  # Ignore cleanup errors
+                else:
+                    plt.show()
+                
+                # Figure 2: Performance by param combination (if available)
+                if param_perf and len(param_perf) > 1:
+                    fig, ax = plt.subplots(1, 1, figsize=(12, 6))
+                    sorted_params = sorted(param_perf.keys(), key=int)
+                    param_means = [np.mean(param_perf[p]) for p in sorted_params]
+                    param_stds = [np.std(param_perf[p]) for p in sorted_params]
+                    
+                    x_pos = range(len(sorted_params))
+                    ax.bar(x_pos, param_means, yerr=param_stds, color='steelblue', alpha=0.7, 
+                          capsize=5, edgecolor='black')
+                    ax.set_xlabel('Param Combination', fontweight='bold')
+                    ax.set_ylabel('Mean Val F1 Score', fontweight='bold')
+                    ax.set_title(f'{model_name} - Performance by Param Combination', fontweight='bold', fontsize=12)
+                    ax.set_xticks(x_pos)
+                    ax.set_xticklabels(sorted_params, rotation=45, ha='right')
+                    ax.grid(True, alpha=0.3, axis='y')
+                    
+                    # Highlight best
+                    best_idx = np.argmax(param_means)
+                    ax.bar(best_idx, param_means[best_idx], color='gold', alpha=0.8, edgecolor='red', linewidth=2)
+                    
+                    plt.tight_layout()
+                    if IPYTHON_AVAILABLE:
+                        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
+                            tmp_path = tmp.name
+                        fig.savefig(tmp_path, dpi=150, bbox_inches='tight')
+                        plt.close(fig)
+                        # Display the image - ensure it's shown in notebook
+                    # Display the image - read file data into Image object before deleting file
+                    # This ensures the image data is in memory when displayed
+                    with open(tmp_path, 'rb') as f:
+                        img_data = f.read()
+                    img = Image(img_data)
+                    display(img)
+                    # Now safe to delete the file
+                    try:
+                        os.unlink(tmp_path)
+                    except:
+                        pass  # Ignore cleanup errors
+                    else:
+                        plt.show()
+                
+                # Figure 3: Performance by fold
+                if fold_perf and len(fold_perf) > 1:
+                    fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+                    sorted_folds = sorted(fold_perf.keys())
+                    fold_means = [np.mean(fold_perf[f]) for f in sorted_folds]
+                    fold_stds = [np.std(fold_perf[f]) for f in sorted_folds]
+                    
+                    ax.bar(sorted_folds, fold_means, yerr=fold_stds, color='coral', alpha=0.7,
+                          capsize=5, edgecolor='black')
+                    ax.set_xlabel('Fold', fontweight='bold')
+                    ax.set_ylabel('Mean Val F1 Score', fontweight='bold')
+                    ax.set_title(f'{model_name} - Performance by Fold', fontweight='bold', fontsize=12)
+                    ax.grid(True, alpha=0.3, axis='y')
+                    
+                    for fold, mean_val in zip(sorted_folds, fold_means):
+                        ax.text(fold, mean_val, f'{mean_val:.3f}', ha='center', va='bottom', fontweight='bold')
+                    
+                    plt.tight_layout()
+                    if IPYTHON_AVAILABLE:
+                        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
+                            tmp_path = tmp.name
+                        fig.savefig(tmp_path, dpi=150, bbox_inches='tight')
+                        plt.close(fig)
+                        # Display the image - ensure it's shown in notebook
+                    # Display the image - read file data into Image object before deleting file
+                    # This ensures the image data is in memory when displayed
+                    with open(tmp_path, 'rb') as f:
+                        img_data = f.read()
+                    img = Image(img_data)
+                    display(img)
+                    # Now safe to delete the file
+                    try:
+                        os.unlink(tmp_path)
+                    except:
+                        pass  # Ignore cleanup errors
+                    else:
+                        plt.show()
+    
+    return {
+        'runs_metrics': runs_metrics,
+        'param_perf': dict(param_perf),
+        'fold_perf': dict(fold_perf)
+    }
+
+
+def print_mlflow_experiment_structure(
+    structure_data: Dict[str, Any]
+) -> None:
+    """
+    Print MLflow experiment structure summary.
+    
+    Args:
+        structure_data: Dictionary from analyze_mlflow_experiment_structure
+    """
+    folds = structure_data.get('folds', [])
+    param_combos = structure_data.get('param_combos', [])
+    batch_sizes = structure_data.get('batch_sizes', [])
+    num_frames_list = structure_data.get('num_frames_list', [])
+    gradient_accum_steps = structure_data.get('gradient_accum_steps', [])
+    
+    if folds:
+        fold_counts = Counter(folds)
+        print(f"\n  Experiment Structure:")
+        print(f"    - Folds: {sorted(fold_counts.keys())}")
+        print(f"    - Runs per fold: {dict(sorted(fold_counts.items()))}")
+        print(f"    - Total unique folds: {len(fold_counts)}")
+    
+    if param_combos:
+        param_counts = Counter(param_combos)
+        print(f"    - Param combinations: {len(param_counts)} unique")
+        print(f"    - Param combo range: {min(param_combos, key=int)} to {max(param_combos, key=int)}")
+        print(f"    - Runs per param combo: min={min(param_counts.values())}, max={max(param_counts.values())}, mean={np.mean(list(param_counts.values())):.1f}")
+    
+    if batch_sizes:
+        batch_counts = Counter(batch_sizes)
+        print(f"    - Batch sizes: {sorted(batch_counts.keys())} (distribution: {dict(sorted(batch_counts.items()))})")
+    
+    if num_frames_list:
+        num_frames_counts = Counter(num_frames_list)
+        print(f"    - Num frames: {sorted(num_frames_counts.keys())} (distribution: {dict(sorted(num_frames_counts.items()))})")
+    
+    if gradient_accum_steps:
+        grad_accum_counts = Counter(gradient_accum_steps)
+        print(f"    - Gradient accumulation steps: {sorted(grad_accum_counts.keys())} (distribution: {dict(sorted(grad_accum_counts.items()))})")

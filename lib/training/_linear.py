@@ -345,8 +345,8 @@ class LogisticRegressionBaseline:
                 logger.info(f"✓ Logistic Regression training completed ({num_epochs} iterations)")
             else:
                 # Standard training (no epoch-wise tracking)
-                self.model.fit(features_scaled, y)
-                logger.info("✓ Logistic Regression training completed")
+            self.model.fit(features_scaled, y)
+            logger.info("✓ Logistic Regression training completed")
         except MemoryError as e:
             logger.critical(f"Memory error during Logistic Regression training: {e}")
             logger.critical(f"Feature matrix size: {features_scaled.nbytes / 1024**2:.2f} MB")

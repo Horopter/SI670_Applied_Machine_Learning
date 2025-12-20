@@ -385,7 +385,7 @@ def train_gradient_boosting(
                     random_seed=42,
                     verbose=False
                 )
-                model_cv.fit(X_train_cv, y_train_cv)
+            model_cv.fit(X_train_cv, y_train_cv)
             
             # Capture XGBoost training history for epoch-wise curves
             if model_name == "xgboost" and hasattr(model_cv, 'evals_result_'):

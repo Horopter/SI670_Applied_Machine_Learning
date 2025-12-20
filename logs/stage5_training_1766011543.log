@@ -424,3 +424,136 @@ Final Training - xgboost_vit_gru - Fold 3/5 (full dataset)
 2025-12-18 03:55:48 [INFO] [lib.training._xgboost_pretrained:622] ViT model (vit_gru) requires 256x256 input. Setting fixed_size=256 (VideoDataset will resize even with use_scaled_videos=True).
 2025-12-18 03:55:48 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using vit_gru (num_frames=400)...
 2025-12-18 03:55:48 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-18 07:00:10 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (2622, 3072)
+2025-12-18 07:00:10 [INFO] [lib.training._xgboost_pretrained:690] Cleared vit_gru model from GPU after feature extraction
+2025-12-18 07:00:11 [INFO] [lib.training._xgboost_pretrained:728] Removing collinear features...
+2025-12-18 07:00:11 [INFO] [lib.training.feature_preprocessing:77] Removed 0 features with zero variance
+2025-12-18 07:00:12 [INFO] [lib.training.feature_preprocessing:141] Removed 0 collinear features (correlation >= 0.95)
+2025-12-18 07:00:12 [INFO] [lib.training.feature_preprocessing:162] Final feature count: 3072/3072 (100.0% retained)
+2025-12-18 07:00:12 [INFO] [lib.training._xgboost_pretrained:735] Using 3072 features after collinearity removal
+2025-12-18 07:00:12 [INFO] [lib.training._xgboost_pretrained:751] Class distribution: Class 0=1284, Class 1=1338, scale_pos_weight=0.960
+2025-12-18 07:00:12 [INFO] [lib.training._xgboost_pretrained:769] Training XGBoost: 2097 train samples, 525 validation samples for early stopping
+2025-12-18 07:00:12 [INFO] [lib.training._xgboost_pretrained:772] Training XGBoost with improved architecture (multi-layer + temporal pooling + class weights + early stopping)...
+2025-12-18 07:01:07 [INFO] [lib.training._xgboost_pretrained:838] Early stopping: Best iteration = 200 (out of 200)
+2025-12-18 07:01:07 [INFO] [lib.training._xgboost_pretrained:840] ✓ XGBoost trained on pretrained model features with enhanced feature extraction
+2025-12-18 07:01:08 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: vit_gru (num_frames=400)
+2025-12-18 07:01:09 [INFO] [timm.models._builder:217] Loading pretrained weights from Hugging Face hub (timm/vit_base_patch16_224.augreg2_in21k_ft_in1k)
+2025-12-18 07:01:09 [INFO] [timm.models._hub:232] [timm/vit_base_patch16_224.augreg2_in21k_ft_in1k] Safe alternative available for 'pytorch_model.bin' (as 'model.safetensors'). Loading weights using safetensors.
+2025-12-18 07:01:09 [INFO] [timm.layers.pos_embed:57] Resized position embedding: (14, 14) to (16, 16).
+2025-12-18 07:01:10 [INFO] [lib.training._xgboost_pretrained:605] Loaded vit_gru model to GPU, cleared cache
+2025-12-18 07:01:10 [INFO] [lib.training._xgboost_pretrained:622] ViT model (vit_gru) requires 256x256 input. Setting fixed_size=256 (VideoDataset will resize even with use_scaled_videos=True).
+2025-12-18 07:01:10 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using vit_gru (num_frames=400)...
+2025-12-18 07:01:10 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-18 07:46:10 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (655, 3072)
+2025-12-18 07:46:11 [INFO] [lib.training._xgboost_pretrained:690] Cleared vit_gru model from GPU after feature extraction
+2025-12-18 07:46:11 [INFO] [lib.training.pipeline:500] Fold 3 - Val Loss: 0.0505, Val Acc: 0.9924, Val F1: 0.9925, Val Precision: 0.9940, Val Recall: 0.9910
+2025-12-18 07:46:11 [INFO] [lib.training._xgboost_pretrained:908] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_vit_gru/fold_3
+2025-12-18 07:46:11 [INFO] [lib.training.pipeline:516] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_vit_gru/fold_3
+2025-12-18 07:46:12 [INFO] [lib.training.visualization:480] Generated fold 3 plots: ROC/PR curves and confusion matrix
+2025-12-18 07:46:13 [INFO] [lib.training.pipeline:2123] 
+Final Training - xgboost_vit_gru - Fold 4/5 (full dataset)
+2025-12-18 07:46:13 [INFO] [lib.training.pipeline:2131] Deleted existing final training fold 4 directory (clean mode)
+2025-12-18 07:46:13 [INFO] [lib.training.pipeline:448] Training XGBoost model xgboost_vit_gru on fold 4...
+2025-12-18 07:46:13 [INFO] [lib.training._xgboost_pretrained:704] Training XGBoost on features from vit_gru...
+2025-12-18 07:46:13 [INFO] [lib.training._xgboost_pretrained:705] Processing 2622 videos...
+2025-12-18 07:46:13 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: vit_gru (num_frames=400)
+2025-12-18 07:46:14 [INFO] [timm.models._builder:217] Loading pretrained weights from Hugging Face hub (timm/vit_base_patch16_224.augreg2_in21k_ft_in1k)
+2025-12-18 07:46:14 [INFO] [timm.models._hub:232] [timm/vit_base_patch16_224.augreg2_in21k_ft_in1k] Safe alternative available for 'pytorch_model.bin' (as 'model.safetensors'). Loading weights using safetensors.
+2025-12-18 07:46:14 [INFO] [timm.layers.pos_embed:57] Resized position embedding: (14, 14) to (16, 16).
+2025-12-18 07:46:15 [INFO] [lib.training._xgboost_pretrained:605] Loaded vit_gru model to GPU, cleared cache
+2025-12-18 07:46:15 [INFO] [lib.training._xgboost_pretrained:622] ViT model (vit_gru) requires 256x256 input. Setting fixed_size=256 (VideoDataset will resize even with use_scaled_videos=True).
+2025-12-18 07:46:15 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using vit_gru (num_frames=400)...
+2025-12-18 07:46:15 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-18 10:44:58 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (2622, 3072)
+2025-12-18 10:44:58 [INFO] [lib.training._xgboost_pretrained:690] Cleared vit_gru model from GPU after feature extraction
+2025-12-18 10:44:58 [INFO] [lib.training._xgboost_pretrained:728] Removing collinear features...
+2025-12-18 10:44:58 [INFO] [lib.training.feature_preprocessing:77] Removed 0 features with zero variance
+2025-12-18 10:45:00 [INFO] [lib.training.feature_preprocessing:141] Removed 0 collinear features (correlation >= 0.95)
+2025-12-18 10:45:00 [INFO] [lib.training.feature_preprocessing:162] Final feature count: 3072/3072 (100.0% retained)
+2025-12-18 10:45:00 [INFO] [lib.training._xgboost_pretrained:735] Using 3072 features after collinearity removal
+2025-12-18 10:45:00 [INFO] [lib.training._xgboost_pretrained:751] Class distribution: Class 0=1284, Class 1=1338, scale_pos_weight=0.960
+2025-12-18 10:45:00 [INFO] [lib.training._xgboost_pretrained:769] Training XGBoost: 2097 train samples, 525 validation samples for early stopping
+2025-12-18 10:45:00 [INFO] [lib.training._xgboost_pretrained:772] Training XGBoost with improved architecture (multi-layer + temporal pooling + class weights + early stopping)...
+2025-12-18 10:45:55 [INFO] [lib.training._xgboost_pretrained:838] Early stopping: Best iteration = 200 (out of 200)
+2025-12-18 10:45:55 [INFO] [lib.training._xgboost_pretrained:840] ✓ XGBoost trained on pretrained model features with enhanced feature extraction
+2025-12-18 10:45:55 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: vit_gru (num_frames=400)
+2025-12-18 10:45:56 [INFO] [timm.models._builder:217] Loading pretrained weights from Hugging Face hub (timm/vit_base_patch16_224.augreg2_in21k_ft_in1k)
+2025-12-18 10:45:57 [INFO] [timm.models._hub:232] [timm/vit_base_patch16_224.augreg2_in21k_ft_in1k] Safe alternative available for 'pytorch_model.bin' (as 'model.safetensors'). Loading weights using safetensors.
+2025-12-18 10:45:57 [INFO] [timm.layers.pos_embed:57] Resized position embedding: (14, 14) to (16, 16).
+2025-12-18 10:45:58 [INFO] [lib.training._xgboost_pretrained:605] Loaded vit_gru model to GPU, cleared cache
+2025-12-18 10:45:58 [INFO] [lib.training._xgboost_pretrained:622] ViT model (vit_gru) requires 256x256 input. Setting fixed_size=256 (VideoDataset will resize even with use_scaled_videos=True).
+2025-12-18 10:45:58 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using vit_gru (num_frames=400)...
+2025-12-18 10:45:58 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-18 11:32:36 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (655, 3072)
+2025-12-18 11:32:36 [INFO] [lib.training._xgboost_pretrained:690] Cleared vit_gru model from GPU after feature extraction
+2025-12-18 11:32:36 [INFO] [lib.training.pipeline:500] Fold 4 - Val Loss: 0.0447, Val Acc: 0.9969, Val F1: 0.9970, Val Precision: 0.9970, Val Recall: 0.9970
+2025-12-18 11:32:36 [INFO] [lib.training._xgboost_pretrained:908] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_vit_gru/fold_4
+2025-12-18 11:32:36 [INFO] [lib.training.pipeline:516] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_vit_gru/fold_4
+2025-12-18 11:32:37 [INFO] [lib.training.visualization:480] Generated fold 4 plots: ROC/PR curves and confusion matrix
+2025-12-18 11:32:38 [INFO] [lib.training.pipeline:2123] 
+Final Training - xgboost_vit_gru - Fold 5/5 (full dataset)
+2025-12-18 11:32:38 [INFO] [lib.training.pipeline:2131] Deleted existing final training fold 5 directory (clean mode)
+2025-12-18 11:32:38 [INFO] [lib.training.pipeline:448] Training XGBoost model xgboost_vit_gru on fold 5...
+2025-12-18 11:32:38 [INFO] [lib.training._xgboost_pretrained:704] Training XGBoost on features from vit_gru...
+2025-12-18 11:32:38 [INFO] [lib.training._xgboost_pretrained:705] Processing 2622 videos...
+2025-12-18 11:32:38 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: vit_gru (num_frames=400)
+2025-12-18 11:32:39 [INFO] [timm.models._builder:217] Loading pretrained weights from Hugging Face hub (timm/vit_base_patch16_224.augreg2_in21k_ft_in1k)
+2025-12-18 11:32:39 [INFO] [timm.models._hub:232] [timm/vit_base_patch16_224.augreg2_in21k_ft_in1k] Safe alternative available for 'pytorch_model.bin' (as 'model.safetensors'). Loading weights using safetensors.
+2025-12-18 11:32:39 [INFO] [timm.layers.pos_embed:57] Resized position embedding: (14, 14) to (16, 16).
+2025-12-18 11:32:39 [INFO] [lib.training._xgboost_pretrained:605] Loaded vit_gru model to GPU, cleared cache
+2025-12-18 11:32:39 [INFO] [lib.training._xgboost_pretrained:622] ViT model (vit_gru) requires 256x256 input. Setting fixed_size=256 (VideoDataset will resize even with use_scaled_videos=True).
+2025-12-18 11:32:39 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using vit_gru (num_frames=400)...
+2025-12-18 11:32:39 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-18 14:37:08 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (2622, 3072)
+2025-12-18 14:37:09 [INFO] [lib.training._xgboost_pretrained:690] Cleared vit_gru model from GPU after feature extraction
+2025-12-18 14:37:09 [INFO] [lib.training._xgboost_pretrained:728] Removing collinear features...
+2025-12-18 14:37:09 [INFO] [lib.training.feature_preprocessing:77] Removed 0 features with zero variance
+2025-12-18 14:37:11 [INFO] [lib.training.feature_preprocessing:141] Removed 0 collinear features (correlation >= 0.95)
+2025-12-18 14:37:11 [INFO] [lib.training.feature_preprocessing:162] Final feature count: 3072/3072 (100.0% retained)
+2025-12-18 14:37:11 [INFO] [lib.training._xgboost_pretrained:735] Using 3072 features after collinearity removal
+2025-12-18 14:37:11 [INFO] [lib.training._xgboost_pretrained:751] Class distribution: Class 0=1284, Class 1=1338, scale_pos_weight=0.960
+2025-12-18 14:37:11 [INFO] [lib.training._xgboost_pretrained:769] Training XGBoost: 2097 train samples, 525 validation samples for early stopping
+2025-12-18 14:37:11 [INFO] [lib.training._xgboost_pretrained:772] Training XGBoost with improved architecture (multi-layer + temporal pooling + class weights + early stopping)...
+2025-12-18 14:38:06 [INFO] [lib.training._xgboost_pretrained:838] Early stopping: Best iteration = 200 (out of 200)
+2025-12-18 14:38:06 [INFO] [lib.training._xgboost_pretrained:840] ✓ XGBoost trained on pretrained model features with enhanced feature extraction
+2025-12-18 14:38:07 [INFO] [lib.training._xgboost_pretrained:590] Loading pretrained model: vit_gru (num_frames=400)
+2025-12-18 14:38:08 [INFO] [timm.models._builder:217] Loading pretrained weights from Hugging Face hub (timm/vit_base_patch16_224.augreg2_in21k_ft_in1k)
+2025-12-18 14:38:08 [INFO] [timm.models._hub:232] [timm/vit_base_patch16_224.augreg2_in21k_ft_in1k] Safe alternative available for 'pytorch_model.bin' (as 'model.safetensors'). Loading weights using safetensors.
+2025-12-18 14:38:08 [INFO] [timm.layers.pos_embed:57] Resized position embedding: (14, 14) to (16, 16).
+2025-12-18 14:38:08 [INFO] [lib.training._xgboost_pretrained:605] Loaded vit_gru model to GPU, cleared cache
+2025-12-18 14:38:08 [INFO] [lib.training._xgboost_pretrained:622] ViT model (vit_gru) requires 256x256 input. Setting fixed_size=256 (VideoDataset will resize even with use_scaled_videos=True).
+2025-12-18 14:38:08 [INFO] [lib.training._xgboost_pretrained:672] Extracting features using vit_gru (num_frames=400)...
+2025-12-18 14:38:08 [INFO] [lib.training._xgboost_pretrained:101] Applied PyTorch memory optimizations for feature extraction
+2025-12-18 15:23:48 [INFO] [lib.training._xgboost_pretrained:478] Extracted features shape: (655, 3072)
+2025-12-18 15:23:49 [INFO] [lib.training._xgboost_pretrained:690] Cleared vit_gru model from GPU after feature extraction
+2025-12-18 15:23:49 [INFO] [lib.training.pipeline:500] Fold 5 - Val Loss: 0.0463, Val Acc: 0.9985, Val F1: 0.9985, Val Precision: 1.0000, Val Recall: 0.9970
+2025-12-18 15:23:49 [INFO] [lib.training._xgboost_pretrained:908] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_vit_gru/fold_5
+2025-12-18 15:23:49 [INFO] [lib.training.pipeline:516] Saved XGBoost model to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_vit_gru/fold_5
+2025-12-18 15:23:50 [INFO] [lib.training.visualization:480] Generated fold 5 plots: ROC/PR curves and confusion matrix
+2025-12-18 15:23:51 [INFO] [lib.training.pipeline:107] Saved best model from fold 5: Copied 2 model file(s) from fold_5 to best_model
+2025-12-18 15:23:51 [INFO] [lib.training.pipeline:2348] 
+xgboost_vit_gru - Avg Val Loss: 0.0467 ± 0.0027, Avg Val Acc: 0.9960 ± 0.0021, Avg Val F1: 0.9961 ± 0.0020
+2025-12-18 15:23:51 [INFO] [lib.training.pipeline:2352]   Avg Val Precision: 0.9970 ± 0.0019, Avg Val Recall: 0.9952 ± 0.0024
+2025-12-18 15:23:51 [INFO] [lib.training.pipeline:2356]   Class 0 - F1: 0.9960 ± 0.0021, Precision: 0.9950 ± 0.0025, Recall: 0.9969 ± 0.0020
+2025-12-18 15:23:51 [INFO] [lib.training.pipeline:2361]   Class 1 - F1: 0.9961 ± 0.0020, Precision: 0.9970 ± 0.0019, Recall: 0.9952 ± 0.0024
+2025-12-18 15:23:51 [INFO] [lib.training.pipeline:2399] Saved aggregated metrics to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_vit_gru/metrics.json (model: xgboost_vit_gru)
+2025-12-18 15:23:52 [INFO] [lib.training.visualization:256] Saved CV fold comparison to /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_vit_gru/plots/cv_fold_comparison.png
+2025-12-18 15:23:52 [INFO] [lib.training.pipeline:2426] Generated plots for xgboost_vit_gru in /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5/xgboost_vit_gru/plots
+2025-12-18 15:23:53 [INFO] [lib.training.pipeline:2463] ================================================================================
+2025-12-18 15:23:53 [INFO] [lib.training.pipeline:2464] Stage 5: Model Training Pipeline Completed
+2025-12-18 15:23:53 [INFO] [lib.training.pipeline:2465] ================================================================================
+2025-12-18 15:23:53 [INFO] [__main__:401] ================================================================================
+2025-12-18 15:23:53 [INFO] [__main__:402] STAGE 5 COMPLETED SUCCESSFULLY
+2025-12-18 15:23:53 [INFO] [__main__:403] ================================================================================
+2025-12-18 15:23:53 [INFO] [__main__:404] Execution time: 77889.62 seconds (1298.16 minutes)
+2025-12-18 15:23:53 [INFO] [__main__:406] Output directory: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5
+2025-12-18 15:23:53 [INFO] [__main__:407] Models trained: ['xgboost_vit_gru']
+2025-12-18 15:23:53 [INFO] [__main__:408] K-fold splits: 5
+2025-12-18 15:23:53 [INFO] [__main__:414] ================================================================================
+2025-12-18 15:23:53 [INFO] [__main__:415] Final memory statistics:
+2025-12-18 15:23:53 [INFO] [__main__:416] ================================================================================
+2025-12-18 15:23:53 [INFO] [lib.utils.memory:91] Memory stats (Stage 5: after training): {'cpu_memory_mb': 12366.89453125, 'cpu_memory_gb': 12.077045440673828, 'cpu_vms_mb': 59914.2890625, 'gpu_allocated_gb': 0.009568256, 'gpu_reserved_gb': 0.046137344, 'gpu_total_gb': 16.928342016, 'gpu_free_gb': 16.882204672}
+2025-12-18 15:23:53 [INFO] [__main__:419] ================================================================================
+2025-12-18 15:23:53 [INFO] [__main__:420] Training complete!
+2025-12-18 15:23:53 [INFO] [__main__:421] Results saved to: /gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/data/stage5
+2025-12-18 15:23:53 [INFO] [__main__:422] ================================================================================
