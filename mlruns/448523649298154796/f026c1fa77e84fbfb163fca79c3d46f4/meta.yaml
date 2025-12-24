@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/f026c1fa77e84fbfb163fca79c3d46f4/artifacts
+end_time: 1766305579669
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: f026c1fa77e84fbfb163fca79c3d46f4
+run_name: kindly-midge-842
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1766294247805
+status: 3
+tags: []
+user_id: santoshd

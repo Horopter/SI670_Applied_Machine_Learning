@@ -1,0 +1,29 @@
+for f in *.log *.out *.err; do
+  [[ -e "$f" ]] || continue
+  kind="${f%%[-_]*}"
+  rest="${f#${kind}}"
+  sep="${rest:0:1}"
+  numext="${rest:1}"
+  jobid="${numext%%.*}"
+  ext="${numext##*.}"
+  echo "$kind $jobid $ext $f" >> .filedb.txt
+done
+awk '
+{
+  k = $1; v = $2; x = $3;
+  if (v > max[k,x]) max[k,x] = v;
+  files[$4] = v SUBSEP k SUBSEP x;
+}
+END {
+  for (f in files) {
+    split(files[f], arr, SUBSEP);
+    jobid = arr[1]; kind = arr[2]; ext = arr[3];
+    if (jobid < max[kind, ext]) print f;
+  }
+}
+' .filedb.txt | while read -r file; do
+  echo "Deleting $file"
+  rm "$file"
+done
+rm .filedb.txt
+echo "Retention complete in $TARGET_DIR."

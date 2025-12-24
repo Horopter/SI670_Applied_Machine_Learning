@@ -21,7 +21,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 # Setup comprehensive logging
-log_dir = project_root / "logs"
+log_dir = project_root / "logs" / "validation"
 log_dir.mkdir(parents=True, exist_ok=True)
 log_file = log_dir / f"validate_stage5_imports_{int(time.time())}.log"
 

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/7f8bf4bb9c9144459344318b79070eaf/artifacts
+end_time: 1766285179332
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 7f8bf4bb9c9144459344318b79070eaf
+run_name: calm-cow-544
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1766284047327
+status: 3
+tags: []
+user_id: santoshd

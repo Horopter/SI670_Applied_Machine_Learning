@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/7bf8e73682274e6387f8f95295c6a915/artifacts
+end_time: 1766286330427
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 7bf8e73682274e6387f8f95295c6a915
+run_name: traveling-jay-883
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1766285179385
+status: 3
+tags: []
+user_id: santoshd

@@ -20,6 +20,9 @@ from typing import Optional
 project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(project_root))
 
+# Import shared get_project_root function
+from src.notebooks.notebook_utils import get_project_root
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
@@ -27,18 +30,6 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 logger = logging.getLogger(__name__)
-
-
-def get_project_root() -> Path:
-    """Get project root directory."""
-    # Try to find project root by looking for lib/ directory
-    current = Path(__file__).resolve().parent
-    while current != current.parent:
-        if (current / "lib").exists() and (current / "lib" / "__init__.py").exists():
-            return current
-        current = current.parent
-    # Fallback to parent of src/scripts/
-    return Path(__file__).resolve().parent.parent.parent
 
 
 def check_features_metadata(metadata_path: Optional[str], stage_name: str, min_rows: int = 100) -> bool:
@@ -157,8 +148,8 @@ def main() -> int:
     logger.info("Feature Sanity Check")
     logger.info("=" * 80)
     
-    # Use the project root that was already added to sys.path
-    project_root = Path(__file__).resolve().parent.parent.parent
+    # Get project root using shared function
+    project_root = get_project_root()
     logger.info(f"Project root: {project_root}")
     
     # Default paths - use correct metadata file names

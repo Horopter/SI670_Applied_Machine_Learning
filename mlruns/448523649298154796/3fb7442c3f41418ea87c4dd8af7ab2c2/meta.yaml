@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/3fb7442c3f41418ea87c4dd8af7ab2c2/artifacts
+end_time: 1766293073479
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 3fb7442c3f41418ea87c4dd8af7ab2c2
+run_name: fun-fox-90
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1766291929840
+status: 3
+tags: []
+user_id: santoshd

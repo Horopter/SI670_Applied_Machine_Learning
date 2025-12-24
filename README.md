@@ -8,13 +8,15 @@ AURA (Authenticity Understanding of Real vs Artificial) is a comprehensive syste
 
 ## Key Features
 
-- **Pretrained 3D CNN**: Uses `torchvision.models.video.r3d_18` with Kinetics-400 weights
-- **Fixed-Size Preprocessing**: 224x224 with letterboxing for memory efficiency
-- **Comprehensive Augmentations**: Pre-generated spatial and temporal augmentations
-- **K-Fold Cross-Validation**: Stratified 5-fold CV for robust evaluation
-- **MLOps Infrastructure**: Experiment tracking, checkpointing, and data versioning
+- **Multiple Model Architectures**: 14 models evaluated including baseline (Logistic Regression, SVM), gradient boosting (XGBoost), and ensemble models (XGBoost + pretrained features)
+- **Pretrained Feature Extraction**: Uses Inception-v3, I3D, R(2+1)D, and ViT backbones for transfer learning
+- **Handcrafted Features**: 26 engineered features capturing compression artifacts, temporal consistency, and codec parameters
+- **Comprehensive Augmentations**: 11× augmentation pipeline with compression, temporal, spatial, and noise perturbations
+- **K-Fold Cross-Validation**: Stratified 5-fold CV for robust evaluation with detailed fold-wise analysis
+- **MLOps Infrastructure**: MLflow experiment tracking, checkpointing, and data versioning
 - **Memory Optimized**: Aggressive GC, OOM handling, progressive batch size fallback
 - **Class Imbalance Handling**: Balanced batch sampling and inverse-frequency weights
+- **Enhanced Reporting**: Detailed LaTeX reports with comprehensive visualizations and model-specific conclusions
 
 ## Project Structure
 
@@ -110,6 +112,39 @@ This creates high-quality figures in PNG, PDF, and SVG formats with:
 
 See [Paper Figure Generation Guide](docs/PAPER_FIGURE_GENERATION.md) for details.
 
+### 6. View Analysis Reports
+
+Comprehensive LaTeX reports are available in the `report/` directory:
+
+- **[Final Report](report/final_report.tex)** - Complete analysis with detailed visualizations including:
+  - ROC and Precision-Recall curves with comprehensive descriptions
+  - Cross-validation stability analysis across all model families
+  - Confusion matrices and calibration curves
+  - Per-class metrics and error analysis
+  - Hyperparameter sensitivity analysis
+  - Statistical significance testing
+  - Ablation studies and overfitting analysis
+
+- **[Submission Report](report/submission_report.tex)** - Concise version for paper submission with:
+  - Key findings and performance metrics
+  - Essential visualizations (ROC/PR curves, CV comparisons, confusion matrices)
+  - Calibration analysis and per-class performance
+  - Platform transformation robustness analysis
+
+Both reports include:
+- ✅ Detailed figure captions explaining all visualizations
+- ✅ Comprehensive performance comparisons across 14 model architectures
+- ✅ Statistical analysis and significance testing
+- ✅ Model-specific conclusions and recommendations
+- ✅ Publication-ready formatting
+
+Compile the reports using:
+```bash
+cd report
+pdflatex final_report.tex
+pdflatex submission_report.tex
+```
+
 ## Documentation
 
 ### Core Documentation
@@ -152,7 +187,9 @@ Each notebook includes:
 - ✅ MLflow experiment tracking integration
 - ✅ DuckDB analytics queries
 - ✅ ROC and Precision-Recall curves
-- ✅ Comprehensive performance summaries
+- ✅ Comprehensive performance summaries with model-specific conclusions
+- ✅ Detailed markdown introductions and data-driven analysis
+- ✅ Training/validation loss plots for all models
 
 ## Dependencies
 
@@ -180,11 +217,33 @@ Key dependencies (see `requirements.txt` for full list):
 
 ## Results
 
-Results are saved in `runs/` directory with:
-- Experiment configurations (`config.json`)
-- Metrics logs (`metrics.jsonl`)
-- Model checkpoints (`checkpoints/`)
-- System metadata (`metadata.json`)
+Results are saved in multiple locations:
+
+### Training Results
+- **`data/stage5/`**: Model outputs organized by model type with:
+  - Fold-wise metrics and visualizations (confusion matrices, ROC/PR curves, calibration plots)
+  - Cross-validation comparison plots
+  - Hyperparameter search results
+  - Best model checkpoints and metadata
+
+### Analysis Reports
+- **`report/`**: LaTeX reports with comprehensive analysis:
+  - `final_report.tex` - Complete detailed analysis
+  - `submission_report.tex` - Concise submission version
+  - Both include enhanced visualizations and detailed figure captions
+
+### Experiment Tracking
+- **`mlruns/`**: MLflow experiment tracking with:
+  - Experiment configurations and hyperparameters
+  - Metrics logs across all folds
+  - Model artifacts and checkpoints
+  - System metadata and git commit tracking
+
+### Analysis Notebooks
+- **`src/notebooks/executed/`**: Executed Jupyter notebooks with:
+  - Complete analysis for each model
+  - Training curves and validation metrics
+  - Model-specific conclusions and recommendations
 
 ## Dataset Credits
 

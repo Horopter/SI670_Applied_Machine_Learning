@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/29e1be952a9746c0864b3a77e035e78d/artifacts
+end_time: 1766410541879
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 29e1be952a9746c0864b3a77e035e78d
+run_name: sincere-dove-637
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1766399588965
+status: 3
+tags: []
+user_id: santoshd

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/7b5aed187f4a4266a9b81abbc7bc4ea2/artifacts
+end_time: 1766399588575
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 7b5aed187f4a4266a9b81abbc7bc4ea2
+run_name: gentle-carp-587
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1766388671818
+status: 3
+tags: []
+user_id: santoshd

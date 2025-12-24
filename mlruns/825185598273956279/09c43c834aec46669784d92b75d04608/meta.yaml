@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/09c43c834aec46669784d92b75d04608/artifacts
+end_time: 1766414760805
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 09c43c834aec46669784d92b75d04608
+run_name: rumbling-finch-591
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1766413382561
+status: 3
+tags: []
+user_id: santoshd

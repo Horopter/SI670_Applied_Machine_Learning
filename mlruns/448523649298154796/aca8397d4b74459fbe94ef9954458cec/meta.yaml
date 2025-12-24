@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/aca8397d4b74459fbe94ef9954458cec/artifacts
+end_time: 1766328174553
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: aca8397d4b74459fbe94ef9954458cec
+run_name: charming-vole-833
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1766316879599
+status: 3
+tags: []
+user_id: santoshd

@@ -76,6 +76,19 @@ MEMORY_INTENSIVE_MODELS_BATCH_LIMITS = {
 
 MODEL_FILE_EXTENSIONS = ["*.pt", "*.joblib", "*.json"]
 
+# Mapping from model_type to MLflow experiment name
+# This mapping ensures MLflow tags match what the notebooks expect
+MLFLOW_MODEL_TYPE_MAPPING = {
+    "xgboost_pretrained_inception": "pretrained_inception",
+    "xgboost_i3d": "x3d",
+    "xgboost_r2plus1d": "slowfast",
+    # For models that use the same name in both
+    "logistic_regression": "logistic_regression",
+    "svm": "svm",
+    "sklearn_logreg": "sklearn_logreg",
+    "gradient_boosting/xgboost": "gradient_boosting/xgboost"
+}
+
 
 def _copy_model_files(source_dir: Path, dest_dir: Path, model_name: str = "") -> None:
     """
@@ -562,7 +575,9 @@ def _train_xgboost_model_fold(
     hyperparams: Optional[Dict[str, Any]] = None,
     is_grid_search: bool = False,
     param_fold_results: Optional[List[Dict[str, Any]]] = None,
-    fold_results: Optional[List[Dict[str, Any]]] = None
+    fold_results: Optional[List[Dict[str, Any]]] = None,
+    use_mlflow: bool = True,
+    param_idx: Optional[int] = None
 ) -> Dict[str, Any]:
     """
     Train an XGBoost model on a single fold.
@@ -579,6 +594,8 @@ def _train_xgboost_model_fold(
         is_grid_search: Whether this is grid search (affects error handling and result storage)
         param_fold_results: Optional list to append grid search results to
         fold_results: Optional list to append results to
+        use_mlflow: Whether to use MLflow tracking
+        param_idx: Optional parameter combination index for grid search
     
     Returns:
         Dictionary with validation metrics
@@ -591,6 +608,44 @@ def _train_xgboost_model_fold(
     
     result = None
     model = None
+    mlflow_tracker = None
+    
+    # Initialize MLflow tracker if enabled
+    if use_mlflow and MLFLOW_AVAILABLE:
+        try:
+            import mlflow
+            if mlflow.active_run() is not None:
+                mlflow.end_run()
+                logger.debug("Ended existing MLflow run before creating new one")
+        except (RuntimeError, AttributeError, ValueError) as mlflow_error:
+            logger.debug(f"Error ending MLflow run (non-critical): {mlflow_error}")
+        
+        try:
+            # Map model_type to MLflow experiment name using the same mapping as notebooks
+            mlflow_model_type = MLFLOW_MODEL_TYPE_MAPPING.get(model_type, model_type)
+            mlflow_tracker = create_mlflow_tracker(experiment_name=f"{mlflow_model_type}", use_mlflow=True)
+            if mlflow_tracker:
+                # CRITICAL: Log the run_id so we can map logs to MLflow runs
+                logger.info(
+                    f"MLflow run started: run_id={mlflow_tracker.run_id}, "
+                    f"experiment={mlflow_model_type}, model={model_type}, "
+                    f"fold={fold_idx + 1}, param_combo={param_idx + 1 if param_idx is not None else 'final'}"
+                )
+                mlflow_tracker.log_config(model_config)
+                mlflow_tracker.set_tag("fold", str(fold_idx + 1))
+                mlflow_tracker.set_tag("model_type", mlflow_model_type)
+                if param_idx is not None:
+                    mlflow_tracker.set_tag("param_combination", str(param_idx + 1))
+                if hyperparams:
+                    # Log hyperparameters as MLflow parameters
+                    import mlflow
+                    for key, value in hyperparams.items():
+                        if isinstance(value, (str, int, float, bool)):
+                            mlflow.log_param(key, value)
+            else:
+                logger.warning(f"MLflow tracker creation returned None for {model_type}")
+        except (RuntimeError, ValueError, AttributeError, ImportError) as e:
+            logger.warning(f"Failed to create MLflow tracker: {e}")
     
     try:
         xgb_config = model_config.copy()
@@ -681,6 +736,38 @@ def _train_xgboost_model_fold(
         # Save model
         model.save(str(fold_output_dir))
         logger.info(f"Saved XGBoost model to {fold_output_dir}")
+        
+        # Log metrics to MLflow
+        if mlflow_tracker is not None:
+            try:
+                mlflow_metrics = {
+                    "val_loss": metrics["val_loss"],
+                    "val_acc": metrics["val_acc"],
+                    "val_f1": metrics["val_f1"],
+                    "val_precision": metrics["val_precision"],
+                    "val_recall": metrics["val_recall"],
+                    "val_f1_class0": metrics["val_f1_class0"],
+                    "val_precision_class0": metrics["val_precision_class0"],
+                    "val_recall_class0": metrics["val_recall_class0"],
+                    "val_f1_class1": metrics["val_f1_class1"],
+                    "val_precision_class1": metrics["val_precision_class1"],
+                    "val_recall_class1": metrics["val_recall_class1"],
+                }
+                mlflow_tracker.log_metrics(mlflow_metrics, step=fold_idx + 1)
+                
+                # Log model artifact - find the saved model file
+                model_files = list(fold_output_dir.glob("xgboost_model.json"))
+                if not model_files:
+                    model_files = list(fold_output_dir.glob("*.json"))
+                if model_files:
+                    model_path = model_files[0]
+                    if model_path.exists() and model_path.stat().st_size > 0:
+                        mlflow_tracker.log_artifact(str(model_path), artifact_path="models")
+                        logger.info(f"Logged model artifact to MLflow: {model_path.name}")
+                else:
+                    logger.debug(f"No model file found to log to MLflow in {fold_output_dir}")
+            except (RuntimeError, ValueError, AttributeError) as e:
+                logger.error(f"Failed to log to MLflow: {e}", exc_info=True)
         
         # Save metrics to DuckDB
         _save_metrics_to_duckdb(result, model_type, fold_idx, project_root_str)
@@ -807,6 +894,15 @@ def _train_xgboost_model_fold(
             fold_results.append(result)
     
     finally:
+        # End MLflow run if active
+        if mlflow_tracker is not None:
+            try:
+                run_id = mlflow_tracker.run_id
+                mlflow_tracker.end_run()
+                logger.info(f"MLflow run ended: run_id={run_id}, model={model_type}, fold={fold_idx + 1}")
+            except (RuntimeError, AttributeError, ValueError) as cleanup_error:
+                logger.warning(f"Error ending MLflow run: {cleanup_error}")
+        
         cleanup_model_and_memory(model=model if model is not None else None, clear_cuda=is_grid_search)
         aggressive_gc(clear_cuda=is_grid_search)
     
@@ -995,11 +1091,19 @@ def _train_pytorch_model_fold(
         try:
             mlflow_tracker = create_mlflow_tracker(experiment_name=f"{model_type}", use_mlflow=True)
             if mlflow_tracker:
+                # CRITICAL: Log the run_id so we can map logs to MLflow runs
+                logger.info(
+                    f"MLflow run started: run_id={mlflow_tracker.run_id}, "
+                    f"experiment={model_type}, model={model_type}, "
+                    f"fold={fold_idx + 1}, param_combo={param_idx + 1 if param_idx is not None else 'final'}"
+                )
                 mlflow_tracker.log_config(model_config)
                 mlflow_tracker.set_tag("fold", str(fold_idx + 1))
                 mlflow_tracker.set_tag("model_type", model_type)
                 if param_idx is not None:
                     mlflow_tracker.set_tag("param_combination", str(param_idx + 1))
+            else:
+                logger.warning(f"MLflow tracker creation returned None for {model_type}")
         except (RuntimeError, ValueError, AttributeError) as e:
             logger.warning(f"Failed to create MLflow tracker: {e}")
     
@@ -1419,11 +1523,9 @@ def _train_pytorch_model_fold(
     
     if mlflow_tracker is not None:
         try:
-            # Ensure artifacts are flushed before ending run
-            import mlflow
-            if mlflow.active_run() is not None:
-                mlflow.flush()
+            run_id = mlflow_tracker.run_id
             mlflow_tracker.end_run()
+            logger.info(f"MLflow run ended: run_id={run_id}, model={model_type}, fold={fold_idx + 1}")
         except (RuntimeError, AttributeError, ValueError) as cleanup_error:
             logger.warning(f"Error ending MLflow run: {cleanup_error}")
     
@@ -1475,7 +1577,9 @@ def _train_baseline_model_fold(
     is_grid_search: bool = False,
     param_fold_results: Optional[List[Dict[str, Any]]] = None,
     fold_results: Optional[List[Dict[str, Any]]] = None,
-    use_tracking: bool = True
+    use_tracking: bool = True,
+    use_mlflow: bool = True,
+    param_idx: Optional[int] = None
 ) -> Dict[str, Any]:
     """
     Train a baseline (sklearn) model on a single fold.
@@ -1494,6 +1598,9 @@ def _train_baseline_model_fold(
         is_grid_search: Whether this is grid search (affects error handling and result storage)
         param_fold_results: Optional list to append grid search results to
         fold_results: Optional list to append results to
+        use_tracking: Whether to use experiment tracking
+        use_mlflow: Whether to use MLflow tracking
+        param_idx: Optional parameter combination index for grid search
     
     Returns:
         Dictionary with validation metrics
@@ -1512,6 +1619,44 @@ def _train_baseline_model_fold(
     
     result = None
     model = None
+    mlflow_tracker = None
+    
+    # Initialize MLflow tracker if enabled
+    if use_mlflow and MLFLOW_AVAILABLE:
+        try:
+            import mlflow
+            if mlflow.active_run() is not None:
+                mlflow.end_run()
+                logger.debug("Ended existing MLflow run before creating new one")
+        except (RuntimeError, AttributeError, ValueError) as mlflow_error:
+            logger.debug(f"Error ending MLflow run (non-critical): {mlflow_error}")
+        
+        try:
+            # Map model_type to MLflow experiment name using the same mapping as notebooks
+            mlflow_model_type = MLFLOW_MODEL_TYPE_MAPPING.get(model_type, model_type)
+            mlflow_tracker = create_mlflow_tracker(experiment_name=f"{mlflow_model_type}", use_mlflow=True)
+            if mlflow_tracker:
+                # CRITICAL: Log the run_id so we can map logs to MLflow runs
+                logger.info(
+                    f"MLflow run started: run_id={mlflow_tracker.run_id}, "
+                    f"experiment={mlflow_model_type}, model={model_type}, "
+                    f"fold={fold_idx + 1}, param_combo={param_idx + 1 if param_idx is not None else 'final'}"
+                )
+                mlflow_tracker.log_config(model_config)
+                mlflow_tracker.set_tag("fold", str(fold_idx + 1))
+                mlflow_tracker.set_tag("model_type", mlflow_model_type)
+                if param_idx is not None:
+                    mlflow_tracker.set_tag("param_combination", str(param_idx + 1))
+                if hyperparams:
+                    # Log hyperparameters as MLflow parameters
+                    import mlflow
+                    for key, value in hyperparams.items():
+                        if isinstance(value, (str, int, float, bool)):
+                            mlflow.log_param(key, value)
+            else:
+                logger.warning(f"MLflow tracker creation returned None for {model_type}")
+        except (RuntimeError, ValueError, AttributeError) as e:
+            logger.warning(f"Failed to create MLflow tracker: {e}")
     
     try:
         baseline_config = model_config.copy()
@@ -1663,6 +1808,38 @@ def _train_baseline_model_fold(
         model.save(str(fold_output_dir))
         logger.info(f"Saved baseline model to {fold_output_dir}")
         
+        # Log metrics to MLflow
+        if mlflow_tracker is not None:
+            try:
+                mlflow_metrics = {
+                    "val_loss": metrics["val_loss"],
+                    "val_acc": metrics["val_acc"],
+                    "val_f1": metrics["val_f1"],
+                    "val_precision": metrics["val_precision"],
+                    "val_recall": metrics["val_recall"],
+                    "val_f1_class0": metrics["val_f1_class0"],
+                    "val_precision_class0": metrics["val_precision_class0"],
+                    "val_recall_class0": metrics["val_recall_class0"],
+                    "val_f1_class1": metrics["val_f1_class1"],
+                    "val_precision_class1": metrics["val_precision_class1"],
+                    "val_recall_class1": metrics["val_recall_class1"],
+                }
+                mlflow_tracker.log_metrics(mlflow_metrics, step=fold_idx + 1)
+                
+                # Log model artifact - find the saved model file
+                model_files = list(fold_output_dir.glob("*.joblib"))
+                if not model_files:
+                    model_files = list(fold_output_dir.glob("*.pkl"))
+                if model_files:
+                    model_path = model_files[0]
+                    if model_path.exists() and model_path.stat().st_size > 0:
+                        mlflow_tracker.log_artifact(str(model_path), artifact_path="models")
+                        logger.info(f"Logged model artifact to MLflow: {model_path.name}")
+                else:
+                    logger.debug(f"No model file found to log to MLflow in {fold_output_dir}")
+            except (RuntimeError, ValueError, AttributeError) as e:
+                logger.error(f"Failed to log to MLflow: {e}", exc_info=True)
+        
         # Save metrics to DuckDB
         _save_metrics_to_duckdb(result, model_type, fold_idx, project_root_str)
         
@@ -1788,6 +1965,15 @@ def _train_baseline_model_fold(
             fold_results.append(result)
     
     finally:
+        # End MLflow run if active
+        if mlflow_tracker is not None:
+            try:
+                run_id = mlflow_tracker.run_id
+                mlflow_tracker.end_run()
+                logger.info(f"MLflow run ended: run_id={run_id}, model={model_type}, fold={fold_idx + 1}")
+            except (RuntimeError, AttributeError, ValueError) as cleanup_error:
+                logger.warning(f"Error ending MLflow run: {cleanup_error}")
+        
         cleanup_model_and_memory(model=model if model is not None else None, clear_cuda=False)
         aggressive_gc(clear_cuda=False)
     
@@ -2410,7 +2596,9 @@ def stage5_train_models(
                             hyperparams=params,
                             is_grid_search=True,
                             param_fold_results=param_fold_results,
-                            fold_results=fold_results
+                            fold_results=fold_results,
+                            use_mlflow=use_mlflow,
+                            param_idx=param_idx
                         )
                     
                     else:
@@ -2429,7 +2617,9 @@ def stage5_train_models(
                             is_grid_search=True,
                             param_fold_results=param_fold_results,
                             fold_results=fold_results,
-                            use_tracking=use_tracking
+                            use_tracking=use_tracking,
+                            use_mlflow=use_mlflow,
+                            param_idx=param_idx
                         )
                     
                 except Exception as e:
@@ -2636,7 +2826,9 @@ def stage5_train_models(
                         model_output_dir=model_output_dir,
                         hyperparams=best_params,
                         is_grid_search=False,
-                        fold_results=fold_results
+                        fold_results=fold_results,
+                        use_mlflow=use_mlflow,
+                        param_idx=None
                     )
                     
                 else:
@@ -2654,7 +2846,9 @@ def stage5_train_models(
                         hyperparams=best_params,
                         is_grid_search=False,
                         fold_results=fold_results,
-                        use_tracking=use_tracking
+                        use_tracking=use_tracking,
+                        use_mlflow=use_mlflow,
+                        param_idx=None
                     )
                     
             except Exception as e:

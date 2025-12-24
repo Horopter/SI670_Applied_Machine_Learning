@@ -291,7 +291,7 @@ Examples:
         model_types = all_model_types
     
     # Logging setup - also log to file
-    log_dir = project_root / "logs"
+    log_dir = project_root / "logs" / "stage5"
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = log_dir / f"stage5_training_{int(time.time())}.log"
     file_handler = logging.FileHandler(log_file)

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/fda5d6a5a75a4171ae123278199c985c/artifacts
+end_time: 1766366973926
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: fda5d6a5a75a4171ae123278199c985c
+run_name: luxuriant-deer-752
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1766356068573
+status: 3
+tags: []
+user_id: santoshd

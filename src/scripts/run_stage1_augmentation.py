@@ -259,7 +259,7 @@ Examples:
     output_dir = project_root / args.output_dir
     
     # Logging setup - also log to file
-    log_dir = project_root / "logs"
+    log_dir = project_root / "logs" / "stage1"
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = log_dir / f"stage1_augmentation_{int(time.time())}.log"
     file_handler = logging.FileHandler(log_file)

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/825185598273956279/5fc6374677d24e6ab63b9809afdfda44/artifacts
+end_time: 1766485513113
+entry_point_name: ''
+experiment_id: '825185598273956279'
+lifecycle_stage: active
+run_id: 5fc6374677d24e6ab63b9809afdfda44
+run_name: righteous-yak-35
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1766471848346
+status: 3
+tags: []
+user_id: santoshd

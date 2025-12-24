@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/92d1ee75c2b948adbc7e0f83f0c88b62/artifacts
+end_time: 1766316879216
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 92d1ee75c2b948adbc7e0f83f0c88b62
+run_name: exultant-bass-218
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1766305580061
+status: 3
+tags: []
+user_id: santoshd

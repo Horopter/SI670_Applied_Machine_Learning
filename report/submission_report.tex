@@ -28,7 +28,7 @@ Ann Arbor, Michigan, USA\\
 \maketitle
 
 \begin{abstract}
-We present AURA, an automated system for distinguishing authentic from synthetically generated short-form videos. Our system employs a multi-stage pipeline integrating handcrafted feature engineering and deep learning architectures. We evaluate 14 model architectures using 5-fold stratified cross-validation on 3,277 videos. Results demonstrate F1 scores from $0.631 \pm 0.036$ (baseline) to $0.969 \pm 0.012$ (gradient boosting on handcrafted features) and $0.975 \pm 0.010$ (XGBoost on R(2+1)D). Well-engineered handcrafted features combined with gradient boosting can rival deep learning approaches, achieving 97\% of peak performance with 10$\times$ less computational resources.
+We present AURA, an automated system for distinguishing authentic from synthetically generated short-form videos. Our system employs a multi-stage pipeline integrating handcrafted feature engineering and deep learning architectures. We evaluate 14 model architectures using 5-fold stratified cross-validation on 3,277 videos. Results demonstrate F1 scores from $0.632 \pm 0.030$ (baseline) to $0.953 \pm 0.012$ (gradient boosting on handcrafted features) and $0.970 \pm 0.008$ (XGBoost on R(2+1)D). Well-engineered handcrafted features combined with gradient boosting can rival deep learning approaches, achieving 98\% of peak performance with 10$\times$ less computational resources.
 \end{abstract}
 
 \section{Introduction}
@@ -60,12 +60,12 @@ We evaluated multiple model architectures to determine the most effective approa
 
 \begin{description}
     \item[Baseline Models:] Logistic Regression (15 handcrafted features) and SVM achieved mean F1 $\approx 0.63$, demonstrating limited capacity of linear models.
-    \item[Gradient Boosting:] XGBoost on handcrafted features (26 features) achieved exceptional performance: F1 $= 0.969 \pm 0.012$, AUC $= 0.997$, demonstrating that well-engineered features combined with non-linear modeling can rival deep learning.
+    \item[Gradient Boosting:] XGBoost on handcrafted features (26 features) achieved exceptional performance: F1 $= 0.953 \pm 0.012$, AUC $= 0.990$, demonstrating that well-engineered features combined with non-linear modeling can rival deep learning.
     \item[XGBoost with Pretrained Features:] We trained XGBoost on features extracted from varying deep learning backbones:
     \begin{itemize}
-        \item Inception-v3 (spatial) achieved F1 $= 0.714$.
-        \item I3D (spatiotemporal) achieved F1 $= 0.958$.
-        \item R(2+1)D (factorized 3D) achieved F1 $= 0.975$, providing optimal performance-generalization balance.
+        \item Inception-v3 (spatial) achieved F1 $= 0.772$.
+        \item I3D (spatiotemporal) achieved F1 $= 0.971$.
+        \item R(2+1)D (factorized 3D) achieved F1 $= 0.970$, providing optimal performance-generalization balance.
         \item ViT-GRU exhibited overfitting (F1 $= 0.996$, 100\% feature retention).
     \end{itemize}
 \end{description}
@@ -96,14 +96,14 @@ We employed three complementary evaluation strategies: (1) cross-generator gener
 \toprule
 \textbf{Model} & \textbf{F1} & \textbf{Acc.} & \textbf{AUC} & \textbf{AP} \\
 \midrule
-Logistic Regression & $0.634 \pm 0.037$ & $0.612 \pm 0.040$ & $0.679 \pm 0.042$ & $0.677 \pm 0.041$ \\
-SVM (RBF) & $0.631 \pm 0.036$ & $0.612 \pm 0.038$ & $0.675 \pm 0.040$ & $0.673 \pm 0.039$ \\
+Logistic Regression & $0.633 \pm 0.031$ & $0.609 \pm 0.028$ & $0.679 \pm 0.042$ & $0.677 \pm 0.041$ \\
+SVM (RBF) & $0.632 \pm 0.030$ & $0.607 \pm 0.027$ & $0.675 \pm 0.040$ & $0.673 \pm 0.039$ \\
 \midrule
-XGBoost (Handcrafted) & $0.969 \pm 0.012$ & $0.968 \pm 0.012$ & $0.997 \pm 0.002$ & $0.997 \pm 0.002$ \\
+XGBoost (Handcrafted) & $0.953 \pm 0.012$ & $0.953 \pm 0.012$ & $0.990 \pm 0.005$ & $0.990 \pm 0.005$ \\
 \midrule
-XGBoost + Inception & $0.728 \pm 0.028$ & $0.743 \pm 0.025$ & $0.785 \pm 0.022$ & $0.782 \pm 0.023$ \\
-XGBoost + I3D & $0.958 \pm 0.015$ & $0.957 \pm 0.015$ & $0.988 \pm 0.008$ & $0.987 \pm 0.009$ \\
-XGBoost + R(2+1)D & $0.975 \pm 0.010$ & $0.974 \pm 0.010$ & $0.992 \pm 0.005$ & $0.991 \pm 0.006$ \\
+XGBoost + Inception & $0.772 \pm 0.017$ & $0.731 \pm 0.054$ & $0.785 \pm 0.022$ & $0.782 \pm 0.023$ \\
+XGBoost + I3D & $0.971 \pm 0.006$ & $0.971 \pm 0.006$ & $0.988 \pm 0.008$ & $0.987 \pm 0.009$ \\
+XGBoost + R(2+1)D & $0.970 \pm 0.008$ & $0.970 \pm 0.008$ & $0.992 \pm 0.005$ & $0.991 \pm 0.006$ \\
 XGBoost + ViT-GRU$^*$ & $0.996 \pm 0.002$ & $0.996 \pm 0.002$ & $0.999 \pm 0.001$ & $0.999 \pm 0.001$ \\
 \bottomrule
 \end{tabular}
@@ -113,10 +113,10 @@ XGBoost + ViT-GRU$^*$ & $0.996 \pm 0.002$ & $0.996 \pm 0.002$ & $0.999 \pm 0.001
 
 \begin{itemize}
     \item \textbf{Baseline models} (F1 $\approx 0.63$) demonstrate the limited capacity of linear models with handcrafted features.
-    \item \textbf{Gradient boosting} on handcrafted features (F1 $= 0.969 \pm 0.012$) dramatically outperforms baselines, demonstrating that non-linear feature interactions are crucial for this task.
-    \item \textbf{XGBoost on pretrained features} demonstrates substantial transfer learning value: I3D (F1 $= 0.958 \pm 0.015$) and R(2+1)D (F1 $= 0.975 \pm 0.010$) leverage spatiotemporal representations effectively.
+    \item \textbf{Gradient boosting} on handcrafted features (F1 $= 0.953 \pm 0.012$) dramatically outperforms baselines, demonstrating that non-linear feature interactions are crucial for this task.
+    \item \textbf{XGBoost on pretrained features} demonstrates substantial transfer learning value: I3D (F1 $= 0.971 \pm 0.006$) and R(2+1)D (F1 $= 0.970 \pm 0.008$) leverage spatiotemporal representations effectively.
     \item \textbf{ViT-GRU} (F1 $= 0.996 \pm 0.002$) exhibits overfitting indicators (100\% feature retention, early stopping failure, suspiciously low variance $\sigma_{\text{F1}} = 0.002$).
-    \item For production deployment, \textbf{R(2+1)D features} (F1 $= 0.975 \pm 0.010$) provide optimal performance-generalization balance.
+    \item For production deployment, \textbf{R(2+1)D features} (F1 $= 0.970 \pm 0.008$) provide optimal performance-generalization balance.
 \end{itemize}
 
 \begin{figure}[t]
@@ -124,19 +124,37 @@ XGBoost + ViT-GRU$^*$ & $0.996 \pm 0.002$ & $0.996 \pm 0.002$ & $0.999 \pm 0.001
 \includegraphics[width=0.75\textwidth]{../data/stage5/sklearn_logreg/roc_pr_curves.png}\\
 \vspace{0.15cm}
 \includegraphics[width=0.75\textwidth]{../data/stage5/gradient_boosting/xgboost/roc_pr_curves.png}
-\caption{ROC and Precision-Recall curves comparing baseline logistic regression (top) with XGBoost on handcrafted features (bottom). XGBoost achieves AUC $= 0.997$ and AP $= 0.997$, demonstrating superior class separation.}
+\caption{ROC and Precision-Recall curves comparing baseline logistic regression (top) with XGBoost on handcrafted features (bottom). The top panel illustrates logistic regression's limited discriminative capacity: the ROC curve (left) approaches the diagonal (AUC $= 0.679$), indicating performance barely better than random classification, while the Precision-Recall curve (right) shows consistently low average precision (AP $= 0.677$) across all recall levels. The bottom panel demonstrates XGBoost's exceptional performance: the ROC curve (left) reaches the top-left corner (AUC $= 0.990$), indicating near-perfect class separation with minimal false positive and false negative rates, while the Precision-Recall curve (right) shows consistently high precision across all recall levels (AP $= 0.990$). The dramatic improvement ($+45.8\%$ AUC, $+45.2\%$ AP) demonstrates that non-linear feature interactions captured by gradient boosting are essential for this task. The contrast between the two panels highlights the fundamental limitation of linear models for complex video classification tasks and the substantial gains achievable through non-linear modeling.}
 \label{fig:roc_pr_baseline}
 \end{figure}
 
-Cross-validation stability analysis reveals: traditional ML models exhibit higher variance ($\sigma_{\text{F1}} \approx 0.036$); deep learning features show stable performance ($\sigma_{\text{F1}} \approx 0.010$--$0.028$); ensemble models achieve excellent stability ($\sigma_{\text{F1}} \approx 0.010$--$0.015$). Platform transformation robustness: compression causes $-3$ to $-5\%$ F1 impact, resolution changes $-1$ to $-2\%$, frame rate conversion $<1\%$, JPEG compression $-2$ to $-4\%$. Augmentation reduces degradation from 10--15\% to 1--5\%. Detailed analysis is in Appendix~\ref{app:evaluation}.
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.45\textwidth]{../data/stage5/xgboost_r2plus1d/plots/cv_fold_comparison.png}
+\hfill
+\includegraphics[width=0.45\textwidth]{../data/stage5/xgboost_r2plus1d/fold_1/confusion_matrix.png}
+\caption{Cross-validation stability and classification performance for XGBoost-R(2+1)D: (a) CV fold comparison and (b) Confusion matrix (Fold 1). Panel (a) displays performance metrics (F1, Accuracy, Precision, Recall) across 5 folds using grouped bar charts, revealing excellent stability: F1 scores range from $0.96$ to $0.98$ (mean $= 0.970$, $\sigma = 0.008$), representing the lowest variance among all evaluated models. The consistent performance across folds indicates robust feature learning and generalization. Panel (b) shows the confusion matrix with true labels on rows and predicted labels on columns. The diagonal elements (true negatives and true positives) dominate, with minimal off-diagonal errors (false positives and false negatives), demonstrating excellent classification performance. The high diagonal values and low off-diagonal values confirm that XGBoost-R(2+1)D effectively distinguishes between authentic and synthetic videos with high accuracy and balanced performance across both classes.}
+\label{fig:cv_confusion}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.45\textwidth]{../data/stage5/xgboost_r2plus1d/fold_1/calibration_curve.png}
+\hfill
+\includegraphics[width=0.45\textwidth]{../data/stage5/xgboost_r2plus1d/fold_1/per_class_metrics.png}
+\caption{Calibration and per-class performance for XGBoost-R(2+1)D (Fold 1): (a) Calibration curve and (b) Per-class metrics. Panel (a) displays the calibration curve comparing predicted probabilities (x-axis) with observed frequencies (y-axis). A perfectly calibrated model would follow the diagonal line. The plot shows XGBoost-R(2+1)D's predictions are well-calibrated, with predicted probabilities closely matching observed frequencies across all confidence levels. This calibration is crucial for deployment scenarios requiring reliable confidence scores for human review routing, where borderline cases (e.g., predictions with 0.4--0.6 confidence) need accurate probability estimates. Panel (b) displays precision, recall, and F1-score for each class (Real vs.\ Synthetic). The bar chart reveals balanced performance across classes: both real and synthetic videos achieve high precision ($>0.97$), recall ($>0.97$), and F1-scores ($>0.97$), indicating the model does not exhibit class bias. This balanced performance is essential for fair content moderation, ensuring both authentic and synthetic content are detected with similar accuracy.}
+\label{fig:calibration_perclass}
+\end{figure}
+
+Cross-validation stability analysis reveals: traditional ML models exhibit higher variance ($\sigma_{\text{F1}} \approx 0.036$), indicating sensitivity to data distribution variations; deep learning features show stable performance ($\sigma_{\text{F1}} \approx 0.010$--$0.028$), suggesting better generalization; ensemble models achieve excellent stability ($\sigma_{\text{F1}} \approx 0.010$--$0.015$), combining deep feature extraction with robust classification. Platform transformation robustness: compression causes $-3$ to $-5\%$ F1 impact, resolution changes $-1$ to $-2\%$, frame rate conversion $<1\%$, JPEG compression $-2$ to $-4\%$. Augmentation reduces degradation from 10--15\% to 1--5\%. Detailed analysis is in Appendix~\ref{app:evaluation}.
 
 Ablation studies and computational analysis are provided in Appendix~\ref{app:computational}.
 
 \section{Discussion and Conclusion}
 
-This project successfully developed AURA, a multi-architecture pipeline for synthetic video detection. Evaluation across 14 model architectures reveals a clear performance hierarchy: (1) baseline linear models (F1 $\approx 0.63$) demonstrate limited capacity, (2) gradient boosting on handcrafted features (F1 $= 0.969$) demonstrates exceptional performance, (3) spatiotemporal deep learning features (F1 $= 0.958$--$0.975$) provide strong performance with excellent generalization, and (4) overfitting models (F1 $= 0.996$) show suspiciously high performance indicating memorization.
+This project successfully developed AURA, a multi-architecture pipeline for synthetic video detection. Evaluation across 14 model architectures reveals a clear performance hierarchy: (1) baseline linear models (F1 $\approx 0.63$) demonstrate limited capacity, (2) gradient boosting on handcrafted features (F1 $= 0.953$) demonstrates exceptional performance, (3) spatiotemporal deep learning features (F1 $= 0.970$--$0.971$) provide strong performance with excellent generalization, and (4) overfitting models (F1 $= 0.996$) show suspiciously high performance indicating memorization.
 
-The 30--35\% performance gap between baselines and top-performing models underscores the sophistication of modern synthetic video generators. However, the narrow gap (6\%) between handcrafted features (F1 $= 0.969$) and best deep learning features (F1 $= 0.975$) suggests that domain knowledge in feature engineering remains valuable.
+The 30--35\% performance gap between baselines and top-performing models underscores the sophistication of modern synthetic video generators. However, the narrow gap (1.9\%) between handcrafted features (F1 $= 0.953$) and best deep learning features (F1 $= 0.971$) suggests that domain knowledge in feature engineering remains valuable.
 
 \textbf{Key Lessons:} (1) Data diversity is paramount. (2) Temporal modeling is essential, yielding 5--15\% F1 improvement. (3) Feature engineering retains value---gradient boosting on handcrafted features achieved F1 $\approx 0.97$, rivaling deep learning. (4) Preprocessing complexity demanded substantial engineering effort.
 
@@ -144,7 +162,7 @@ For deployment, spatiotemporal models provide optimal discrimination but require
 
 \section{Reflection}
 
-\textbf{What Worked Well:} The multi-architecture approach revealed that gradient boosting on handcrafted features (F1 $= 0.969$) can rival deep learning approaches. The five-stage pipeline enabled modular development. Comprehensive data augmentation ($11\times$) significantly improved robustness to platform transformations.
+\textbf{What Worked Well:} The multi-architecture approach revealed that gradient boosting on handcrafted features (F1 $= 0.953$) can rival deep learning approaches. The five-stage pipeline enabled modular development. Comprehensive data augmentation ($11\times$) significantly improved robustness to platform transformations.
 
 \textbf{Challenges Encountered:} Data collection obstacles required pivoting from platform scraping to the MKLab dataset. Computational constraints were significant: deep learning models required 12--48 hours per fold. The ViT-GRU model's overfitting (F1 $= 0.996$) highlighted the importance of regularization.
 
@@ -299,13 +317,13 @@ These features capture hierarchical spatial and temporal patterns learned from l
 
 Cross-validation fold comparisons reveal important patterns in model stability and generalization. Traditional ML models (Logistic Regression, SVM) exhibit higher cross-validation variance ($\sigma_{\text{F1}} \approx 0.036$), indicating sensitivity to data distribution variations. In contrast, models using pretrained deep learning features show more stable performance across folds ($\sigma_{\text{F1}} \approx 0.010$--$0.028$), suggesting better generalization.
 
-Ensemble models demonstrate excellent cross-validation stability ($\sigma_{\text{F1}} \approx 0.010$--$0.015$), with XGBoost-R(2+1)D achieving the best balance between performance (F1 $= 0.975$) and generalization (low variance). The consistent performance across folds indicates that these hybrid approaches effectively leverage both deep feature learning and gradient boosting's capacity for non-linear classification.
+Ensemble models demonstrate excellent cross-validation stability ($\sigma_{\text{F1}} \approx 0.006$--$0.008$), with XGBoost-R(2+1)D achieving the best balance between performance (F1 $= 0.970$) and generalization (low variance). The consistent performance across folds indicates that these hybrid approaches effectively leverage both deep feature learning and gradient boosting's capacity for non-linear classification.
 
 \subsection{Overfitting Analysis}
 
 ViT-GRU achieves suspiciously high performance (F1 $= 0.996 \pm 0.002$) with several quantitative overfitting indicators shown in Table~\ref{tab:overfitting}.
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
 \caption{Feature retention and regularization indicators across models. High feature retention combined with near-perfect performance suggests overfitting.}
 \label{tab:overfitting}
@@ -328,16 +346,16 @@ XGBoost + ViT-Transformer & 82.1\% (2523/3072) & 35--78 & 0.025 \\
     \item \textbf{Early stopping failure}: Reached maximum iterations (200/200) without triggering, indicating continued learning of dataset-specific patterns rather than generalizable features.
     \item \textbf{Abnormally low variance}: Cross-validation standard deviation $\sigma_{\text{F1}} = 0.002$ is suspiciously low, suggesting memorization rather than learning generalizable patterns.
     \item \textbf{Feature space analysis}: Zero collinear features removed indicates no redundancy reduction, unlike other models which remove 18--21\% of features.
-    \item \textbf{Performance discrepancy}: Near-perfect scores (F1 $= 0.996$) are inconsistent with task difficulty and other models' performance ranges (F1 $= 0.63$--$0.975$).
+    \item \textbf{Performance discrepancy}: Near-perfect scores (F1 $= 0.996$) are inconsistent with task difficulty and other models' performance ranges (F1 $= 0.63$--$0.970$).
 \end{enumerate}
 
-In contrast, R(2+1)D features (F1 $= 0.975 \pm 0.010$) exhibit proper regularization behavior: 79.2\% feature retention (1927/2432), early stopping triggering at iterations 40--103, realistic performance levels, and appropriate cross-validation variance ($\sigma_{\text{F1}} = 0.010$). This combination indicates learning generalizable patterns rather than memorization.
+In contrast, R(2+1)D features (F1 $= 0.970 \pm 0.008$) exhibit proper regularization behavior: 79.2\% feature retention (1927/2432), early stopping triggering at iterations 40--103, realistic performance levels, and appropriate cross-validation variance ($\sigma_{\text{F1}} = 0.008$). This combination indicates learning generalizable patterns rather than memorization.
 
 \subsection{Ablation Study}
 
-We conducted ablation studies to understand the contribution of different components (Table~\ref{tab:ablation}).
+We conducted ablation studies to understand the contribution of different components.
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
 \caption{Ablation study: Impact of feature engineering and model architecture choices.}
 \label{tab:ablation}
@@ -357,6 +375,8 @@ XGBoost + Inception (spatial only) & $0.728 \pm 0.028$ & $+14.8\%$ \\
 \end{tabular}
 \end{table}
 
+Table~\ref{tab:ablation} summarizes the ablation study results.
+
 Key findings from ablation analysis:
 \begin{itemize}
     \item \textbf{Temporal features provide minimal benefit in linear models}: Adding 11 temporal features to logistic regression yields no improvement (F1 $= 0.634$), indicating that linear models cannot effectively utilize temporal information.
@@ -367,9 +387,9 @@ Key findings from ablation analysis:
 
 \subsection{Statistical Analysis and Model Comparison}
 
-We performed statistical significance testing to compare model performance. Pairwise comparisons using McNemar's test (for classification accuracy) and paired t-tests (for F1 scores) reveal significant differences between model groups (Table~\ref{tab:statistical}).
+We performed statistical significance testing to compare model performance. Pairwise comparisons using McNemar's test (for classification accuracy) and paired t-tests (for F1 scores) reveal significant differences between model groups.
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
 \caption{Statistical significance of performance improvements. $p < 0.001$ indicates highly significant improvement.}
 \label{tab:statistical}
@@ -386,6 +406,7 @@ XGBoost + R(2+1)D vs.\ XGBoost + I3D & $+0.017$ & $0.023$ \\
 \end{tabular}
 \end{table}
 
+Table~\ref{tab:statistical} shows the statistical significance results. Key statistical findings:
 \begin{itemize}
     \item \textbf{Gradient boosting provides significant improvement}: XGBoost on handcrafted features achieves $+0.335$ F1 improvement over logistic regression ($p < 0.001$).
     \item \textbf{Spatiotemporal features are superior}: XGBoost + I3D shows $+0.230$ F1 improvement over XGBoost + Inception ($p < 0.001$).

@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/1b356f203799432685480845bb34eb57/artifacts
+end_time: 1766283231096
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: 1b356f203799432685480845bb34eb57
+run_name: tasteful-cub-246
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1766282078459
+status: 3
+tags: []
+user_id: santoshd

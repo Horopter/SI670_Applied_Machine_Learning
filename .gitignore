@@ -39,7 +39,7 @@ ENV/
 *~
 
 # Data and Models (keep structure, ignore large files)
-# Note: logs and data are now tracked, but very large files (>100MB) are excluded
+# Note: logs are tracked with Git LFS
 data/*.csv
 data/*.json
 !data/.gitkeep
@@ -47,9 +47,6 @@ videos/
 models/*.pt
 models/*.pth
 runs/
-# Exclude only very large log files (>100MB)
-logs/stage4_scaled_features_1765399438.log
-logs/stage5_training_1765353036.log
 logs/*.out
 logs/*.err
 

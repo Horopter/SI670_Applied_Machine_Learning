@@ -12,7 +12,6 @@ except ImportError:
     # Python < 3.8 compatibility
     from typing_extensions import Protocol
 from dataclasses import dataclass, field
-from abc import ABC, abstractmethod
 import json
 import re
 
@@ -66,6 +65,14 @@ MLFLOW_MODEL_TYPE_MAPPING = {
     "svm": "svm",
     "sklearn_logreg": "sklearn_logreg",
     "gradient_boosting/xgboost": "gradient_boosting/xgboost"
+}
+
+# Mapping from model_id to MLflow experiment ID
+# This allows explicit mapping of notebooks to MLflow experiments
+MLFLOW_EXPERIMENT_ID_MAPPING = {
+    "5f": "448523649298154796",  # xgboost_pretrained_inception
+    "5g": "609328694875670898",  # xgboost_i3d
+    "5h": "825185598273956279"   # xgboost_r2plus1d
 }
 
 
@@ -293,7 +300,8 @@ def extract_mlflow_run_ids_from_log(
 def load_mlflow_metrics_by_model_type(
     model_type: str,
     mlruns_path: str = "mlruns/",
-    project_root: Optional[Path] = None
+    project_root: Optional[Path] = None,
+    experiment_id: Optional[str] = None
 ) -> Optional[Dict[str, Any]]:
     """
     Load metrics from MLflow using model_type and fold tags.
@@ -306,19 +314,13 @@ def load_mlflow_metrics_by_model_type(
         model_type: Model type (e.g., "xgboost_pretrained_inception", "logistic_regression", "svm")
         mlruns_path: Path to mlruns directory
         project_root: Project root directory
+        experiment_id: Optional experiment ID to filter by (if provided, only loads runs from this experiment)
     
     Returns:
         Dictionary with MLflow metrics or None if not found
     """
     if project_root is None:
-        project_root = Path.cwd()
-        for _ in range(10):
-            if (project_root / "lib").exists():
-                break
-            parent = project_root.parent
-            if parent == project_root:
-                break
-            project_root = parent
+        project_root = get_project_root()
     
     # Convert model_type to MLflow tag if mapping exists
     mlflow_model_type = MLFLOW_MODEL_TYPE_MAPPING.get(model_type, model_type)
@@ -335,6 +337,12 @@ def load_mlflow_metrics_by_model_type(
     except Exception as e:
         print(f"[ERROR] Failed to list experiments in {mlruns_dir}: {e}")
         return None
+    
+    # Filter by experiment_id if provided
+    if experiment_id:
+        experiments = [exp_dir for exp_dir in experiments if exp_dir.name == str(experiment_id)]
+        if not experiments:
+            return None
     
     all_runs_data = []
     
@@ -440,30 +448,133 @@ def load_mlflow_metrics_by_model_type(
             return {"runs": [], "message": f"Baseline model {model_type} does not use MLflow tracking"}
         return None
     
-    # Aggregate metrics across all runs
-    aggregated_metrics = {}
+    # Separate CV fold runs: grid search CV (20% data) vs final training CV (100% data)
+    # Grid search runs have both "fold" tag AND "param_combination" tag
+    # Final training CV runs have "fold" tag but NO "param_combination" tag
+    grid_search_cv_runs = []
+    final_training_cv_runs = []
+    final_runs = []
+    
     for run_data in all_runs_data:
+        has_fold_tag = 'fold' in run_data.get('tags', {})
+        has_param_combo = 'param_combination' in run_data.get('tags', {})
+        
+        if has_fold_tag and has_param_combo:
+            # Grid search CV fold (20% data for hyperparameter tuning)
+            grid_search_cv_runs.append(run_data)
+        elif has_fold_tag and not has_param_combo:
+            # Final training CV fold (100% data, using best hyperparameters)
+            final_training_cv_runs.append(run_data)
+        else:
+            # Final run (no fold tag) - single run on full dataset (if any)
+            final_runs.append(run_data)
+    
+    # For backward compatibility, combine all CV runs
+    cv_runs = grid_search_cv_runs + final_training_cv_runs
+    
+    # Aggregate CV metrics separately (per fold, don't take mean across final run)
+    cv_aggregated_metrics = {}
+    for run_data in cv_runs:
         for metric_name, metric_info in run_data['metrics'].items():
-            if metric_name not in aggregated_metrics:
-                aggregated_metrics[metric_name] = {
+            if metric_name not in cv_aggregated_metrics:
+                cv_aggregated_metrics[metric_name] = {
                     'values': [],
                     'runs': []
                 }
-            aggregated_metrics[metric_name]['values'].extend(metric_info['values'])
-            aggregated_metrics[metric_name]['runs'].append({
-            'run_id': run_data['run_id'],
-            'latest': metric_info['latest']
+            cv_aggregated_metrics[metric_name]['values'].extend(metric_info['values'])
+            cv_aggregated_metrics[metric_name]['runs'].append({
+                'run_id': run_data['run_id'],
+                'fold': run_data.get('tags', {}).get('fold', 'unknown'),
+                'latest': metric_info['latest']
             })
     
-    # Calculate aggregated stats
-    for metric_name in aggregated_metrics:
-        values = aggregated_metrics[metric_name]['values']
+    # Calculate CV aggregated stats (for display, but keep per-fold data separate)
+    for metric_name in cv_aggregated_metrics:
+        values = cv_aggregated_metrics[metric_name]['values']
         if values:
-            aggregated_metrics[metric_name]['mean'] = np.mean(values)
-            aggregated_metrics[metric_name]['std'] = np.std(values)
-            aggregated_metrics[metric_name]['min'] = np.min(values)
-            aggregated_metrics[metric_name]['max'] = np.max(values)
-            aggregated_metrics[metric_name]['latest'] = values[-1]
+            cv_aggregated_metrics[metric_name]['mean'] = np.mean(values)
+            cv_aggregated_metrics[metric_name]['std'] = np.std(values)
+            cv_aggregated_metrics[metric_name]['min'] = np.min(values)
+            cv_aggregated_metrics[metric_name]['max'] = np.max(values)
+            cv_aggregated_metrics[metric_name]['latest'] = values[-1]
+    
+    # Aggregate grid search CV metrics separately
+    grid_search_cv_aggregated_metrics = {}
+    for run_data in grid_search_cv_runs:
+        for metric_name, metric_info in run_data['metrics'].items():
+            if metric_name not in grid_search_cv_aggregated_metrics:
+                grid_search_cv_aggregated_metrics[metric_name] = {
+                    'values': [],
+                    'runs': []
+                }
+            grid_search_cv_aggregated_metrics[metric_name]['values'].extend(metric_info['values'])
+            grid_search_cv_aggregated_metrics[metric_name]['runs'].append({
+                'run_id': run_data['run_id'],
+                'fold': run_data.get('tags', {}).get('fold', 'unknown'),
+                'param_combination': run_data.get('tags', {}).get('param_combination', 'unknown'),
+                'latest': metric_info['latest']
+            })
+    
+    # Calculate grid search CV aggregated stats
+    for metric_name in grid_search_cv_aggregated_metrics:
+        values = grid_search_cv_aggregated_metrics[metric_name]['values']
+        if values:
+            grid_search_cv_aggregated_metrics[metric_name]['mean'] = np.mean(values)
+            grid_search_cv_aggregated_metrics[metric_name]['std'] = np.std(values)
+            grid_search_cv_aggregated_metrics[metric_name]['min'] = np.min(values)
+            grid_search_cv_aggregated_metrics[metric_name]['max'] = np.max(values)
+            grid_search_cv_aggregated_metrics[metric_name]['latest'] = values[-1]
+    
+    # Aggregate final training CV metrics separately
+    final_training_cv_aggregated_metrics = {}
+    for run_data in final_training_cv_runs:
+        for metric_name, metric_info in run_data['metrics'].items():
+            if metric_name not in final_training_cv_aggregated_metrics:
+                final_training_cv_aggregated_metrics[metric_name] = {
+                    'values': [],
+                    'runs': []
+                }
+            final_training_cv_aggregated_metrics[metric_name]['values'].extend(metric_info['values'])
+            final_training_cv_aggregated_metrics[metric_name]['runs'].append({
+                'run_id': run_data['run_id'],
+                'fold': run_data.get('tags', {}).get('fold', 'unknown'),
+                'latest': metric_info['latest']
+            })
+    
+    # Calculate final training CV aggregated stats
+    for metric_name in final_training_cv_aggregated_metrics:
+        values = final_training_cv_aggregated_metrics[metric_name]['values']
+        if values:
+            final_training_cv_aggregated_metrics[metric_name]['mean'] = np.mean(values)
+            final_training_cv_aggregated_metrics[metric_name]['std'] = np.std(values)
+            final_training_cv_aggregated_metrics[metric_name]['min'] = np.min(values)
+            final_training_cv_aggregated_metrics[metric_name]['max'] = np.max(values)
+            final_training_cv_aggregated_metrics[metric_name]['latest'] = values[-1]
+    
+    # Aggregate final run metrics separately
+    final_aggregated_metrics = {}
+    for run_data in final_runs:
+        for metric_name, metric_info in run_data['metrics'].items():
+            if metric_name not in final_aggregated_metrics:
+                final_aggregated_metrics[metric_name] = {
+                    'values': [],
+                    'runs': []
+                }
+            final_aggregated_metrics[metric_name]['values'].extend(metric_info['values'])
+            final_aggregated_metrics[metric_name]['runs'].append({
+                'run_id': run_data['run_id'],
+                'latest': metric_info['latest']
+            })
+    
+    # Calculate final run aggregated stats
+    for metric_name in final_aggregated_metrics:
+        values = final_aggregated_metrics[metric_name]['values']
+        if values:
+            final_aggregated_metrics[metric_name]['mean'] = np.mean(values)
+            final_aggregated_metrics[metric_name]['std'] = np.std(values)
+            final_aggregated_metrics[metric_name]['min'] = np.min(values)
+            final_aggregated_metrics[metric_name]['max'] = np.max(values)
+            final_aggregated_metrics[metric_name]['latest'] = values[-1]
     
     # Use params from first run (should be consistent)
     aggregated_params = all_runs_data[0]['params'] if all_runs_data else {}
@@ -471,11 +582,91 @@ def load_mlflow_metrics_by_model_type(
     return {
         'experiment_id': all_runs_data[0]['experiment_id'] if all_runs_data else None,
         'run_ids': [r['run_id'] for r in all_runs_data],
-        'metrics': aggregated_metrics,
+        'cv_runs': cv_runs,  # All CV runs (backward compatibility)
+        'grid_search_cv_runs': grid_search_cv_runs,  # Grid search CV (20% data)
+        'final_training_cv_runs': final_training_cv_runs,  # Final training CV (100% data)
+        'final_runs': final_runs,  # Final run data
+        'cv_metrics': cv_aggregated_metrics,  # All CV aggregated metrics (backward compatibility)
+        'grid_search_cv_metrics': grid_search_cv_aggregated_metrics,  # Grid search CV metrics
+        'final_training_cv_metrics': final_training_cv_aggregated_metrics,  # Final training CV metrics
+        'final_metrics': final_aggregated_metrics,  # Final run metrics
+        'metrics': cv_aggregated_metrics,  # Backward compatibility - CV metrics
         'params': aggregated_params,
         'tags': all_runs_data[0]['tags'] if all_runs_data else {},
-        'num_runs': len(all_runs_data)
+        'num_runs': len(all_runs_data),
+        'num_cv_runs': len(cv_runs),
+        'num_grid_search_cv_runs': len(grid_search_cv_runs),
+        'num_final_training_cv_runs': len(final_training_cv_runs),
+        'num_final_runs': len(final_runs)
     }
+
+
+def supplement_mlflow_with_duckdb_losses(
+    mlflow_data: Dict[str, Any],
+    model_id: str,
+    project_root: Path,
+    model_type_mapping: Optional[Dict[str, str]] = None
+) -> Dict[str, Any]:
+    """
+    Supplement MLflow data with train/validation loss from DuckDB or metrics.jsonl
+    if not present in MLflow.
+    
+    Args:
+        mlflow_data: MLflow data dictionary from load_mlflow_metrics_by_model_type
+        model_id: Model identifier
+        project_root: Project root directory
+        model_type_mapping: Optional model type mapping dict
+    
+    Returns:
+        Updated MLflow data with supplemented train/val loss metrics
+    """
+    # Handle None or invalid input
+    if not mlflow_data or not isinstance(mlflow_data, dict):
+        return mlflow_data
+    
+    if model_type_mapping is None:
+        model_type_mapping = MODEL_TYPE_MAPPING
+    
+    model_type = model_type_mapping.get(model_id)
+    if not model_type:
+        return mlflow_data
+    
+    # Check if train_loss or val_loss are missing in MLflow
+    # Handle both new format (with cv_runs/final_runs) and old format
+    cv_runs = mlflow_data.get('cv_runs', [])
+    final_runs = mlflow_data.get('final_runs', [])
+    
+    # If old format, try to extract runs from the data structure
+    if not cv_runs and not final_runs:
+        # Old format - return as-is, can't supplement without run structure
+        return mlflow_data
+    
+    # Get DuckDB metrics
+    duckdb_metrics = get_metrics_data(model_id, project_root)
+    
+    # Supplement CV runs
+    for run_data in cv_runs:
+        fold = run_data.get('tags', {}).get('fold')
+        if fold and duckdb_metrics:
+            fold_metrics = duckdb_metrics.get_fold_metrics(int(fold))
+            if fold_metrics:
+                metrics = run_data.get('metrics', {})
+                if 'val_loss' not in metrics and fold_metrics.val_loss is not None:
+                    metrics['val_loss'] = {
+                        'values': [fold_metrics.val_loss],
+                        'latest': fold_metrics.val_loss
+                    }
+    
+    # Supplement final runs
+    for run_data in final_runs:
+        if duckdb_metrics and duckdb_metrics.aggregated:
+            agg = duckdb_metrics.aggregated
+            metrics = run_data.get('metrics', {})
+            if 'val_loss' not in metrics and agg.mean_val_acc is not None:
+                # Use aggregated metrics if available
+                pass  # Final runs typically don't need supplementation
+    
+    return mlflow_data
 
 
 def extract_hyperparameters_from_metrics(
@@ -560,15 +751,7 @@ def get_latest_job_ids(
         Returns empty dict if logs directory not found.
     """
     if project_root is None:
-        project_root = Path.cwd()
-        # Try to find project root
-        for _ in range(10):
-            if (project_root / "lib").exists():
-                break
-            parent = project_root.parent
-            if parent == project_root:
-                break
-            project_root = parent
+        project_root = get_project_root()
     
     logs_dir = project_root / "logs" / "stage5"
     if not logs_dir.exists():
@@ -641,76 +824,6 @@ def get_model_data_path(
     if not model_type:
         return None
     return project_root / "data" / "stage5" / model_type
-
-
-def load_model_metrics(
-    model_id: str,
-    project_root: Path,
-    model_type_mapping: Optional[Dict[str, str]] = None
-) -> Optional[Dict[str, Any]]:
-    """
-    Load metrics from metrics.json or results.json.
-    
-    Handles model-specific differences:
-        - 5a, 5b: metrics.json with fold_results
-    - 5alpha: results.json at root with cv_fold_results
-    - 5beta: xgboost/results.json (subdirectory) with cv_fold_results
-    - 5f, 5g: metrics.json with fold_results
-    - 5h: May not have metrics.json, check fold directories
-    
-    Args:
-        model_id: Model identifier.
-        project_root: Project root directory.
-        model_type_mapping: Optional model type mapping dict.
-    
-    Returns:
-        Metrics dictionary or None if not found.
-    """
-    model_path = get_model_data_path(
-        model_id, project_root, model_type_mapping
-    )
-    if not model_path or not model_path.exists():
-        return None
-    
-    # Model-specific loading logic
-    if model_id == "5alpha":
-        # sklearn_logreg: results.json at root
-        results_file = model_path / "results.json"
-        if results_file.exists():
-            try:
-                with open(results_file) as f:
-                    return json.load(f)
-            except Exception:
-                pass
-    elif model_id == "5beta":
-        # gradient_boosting: results.json is directly at model_path (which is already xgboost/)
-        results_file = model_path / "results.json"
-        if results_file.exists():
-            try:
-                with open(results_file) as f:
-                    return json.load(f)
-            except Exception:
-                pass
-    else:
-        # Most models: metrics.json at root
-        metrics_file = model_path / "metrics.json"
-        if metrics_file.exists():
-            try:
-                with open(metrics_file) as f:
-                    return json.load(f)
-            except Exception:
-                pass
-        
-        # Fallback: results.json at root (for some models)
-        results_file = model_path / "results.json"
-        if results_file.exists():
-            try:
-                with open(results_file) as f:
-                    return json.load(f)
-            except Exception:
-                pass
-    
-    return None
 
 
 def load_results_json(
@@ -958,6 +1071,8 @@ def display_png_plots_from_folds(
     """
     Display PNG plot files found in fold directories.
     
+    Excludes feature_importance.png files as they are not used in analyses.
+    
     Args:
         fold_dirs: List of fold directory paths.
         model_name: Model name for display.
@@ -973,10 +1088,13 @@ def display_png_plots_from_folds(
     displayed = False
     all_png_files = []
     
-    # Collect all PNG files from all folds
+    # Collect all PNG files from all folds, excluding feature_importance.png
     for fold_dir in fold_dirs:
         png_files = sorted(fold_dir.glob("*.png"))
         for png_file in png_files:
+            # Skip feature importance plots as they're not used in analyses
+            if png_file.name == "feature_importance.png":
+                continue
             all_png_files.append((fold_dir.name, png_file))
     
     if not all_png_files:
@@ -1329,206 +1447,6 @@ def plot_metric_summary_table(
     return df
 
 
-def plot_roc_curves_comprehensive(
-    metrics: Dict[str, Any],
-    model_name: str,
-    model_id: str,
-    project_root: Path,
-    model_type_mapping: Optional[Dict[str, str]] = None
-) -> Optional[Any]:
-    """
-    Plot ROC curves from existing PNG files or display warning.
-    
-    Attempts to locate and display pre-generated ROC curve images.
-    If no images are found, displays a warning message.
-    
-    Args:
-        metrics: Metrics dictionary (unused, for compatibility).
-        model_name: Model name for display.
-        model_id: Model identifier.
-        project_root: Project root directory.
-        model_type_mapping: Optional model type mapping dict.
-    
-    Returns:
-        None if PNG files displayed, None if no data found.
-    """
-    curve_files = find_roc_pr_curve_files(
-        model_id, project_root, model_type_mapping
-    )
-    
-    if (curve_files.get('per_fold') or curve_files.get('test_set') or
-            curve_files.get('root_level')):
-                if display_roc_pr_curve_images(curve_files, model_name):
-                    return None
-    
-    print(f"[WARN] No ROC curve PNG files found for {model_name}")
-    return None
-
-
-def plot_pr_curves_comprehensive(
-    metrics: Dict[str, Any],
-    model_name: str,
-    model_id: str,
-    project_root: Path,
-    model_type_mapping: Optional[Dict[str, str]] = None
-) -> Optional[Any]:
-    """
-    Plot Precision-Recall curves from existing PNG files or display warning.
-    
-    Attempts to locate and display pre-generated PR curve images.
-    If no images are found, displays a warning message.
-    
-    Args:
-        metrics: Metrics dictionary (unused, for compatibility).
-        model_name: Model name for display.
-        model_id: Model identifier.
-        project_root: Project root directory.
-        model_type_mapping: Optional model type mapping dict.
-    
-    Returns:
-        None if PNG files displayed, None if no data found.
-    """
-    curve_files = find_roc_pr_curve_files(
-        model_id, project_root, model_type_mapping
-    )
-    
-    if (curve_files.get('per_fold') or curve_files.get('test_set') or
-            curve_files.get('root_level')):
-        if display_roc_pr_curve_images(curve_files, model_name):
-            return None
-    
-    print(f"[WARN] No PR curve PNG files found for {model_name}")
-    return None
-
-
-def load_training_curves_from_log_file(
-    log_file: Path,
-    model_id: str
-) -> Optional[Dict[str, Dict[str, List[float]]]]:
-    """
-    Extract training curves from log files.
-    
-    Logs follow a consistent format with epoch/iteration metrics.
-    Extracts train/val loss, accuracy, f1, etc. from log entries.
-    
-    Supports multiple log formats:
-        1. "Fold X - Val Loss: Y, Val Acc: Z, Val F1: W" (per-fold validation)
-    2. "Epoch X, Train Loss: Y, Val Loss: Z" (per-epoch training)
-    3. "Iteration X, Train Loss: Y" (per-iteration)
-    
-    Args:
-        log_file: Path to log file
-        model_id: Model identifier
-    
-    Returns:
-        Dictionary with 'train' and 'val' keys, or None if not found
-    """
-    if not log_file.exists():
-        return None
-    
-    train_metrics = {
-        "epoch": [], "loss": [], "accuracy": [], "f1": [],
-        "precision": [], "recall": []
-    }
-    val_metrics = {
-        "epoch": [], "loss": [], "accuracy": [], "f1": [],
-        "precision": [], "recall": []
-    }
-    
-    try:
-        import re
-        with open(log_file, 'r') as f:
-            lines = f.readlines()
-        
-        epoch = 0
-        fold_num = 0
-        
-        for line in lines:
-            # Pattern 1: "Fold X - Val Loss: Y, Val Acc: Z, Val F1: W, Val Precision: P, Val Recall: R"
-            fold_val_pattern = re.compile(
-            r'Fold\s+(\d+).*?Val\s+Loss:\s+([\d.]+).*?Val\s+Acc:\s+([\d.]+).*?Val\s+F1:\s+([\d.]+)'
-            r'(?:.*?Val\s+Precision:\s+([\d.]+))?(?:.*?Val\s+Recall:\s+([\d.]+))?'
-            )
-            fold_match = fold_val_pattern.search(line)
-            if fold_match:
-                fold_num = int(fold_match.group(1))
-                val_loss = float(fold_match.group(2))
-                val_acc = float(fold_match.group(3))
-                val_f1 = float(fold_match.group(4))
-                val_precision = float(fold_match.group(5)) if fold_match.group(5) else None
-                val_recall = float(fold_match.group(6)) if fold_match.group(6) else None
-                
-                val_metrics["epoch"].append(fold_num)
-                val_metrics["loss"].append(val_loss)
-                val_metrics["accuracy"].append(val_acc)
-                val_metrics["f1"].append(val_f1)
-                if val_precision is not None:
-                    val_metrics["precision"].append(val_precision)
-                if val_recall is not None:
-                    val_metrics["recall"].append(val_recall)
-                continue
-            
-            # Pattern 2: Look for epoch/iteration markers
-            epoch_match = re.search(r'(?:Epoch|Iteration|Round)\s+(\d+)', line, re.IGNORECASE)
-            if epoch_match:
-                epoch = int(epoch_match.group(1))
-            
-            # Pattern 3: Look for training metrics
-            if 'Train' in line and ('Loss' in line or 'Acc' in line or 'F1' in line):
-                loss_match = re.search(r'Train\s+Loss[:\s]+([\d.]+)', line, re.IGNORECASE)
-                acc_match = re.search(r'Train\s+Acc[:\s]+([\d.]+)', line, re.IGNORECASE)
-                f1_match = re.search(r'Train\s+F1[:\s]+([\d.]+)', line, re.IGNORECASE)
-                
-                if loss_match:
-                    train_metrics["loss"].append(float(loss_match.group(1)))
-                    if epoch > 0 and len(train_metrics["epoch"]) < len(train_metrics["loss"]):
-                        train_metrics["epoch"].append(epoch)
-                if acc_match:
-                    train_metrics["accuracy"].append(float(acc_match.group(1)))
-                if f1_match:
-                    train_metrics["f1"].append(float(f1_match.group(1)))
-            
-            # Pattern 4: Look for validation metrics (not already captured by fold pattern)
-            if ('Val' in line or 'Validation' in line) and 'Fold' not in line:
-                loss_match = re.search(r'Val\s+Loss[:\s]+([\d.]+)', line, re.IGNORECASE)
-                acc_match = re.search(r'Val\s+Acc[:\s]+([\d.]+)', line, re.IGNORECASE)
-                f1_match = re.search(r'Val\s+F1[:\s]+([\d.]+)', line, re.IGNORECASE)
-                
-                if loss_match:
-                    val_metrics["loss"].append(float(loss_match.group(1)))
-                    if epoch > 0 and len(val_metrics["epoch"]) < len(val_metrics["loss"]):
-                        val_metrics["epoch"].append(epoch)
-                if acc_match:
-                    val_metrics["accuracy"].append(float(acc_match.group(1)))
-                if f1_match:
-                    val_metrics["f1"].append(float(f1_match.group(1)))
-        
-        # Check if we have any data
-        if not train_metrics["loss"] and not val_metrics["loss"]:
-            return None
-        
-        # Fill epochs if missing
-        max_epochs = max(
-            len(train_metrics.get("loss", [])),
-            len(val_metrics.get("loss", []))
-        )
-        if not train_metrics["epoch"] and train_metrics["loss"]:
-            train_metrics["epoch"] = list(range(1, len(train_metrics["loss"]) + 1))
-        if not val_metrics["epoch"] and val_metrics["loss"]:
-            val_metrics["epoch"] = list(range(1, len(val_metrics["loss"]) + 1))
-        
-        has_training_epochs = max_epochs > 1
-        
-        return {
-            "train": train_metrics,
-            "val": val_metrics,
-            "has_training_epochs": has_training_epochs
-        }
-    except Exception as e:
-        print(f"[WARN] Failed to extract training curves from log: {e}")
-        return None
-
-
 def load_training_curves_from_jsonl(
     metrics_file: Path
 ) -> Optional[Dict[str, Dict[str, List[float]]]]:
@@ -1738,8 +1656,8 @@ def extract_training_curves_from_log(
             continue
     
     # Return data if we found anything
-        if val_metrics["epoch"] or train_metrics["epoch"]:
-            return {
+    if val_metrics["epoch"] or train_metrics["epoch"]:
+        return {
             "train": train_metrics,
             "val": val_metrics,
             "has_training_epochs": has_epoch_data
@@ -1888,6 +1806,9 @@ def plot_training_curves(
         if train_loss_clean:
             ax.plot(train_epochs_clean, train_loss_clean, 'b-', label='Train Loss',
                     linewidth=2, marker='o', markersize=4)
+            print(f"[DEBUG] Plotted {len(train_loss_clean)} train loss points")
+    else:
+        print(f"[DEBUG] No train loss data: train_metrics.get('loss')={train_metrics.get('loss')}, train_metrics.get('epoch')={train_metrics.get('epoch')}")
     
     val_loss_clean = []
     val_epochs_clean = []
@@ -1899,6 +1820,9 @@ def plot_training_curves(
         if val_loss_clean:
             ax.plot(val_epochs_clean, val_loss_clean, 'r-', label='Val Loss',
                     linewidth=2, marker='s', markersize=4)
+            print(f"[DEBUG] Plotted {len(val_loss_clean)} val loss points")
+    else:
+        print(f"[DEBUG] No val loss data: val_metrics.get('loss')={val_metrics.get('loss')}, val_metrics.get('epoch')={val_metrics.get('epoch')}")
     
     # Add comment about train vs validation loss
     if train_loss_clean and val_loss_clean:
@@ -2002,85 +1926,194 @@ def plot_training_curves(
     
     plt.suptitle(f'{model_name} - Training Curves', fontsize=16, fontweight='bold')
     plt.tight_layout()
-    return fig
+    
+    # #region agent log
+    log_path = Path("/Users/santoshdesai/Downloads/fvc/.cursor/debug.log")
+    try:
+        import time
+        entry = {
+            "timestamp": int(time.time() * 1000),
+            "location": "plot_training_curves:complete",
+            "message": "Training curves plot generated",
+            "data": {
+                "model_name": model_name,
+                "has_train_loss": bool(train_loss_clean),
+                "has_val_loss": bool(val_loss_clean),
+                "train_loss_points": len(train_loss_clean) if train_loss_clean else 0,
+                "val_loss_points": len(val_loss_clean) if val_loss_clean else 0,
+                "ipython_available": IPYTHON_AVAILABLE
+            },
+            "sessionId": "notebook-debug",
+            "runId": "run1",
+            "hypothesisId": "F"
+        }
+        with open(log_path, "a") as f:
+            f.write(json.dumps(entry) + "\n")
+    except Exception:
+        pass
+    # #endregion
+    
+    # Save plot to temporary file and display it (for nbconvert compatibility)
+    # This ensures plots appear in notebooks executed via nbconvert
+    if IPYTHON_AVAILABLE:
+        try:
+            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
+                tmp_path = tmp.name
+            fig.savefig(tmp_path, dpi=150, bbox_inches='tight')
+            plt.close(fig)
+            # Display the image - read file data into Image object before deleting file
+            # This ensures the image data is in memory when displayed
+            with open(tmp_path, 'rb') as f:
+                img_data = f.read()
+            img = Image(img_data)
+            display(img)
+            # Now safe to delete the file
+            try:
+                os.unlink(tmp_path)
+            except:
+                pass  # Ignore cleanup errors
+            return None  # Already displayed
+        except Exception:
+            # Fallback to plt.show()
+            try:
+                plt.show()
+            except Exception:
+                pass
+            return fig
+    else:
+        # Fallback when IPython is not available
+        try:
+            plt.show()
+        except Exception:
+            pass
+        return fig
 
 
-def plot_training_curves_from_history(
-    history: Dict[str, Dict[str, List[float]]],
+def plot_train_val_loss_standalone(
+    metrics_file: Path,
     model_name: str,
-    figsize: Tuple[int, int] = (14, 10)
+    figsize: Tuple[int, int] = (12, 8)
 ) -> Optional[Any]:
     """
-    Plot training curves from a history dictionary (extracted from logs or JSONL).
+    Create a standalone, prominent train/val loss plot.
+    
+    This function creates a dedicated, larger plot specifically for train/val loss
+    to ensure it's visible and prominent in the notebook output.
     
     Args:
-        history: Dictionary with 'train' and 'val' keys containing metrics.
+        metrics_file: Path to metrics.jsonl file.
         model_name: Model name for display.
-        figsize: Figure size tuple.
+        figsize: Figure size tuple (width, height).
     
     Returns:
         matplotlib Figure object, or None if plotting unavailable or no data.
     """
+    # #region agent log
+    log_path = Path("/Users/santoshdesai/Downloads/fvc/.cursor/debug.log")
+    try:
+        import time
+        entry = {
+            "timestamp": int(time.time() * 1000),
+            "location": "plot_train_val_loss_standalone:entry",
+            "message": "Creating standalone train/val loss plot",
+            "data": {
+                "metrics_file": str(metrics_file),
+                "model_name": model_name
+            },
+            "sessionId": "notebook-debug",
+            "runId": "run1",
+            "hypothesisId": "G"
+        }
+        with open(log_path, "a") as f:
+            f.write(json.dumps(entry) + "\n")
+    except Exception:
+        pass
+    # #endregion
+    
     if not PLOTTING_AVAILABLE:
         print("[WARN] Matplotlib not available for plotting")
+        return None
+    
+    history = load_training_curves_from_jsonl(metrics_file)
+    if not history:
+        # Try extracting from log file as fallback
+        log_file = metrics_file.parent.parent / "logs" / "stage5" / f"stage5{metrics_file.parent.name[-1]}_*.log"
+        if log_file.parent.exists():
+            log_files = sorted(log_file.parent.glob(f"stage5{metrics_file.parent.name[-1]}_*.log"), reverse=True)
+            if log_files:
+                model_id = metrics_file.parent.name[-1] if len(metrics_file.parent.name) > 0 else "unknown"
+                history = extract_training_curves_from_log(log_files[0], model_id)
+                if history:
+                    print(f"[INFO] Loaded training curves from log file: {log_files[0].name}")
+    
+    if not history:
+        # #region agent log
+        try:
+            entry = {
+                "timestamp": int(time.time() * 1000),
+                "location": "plot_train_val_loss_standalone:no_history",
+                "message": "No training history found",
+                "data": {
+                    "metrics_file": str(metrics_file),
+                    "model_name": model_name
+                },
+                "sessionId": "notebook-debug",
+                "runId": "run1",
+                "hypothesisId": "G"
+            }
+            with open(log_path, "a") as f:
+                f.write(json.dumps(entry) + "\n")
+        except Exception:
+            pass
+        # #endregion
         return None
     
     train_metrics = history.get("train", {})
     val_metrics = history.get("val", {})
     
+    # Check if we have loss data
     if not train_metrics.get("loss") and not val_metrics.get("loss"):
-        print(f"[WARN] No loss data found in history")
+        # #region agent log
+        try:
+            entry = {
+                "timestamp": int(time.time() * 1000),
+                "location": "plot_train_val_loss_standalone:no_loss",
+                "message": "No loss data found",
+                "data": {
+                    "has_train_loss": bool(train_metrics.get("loss")),
+                    "has_val_loss": bool(val_metrics.get("loss"))
+                },
+                "sessionId": "notebook-debug",
+                "runId": "run1",
+                "hypothesisId": "G"
+            }
+            with open(log_path, "a") as f:
+                f.write(json.dumps(entry) + "\n")
+        except Exception:
+            pass
+        # #endregion
         return None
     
+    # Use the same filter_outliers function from plot_training_curves
     def filter_outliers(values, epochs, iqr_factor=1.5):
-        """Filter outliers using IQR method and remove spurious values."""
+        """Filter outliers using IQR method."""
         if not values or len(values) < 3:
             return values, epochs
-        
-        # Convert to numpy for easier manipulation
+        import numpy as np
         values_arr = np.array(values)
-        epochs_arr = np.array(epochs[:len(values)])
-        
-        # Remove NaN and infinite values
-        valid_mask = np.isfinite(values_arr) & (values_arr > 0)
-        values_arr = values_arr[valid_mask]
-        epochs_arr = epochs_arr[valid_mask]
-        
-        if len(values_arr) < 3:
-            return values_arr.tolist(), epochs_arr.tolist()
-        
-        # Calculate IQR
-        q25 = np.percentile(values_arr, 25)
-        q75 = np.percentile(values_arr, 75)
-        iqr = q75 - q25
-        
-        # Filter outliers
-        lower_bound = q25 - iqr_factor * iqr
-        upper_bound = q75 + iqr_factor * iqr
+        epochs_arr = np.array(epochs)
+        q1 = np.percentile(values_arr, 25)
+        q3 = np.percentile(values_arr, 75)
+        iqr = q3 - q1
+        lower_bound = q1 - iqr_factor * iqr
+        upper_bound = q3 + iqr_factor * iqr
         outlier_mask = (values_arr >= lower_bound) & (values_arr <= upper_bound)
-        
-        # Also remove spurious values (straight line artifacts)
-        # Check for sudden jumps that indicate interpolation artifacts
-        if len(values_arr) > 2:
-            diffs = np.abs(np.diff(values_arr))
-            # If difference is too large compared to median, it might be spurious
-            median_diff = np.median(diffs)
-            if median_diff > 0:
-                # Mark values with unusually large changes
-                large_jump_mask = np.ones(len(values_arr), dtype=bool)
-                large_jump_mask[1:-1] = (diffs[:-1] < 10 * median_diff) & (diffs[1:] < 10 * median_diff)
-                outlier_mask = outlier_mask & large_jump_mask
-        
         filtered_values = values_arr[outlier_mask].tolist()
         filtered_epochs = epochs_arr[outlier_mask].tolist()
-        
         return filtered_values, filtered_epochs
     
-    fig, axes = plt.subplots(2, 2, figsize=figsize)
-    
-    # Plot 1: Loss curves (regular scale)
-    # Note: This plots loss (binary cross-entropy) on a regular scale
-    ax = axes[0, 0]
+    # Create standalone figure
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
     
     train_loss_clean = []
     train_epochs_clean = []
@@ -2091,7 +2124,25 @@ def plot_training_curves_from_history(
         
         if train_loss_clean:
             ax.plot(train_epochs_clean, train_loss_clean, 'b-', label='Train Loss',
-                    linewidth=2, marker='o', markersize=4)
+                    linewidth=3, marker='o', markersize=6, alpha=0.8)
+            # #region agent log
+            try:
+                entry = {
+                    "timestamp": int(time.time() * 1000),
+                    "location": "plot_train_val_loss_standalone:plotted_train",
+                    "message": "Plotted train loss",
+                    "data": {
+                        "points": len(train_loss_clean)
+                    },
+                    "sessionId": "notebook-debug",
+                    "runId": "run1",
+                    "hypothesisId": "G"
+                }
+                with open(log_path, "a") as f:
+                    f.write(json.dumps(entry) + "\n")
+            except Exception:
+                pass
+            # #endregion
     
     val_loss_clean = []
     val_epochs_clean = []
@@ -2102,7 +2153,25 @@ def plot_training_curves_from_history(
         
         if val_loss_clean:
             ax.plot(val_epochs_clean, val_loss_clean, 'r-', label='Val Loss',
-                    linewidth=2, marker='s', markersize=4)
+                    linewidth=3, marker='s', markersize=6, alpha=0.8)
+            # #region agent log
+            try:
+                entry = {
+                    "timestamp": int(time.time() * 1000),
+                    "location": "plot_train_val_loss_standalone:plotted_val",
+                    "message": "Plotted val loss",
+                    "data": {
+                        "points": len(val_loss_clean)
+                    },
+                    "sessionId": "notebook-debug",
+                    "runId": "run1",
+                    "hypothesisId": "G"
+                }
+                with open(log_path, "a") as f:
+                    f.write(json.dumps(entry) + "\n")
+            except Exception:
+                pass
+            # #endregion
     
     # Add comment about train vs validation loss
     if train_loss_clean and val_loss_clean:
@@ -2115,98 +2184,130 @@ def plot_training_curves_from_history(
         else:
             comment = "Val loss ≈ Train loss: Good generalization"
         
-        # Add text comment in upper right corner
         ax.text(0.98, 0.02, comment, transform=ax.transAxes,
-                ha='right', va='bottom', fontsize=9,
-                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.7))
+                ha='right', va='bottom', fontsize=11,
+                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
+    elif val_loss_clean and not train_loss_clean:
+        ax.text(0.5, 0.5, 'Only validation loss available\n(Training loss not logged)', 
+                transform=ax.transAxes, ha='center', va='center',
+                fontsize=12, style='italic', alpha=0.6)
     
-    ax.set_xlabel('Epoch/Fold', fontweight='bold')
-    ax.set_ylabel('Loss', fontweight='bold')
-    ax.set_title('Training and Validation Loss', fontweight='bold')
-    ax.legend()
+    ax.set_xlabel('Epoch', fontweight='bold', fontsize=14)
+    ax.set_ylabel('Loss', fontweight='bold', fontsize=14)
+    ax.set_title(f'{model_name} - Training and Validation Loss', fontweight='bold', fontsize=16)
+    ax.legend(fontsize=12, loc='best')
     ax.grid(True, alpha=0.3)
     
-    # Plot 2: Accuracy curves
-    ax = axes[0, 1]
-    if train_metrics.get("accuracy") and train_metrics.get("epoch"):
-        epochs = train_metrics["epoch"][:len(train_metrics["accuracy"])]
-        # Filter outliers for accuracy
-        train_acc_clean, train_acc_epochs = filter_outliers(train_metrics["accuracy"], epochs)
-        if train_acc_clean:
-            ax.plot(train_acc_epochs, train_acc_clean, 'b-', label='Train Acc',
-                    linewidth=2, marker='o', markersize=4)
-    if val_metrics.get("accuracy") and val_metrics.get("epoch"):
-        epochs = val_metrics["epoch"][:len(val_metrics["accuracy"])]
-        # Filter outliers for accuracy
-        val_acc_clean, val_acc_epochs = filter_outliers(val_metrics["accuracy"], epochs)
-        if val_acc_clean:
-            ax.plot(val_acc_epochs, val_acc_clean, 'r-', label='Val Acc',
-                    linewidth=2, marker='s', markersize=4)
-    ax.set_xlabel('Epoch/Fold', fontweight='bold')
-    ax.set_ylabel('Accuracy', fontweight='bold')
-    ax.set_title('Training and Validation Accuracy', fontweight='bold')
-    ax.legend()
-    ax.grid(True, alpha=0.3)
-    
-    # Plot 3: F1 Score curves
-    ax = axes[1, 0]
-    if train_metrics.get("f1") and train_metrics.get("epoch"):
-        epochs = train_metrics["epoch"][:len(train_metrics["f1"])]
-        # Filter outliers for F1 score
-        train_f1_clean, train_f1_epochs = filter_outliers(train_metrics["f1"], epochs)
-        if train_f1_clean:
-            ax.plot(train_f1_epochs, train_f1_clean, 'b-', label='Train F1',
-                    linewidth=2, marker='o', markersize=4)
-    if val_metrics.get("f1") and val_metrics.get("epoch"):
-        epochs = val_metrics["epoch"][:len(val_metrics["f1"])]
-        # Filter outliers for F1 score
-        val_f1_clean, val_f1_epochs = filter_outliers(val_metrics["f1"], epochs)
-        if val_f1_clean:
-            ax.plot(val_f1_epochs, val_f1_clean, 'r-', label='Val F1',
-                    linewidth=2, marker='s', markersize=4)
-    ax.set_xlabel('Epoch/Fold', fontweight='bold')
-    ax.set_ylabel('F1 Score', fontweight='bold')
-    ax.set_title('Training and Validation F1 Score', fontweight='bold')
-    ax.legend()
-    ax.grid(True, alpha=0.3)
-    
-    # Plot 4: Precision-Recall curves (over epochs)
-    ax = axes[1, 1]
-    if (train_metrics.get("precision") and train_metrics.get("recall") and
-            train_metrics.get("epoch")):
-        epochs = train_metrics["epoch"][:len(train_metrics["precision"])]
-        # Filter outliers for precision and recall
-        train_prec_clean, train_prec_epochs = filter_outliers(train_metrics["precision"], epochs)
-        train_rec_clean, train_rec_epochs = filter_outliers(train_metrics["recall"], epochs)
-        
-        if train_prec_clean:
-            ax.plot(train_prec_epochs, train_prec_clean, 'b--', label='Train Precision',
-                    linewidth=2, marker='o', markersize=4)
-        if train_rec_clean:
-            ax.plot(train_rec_epochs, train_rec_clean, 'b:', label='Train Recall',
-                    linewidth=2, marker='s', markersize=4)
-    if (val_metrics.get("precision") and val_metrics.get("recall") and
-            val_metrics.get("epoch")):
-        epochs = val_metrics["epoch"][:len(val_metrics["precision"])]
-        # Filter outliers for precision and recall
-        val_prec_clean, val_prec_epochs = filter_outliers(val_metrics["precision"], epochs)
-        val_rec_clean, val_rec_epochs = filter_outliers(val_metrics["recall"], epochs)
-        
-        if val_prec_clean:
-            ax.plot(val_prec_epochs, val_prec_clean, 'r--', label='Val Precision',
-                    linewidth=2, marker='o', markersize=4)
-        if val_rec_clean:
-            ax.plot(val_rec_epochs, val_rec_clean, 'r:', label='Val Recall',
-                    linewidth=2, marker='s', markersize=4)
-    ax.set_xlabel('Epoch/Fold', fontweight='bold')
-    ax.set_ylabel('Score', fontweight='bold')
-    ax.set_title('Precision and Recall Over Epochs/Folds', fontweight='bold')
-    ax.legend()
-    ax.grid(True, alpha=0.3)
-    
-    plt.suptitle(f'{model_name} - Training Curves (from log)', fontsize=16, fontweight='bold')
     plt.tight_layout()
-    return fig
+    
+    # #region agent log
+    try:
+        entry = {
+            "timestamp": int(time.time() * 1000),
+            "location": "plot_train_val_loss_standalone:complete",
+            "message": "Standalone loss plot created",
+            "data": {
+                "has_train_loss": bool(train_loss_clean),
+                "has_val_loss": bool(val_loss_clean),
+                "train_points": len(train_loss_clean) if train_loss_clean else 0,
+                "val_points": len(val_loss_clean) if val_loss_clean else 0,
+                "ipython_available": IPYTHON_AVAILABLE
+            },
+            "sessionId": "notebook-debug",
+            "runId": "run1",
+            "hypothesisId": "G"
+        }
+        with open(log_path, "a") as f:
+            f.write(json.dumps(entry) + "\n")
+    except Exception:
+        pass
+    # #endregion
+    
+    # Save plot to temporary file and display it (for nbconvert compatibility)
+    # This ensures plots appear in notebooks executed via nbconvert
+    if IPYTHON_AVAILABLE:
+        try:
+            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
+                tmp_path = tmp.name
+            fig.savefig(tmp_path, dpi=150, bbox_inches='tight')
+            plt.close(fig)
+            # #region agent log
+            try:
+                entry = {
+                    "timestamp": int(time.time() * 1000),
+                    "location": "plot_train_val_loss_standalone:saved",
+                    "message": "Plot saved to temp file",
+                    "data": {"tmp_path": tmp_path},
+                    "sessionId": "notebook-debug",
+                    "runId": "run1",
+                    "hypothesisId": "G"
+                }
+                with open(log_path, "a") as f:
+                    f.write(json.dumps(entry) + "\n")
+            except Exception:
+                pass
+            # #endregion
+            
+            # Display the image - read file data into Image object before deleting file
+            # This ensures the image data is in memory when displayed
+            with open(tmp_path, 'rb') as f:
+                img_data = f.read()
+            img = Image(img_data)
+            display(img)
+            # #region agent log
+            try:
+                entry = {
+                    "timestamp": int(time.time() * 1000),
+                    "location": "plot_train_val_loss_standalone:displayed",
+                    "message": "Plot displayed via IPython.display",
+                    "data": {"image_size_bytes": len(img_data)},
+                    "sessionId": "notebook-debug",
+                    "runId": "run1",
+                    "hypothesisId": "G"
+                }
+                with open(log_path, "a") as f:
+                    f.write(json.dumps(entry) + "\n")
+            except Exception:
+                pass
+            # #endregion
+            
+            # Now safe to delete the file
+            try:
+                os.unlink(tmp_path)
+            except:
+                pass  # Ignore cleanup errors
+            
+            return None  # Already displayed
+        except Exception as e:
+            # #region agent log
+            try:
+                entry = {
+                    "timestamp": int(time.time() * 1000),
+                    "location": "plot_train_val_loss_standalone:display_error",
+                    "message": "Error displaying plot via IPython",
+                    "data": {"error": str(e)},
+                    "sessionId": "notebook-debug",
+                    "runId": "run1",
+                    "hypothesisId": "G"
+                }
+                with open(log_path, "a") as f:
+                    f.write(json.dumps(entry) + "\n")
+            except Exception:
+                pass
+            # #endregion
+            # Fallback to plt.show()
+            try:
+                plt.show()
+            except Exception:
+                pass
+            return fig
+    else:
+        # Fallback when IPython is not available
+        try:
+            plt.show()
+        except Exception:
+            pass
+        return fig
 
 
 def plot_validation_metrics_across_folds(
@@ -2843,6 +2944,245 @@ def display_duckdb_metrics_summary(metrics_data: Optional[MetricsData], model_id
             print(f"      Class 1 F1:    {np.mean(class1_f1_values):.4f} ± {np.std(class1_f1_values):.4f}")
 
 
+def display_segregated_performance_summary(
+    mlflow_data: Optional[Dict[str, Any]],
+    duckdb_metrics: Optional[Dict[str, Any]],
+    model_id: str,
+    project_root: Path,
+    model_type_mapping: Optional[Dict[str, str]] = None,
+    results: Optional[Dict[str, Any]] = None
+) -> None:
+    """
+    Display performance summary with segregated grid search CV, final training CV, and final run metrics.
+    Adapts output based on model type (baseline vs MLflow models).
+    
+    Args:
+        mlflow_data: MLflow data dictionary (may contain grid_search_cv_runs, final_training_cv_runs, final_runs)
+        duckdb_metrics: DuckDB metrics dictionary
+        model_id: Model identifier
+        project_root: Project root directory
+        model_type_mapping: Optional model type mapping dict
+        results: Optional results dictionary (for test set results)
+    """
+    print("\n[6/6] Performance Summary")
+    print("=" * 70)
+    
+    # Determine if this is a baseline model (no MLflow) or MLflow model
+    baseline_models = ['5a', '5b', '5alpha', '5beta']
+    is_baseline = model_id in baseline_models
+    has_mlflow = mlflow_data and isinstance(mlflow_data, dict) and mlflow_data.get('num_runs', 0) > 0
+    
+    # For baseline models: Show simple CV summary + test results
+    if is_baseline or not has_mlflow:
+        # Cross-Validation Results (from results.json or DuckDB)
+        if results and "fold_results" in results:
+            print("\nCross-Validation Results (5-Fold CV):")
+            fold_results = results["fold_results"]
+            
+            # Calculate aggregated metrics
+            val_f1_values = [f.get('val_f1', 0) for f in fold_results if f.get('val_f1') is not None]
+            val_acc_values = [f.get('val_acc', 0) for f in fold_results if f.get('val_acc') is not None]
+            val_prec_values = [f.get('val_precision', 0) for f in fold_results if f.get('val_precision') is not None]
+            val_recall_values = [f.get('val_recall', 0) for f in fold_results if f.get('val_recall') is not None]
+            
+            if val_f1_values:
+                print(f"  Val F1:      {np.mean(val_f1_values):.4f} ± {np.std(val_f1_values):.4f}")
+            if val_acc_values:
+                print(f"  Val Acc:     {np.mean(val_acc_values):.4f} ± {np.std(val_acc_values):.4f}")
+            if val_prec_values:
+                print(f"  Val Precision: {np.mean(val_prec_values):.4f} ± {np.std(val_prec_values):.4f}")
+            if val_recall_values:
+                print(f"  Val Recall:   {np.mean(val_recall_values):.4f} ± {np.std(val_recall_values):.4f}")
+            
+            # Per-fold breakdown
+            print(f"\n  Per-Fold Breakdown:")
+            for fold_result in sorted(fold_results, key=lambda x: x.get('fold', 0)):
+                fold_num = fold_result.get('fold', '?')
+                f1 = fold_result.get('val_f1', 0)
+                acc = fold_result.get('val_acc', 0)
+                print(f"    Fold {fold_num}: F1={f1:.4f}, Acc={acc:.4f}")
+        
+        elif duckdb_metrics and "aggregated" in duckdb_metrics:
+            print("\nCross-Validation Results (from DuckDB):")
+            agg = duckdb_metrics["aggregated"]
+            if agg.get('mean_val_f1') is not None:
+                print(f"  Val F1:      {agg.get('mean_val_f1', 0):.4f} ± {agg.get('std_val_f1', 0):.4f}")
+            if agg.get('mean_val_acc') is not None:
+                print(f"  Val Acc:     {agg.get('mean_val_acc', 0):.4f} ± {agg.get('std_val_acc', 0):.4f}")
+        
+        # Test Set Results
+        if results and "test" in results:
+            test = results["test"]
+            print("\nTest Set Results (Final Evaluation):")
+            if "f1" in test:
+                print(f"  Test F1:          {test['f1']:.4f}")
+            if "auc" in test:
+                print(f"  Test AUC:         {test['auc']:.4f}")
+            if "accuracy" in test:
+                print(f"  Test Accuracy:    {test['accuracy']:.4f}")
+    
+    # For MLflow models: Show segregated phases
+    else:
+        # Grid Search CV Metrics (20% data, hyperparameter tuning) - Show aggregated only
+        grid_search_cv_metrics = mlflow_data.get('grid_search_cv_metrics', {})
+        if grid_search_cv_metrics and any(grid_search_cv_metrics.values()):
+            print("\nGrid Search CV (20% data, Hyperparameter Tuning):")
+            if 'val_f1' in grid_search_cv_metrics and grid_search_cv_metrics['val_f1'].get('mean') is not None:
+                print(f"  Val F1:      {grid_search_cv_metrics['val_f1'].get('mean', 0):.4f} ± {grid_search_cv_metrics['val_f1'].get('std', 0):.4f}")
+            if 'val_acc' in grid_search_cv_metrics and grid_search_cv_metrics['val_acc'].get('mean') is not None:
+                print(f"  Val Acc:     {grid_search_cv_metrics['val_acc'].get('mean', 0):.4f} ± {grid_search_cv_metrics['val_acc'].get('std', 0):.4f}")
+            if 'val_loss' in grid_search_cv_metrics and grid_search_cv_metrics['val_loss'].get('mean') is not None:
+                print(f"  Val Loss:    {grid_search_cv_metrics['val_loss'].get('mean', 0):.4f} ± {grid_search_cv_metrics['val_loss'].get('std', 0):.4f}")
+            num_runs = mlflow_data.get('num_grid_search_cv_runs', 0)
+            if num_runs > 0:
+                print(f"  (Based on {num_runs} runs across {mlflow_data.get('num_grid_search_cv_runs', 0) // max(1, len(set(r.get('tags', {}).get('fold', 0) for r in mlflow_data.get('grid_search_cv_runs', []))))} folds)")
+        
+        # Final Training CV Metrics (100% data, best hyperparameters) - Show aggregated + per-fold
+        final_training_cv_metrics = mlflow_data.get('final_training_cv_metrics', {})
+        final_training_cv_runs = mlflow_data.get('final_training_cv_runs', [])
+        if final_training_cv_metrics and any(final_training_cv_metrics.values()):
+            print("\nFinal Training CV (100% data, Best Hyperparameters):")
+            if 'val_f1' in final_training_cv_metrics and final_training_cv_metrics['val_f1'].get('mean') is not None:
+                print(f"  Val F1:      {final_training_cv_metrics['val_f1'].get('mean', 0):.4f} ± {final_training_cv_metrics['val_f1'].get('std', 0):.4f}")
+            if 'val_acc' in final_training_cv_metrics and final_training_cv_metrics['val_acc'].get('mean') is not None:
+                print(f"  Val Acc:     {final_training_cv_metrics['val_acc'].get('mean', 0):.4f} ± {final_training_cv_metrics['val_acc'].get('std', 0):.4f}")
+            if 'val_precision' in final_training_cv_metrics and final_training_cv_metrics['val_precision'].get('mean') is not None:
+                print(f"  Val Precision: {final_training_cv_metrics['val_precision'].get('mean', 0):.4f} ± {final_training_cv_metrics['val_precision'].get('std', 0):.4f}")
+            if 'val_recall' in final_training_cv_metrics and final_training_cv_metrics['val_recall'].get('mean') is not None:
+                print(f"  Val Recall:   {final_training_cv_metrics['val_recall'].get('mean', 0):.4f} ± {final_training_cv_metrics['val_recall'].get('std', 0):.4f}")
+            if 'val_loss' in final_training_cv_metrics and final_training_cv_metrics['val_loss'].get('mean') is not None:
+                print(f"  Val Loss:    {final_training_cv_metrics['val_loss'].get('mean', 0):.4f} ± {final_training_cv_metrics['val_loss'].get('std', 0):.4f}")
+            
+            # Per-fold breakdown for final training CV
+            if final_training_cv_runs:
+                print(f"\n  Per-Fold Breakdown:")
+                for run_data in sorted(final_training_cv_runs, key=lambda x: int(x.get('tags', {}).get('fold', 0))):
+                    fold = run_data.get('tags', {}).get('fold', '?')
+                    metrics = run_data.get('metrics', {})
+                    f1 = metrics.get('val_f1', {}).get('latest', 0) if isinstance(metrics.get('val_f1'), dict) else 0
+                    acc = metrics.get('val_acc', {}).get('latest', 0) if isinstance(metrics.get('val_acc'), dict) else 0
+                    if f1 > 0 or acc > 0:
+                        print(f"    Fold {fold}: F1={f1:.4f}, Acc={acc:.4f}")
+        
+        # Fallback to DuckDB if MLflow doesn't have final training CV
+        elif duckdb_metrics and "aggregated" in duckdb_metrics:
+            print("\nFinal Training CV (from DuckDB):")
+            agg = duckdb_metrics["aggregated"]
+            if agg.get('mean_val_f1') is not None:
+                print(f"  Val F1:      {agg.get('mean_val_f1', 0):.4f} ± {agg.get('std_val_f1', 0):.4f}")
+            if agg.get('mean_val_acc') is not None:
+                print(f"  Val Acc:     {agg.get('mean_val_acc', 0):.4f} ± {agg.get('std_val_acc', 0):.4f}")
+        
+        # Test Set Results
+        if results and "test" in results:
+            test = results["test"]
+            print("\nTest Set Results (Final Evaluation):")
+            if "f1" in test:
+                print(f"  Test F1:          {test['f1']:.4f}")
+            if "auc" in test:
+                print(f"  Test AUC:         {test['auc']:.4f}")
+            if "accuracy" in test:
+                print(f"  Test Accuracy:    {test['accuracy']:.4f}")
+    
+    print("\n" + "=" * 70)
+    print("Analysis complete!")
+    print("=" * 70)
+
+
+def parse_final_training_metrics_from_log(
+    model_id: str,
+    project_root: Path,
+    model_type_mapping: Optional[Dict[str, str]] = None
+) -> Optional[Dict[str, float]]:
+    """
+    Parse final training metrics (accuracy, precision, recall, f1) from stage5 training logs.
+    
+    Looks for lines like:
+    "{model_type} - Avg Val Loss: X ± Y, Avg Val Acc: X ± Y, Avg Val F1: X ± Y"
+    "  Avg Val Precision: X ± Y, Avg Val Recall: X ± Y"
+    
+    These appear after "FINAL TRAINING" section in the logs.
+    
+    Args:
+        model_id: Model identifier
+        project_root: Project root directory
+        model_type_mapping: Optional model type mapping dict
+    
+    Returns:
+        Dictionary with final metrics or None if not found
+    """
+    if model_type_mapping is None:
+        model_type_mapping = MODEL_TYPE_MAPPING
+    
+    model_type = model_type_mapping.get(model_id)
+    if not model_type:
+        return None
+    
+    # Find the most recent stage5 training log
+    logs_dir = project_root / "logs" / "stage5"
+    if not logs_dir.exists():
+        return None
+    
+    # Look for log files matching the model
+    log_files = sorted(logs_dir.glob(f"stage5*{model_id}*.log"), reverse=True)
+    if not log_files:
+        # Try generic stage5 training logs
+        log_files = sorted(logs_dir.glob("stage5_training_*.log"), reverse=True)
+    
+    if not log_files:
+        return None
+    
+    # Try the most recent log file
+    import re
+    for log_file in log_files[:3]:  # Try up to 3 most recent logs
+        try:
+            with open(log_file, 'r') as f:
+                lines = f.readlines()
+            
+            # Look for FINAL TRAINING section
+            in_final_training = False
+            final_metrics = {}
+            
+            for i, line in enumerate(lines):
+                # Check if we're in FINAL TRAINING section
+                if "FINAL TRAINING" in line.upper() or "Final training" in line:
+                    in_final_training = True
+                
+                # Look for the aggregated metrics line after FINAL TRAINING
+                # Pattern: "{model_type} - Avg Val Loss: X ± Y, Avg Val Acc: X ± Y, Avg Val F1: X ± Y"
+                if in_final_training and model_type in line and "Avg Val" in line:
+                    # Extract metrics from this line and the next line
+                    # Line 1: Loss, Acc, F1
+                    loss_match = re.search(r'Avg Val Loss:\s+([\d.]+)', line)
+                    acc_match = re.search(r'Avg Val Acc:\s+([\d.]+)', line)
+                    f1_match = re.search(r'Avg Val F1:\s+([\d.]+)', line)
+                    
+                    if loss_match:
+                        final_metrics['val_loss'] = float(loss_match.group(1))
+                    if acc_match:
+                        final_metrics['val_acc'] = float(acc_match.group(1))
+                    if f1_match:
+                        final_metrics['val_f1'] = float(f1_match.group(1))
+                    
+                    # Line 2 (usually next line): Precision, Recall
+                    if i + 1 < len(lines):
+                        next_line = lines[i + 1]
+                        prec_match = re.search(r'Avg Val Precision:\s+([\d.]+)', next_line)
+                        recall_match = re.search(r'Avg Val Recall:\s+([\d.]+)', next_line)
+                        
+                        if prec_match:
+                            final_metrics['val_precision'] = float(prec_match.group(1))
+                        if recall_match:
+                            final_metrics['val_recall'] = float(recall_match.group(1))
+                    
+                    if final_metrics:
+                        return final_metrics
+        except Exception as e:
+            continue
+    
+    return None
+
+
 def _normalize_metrics_input(metrics: Any) -> Optional[MetricsData]:
     """
     Normalize metrics input to MetricsData (helper for backward compatibility).
@@ -2873,7 +3213,8 @@ def _normalize_metrics_input(metrics: Any) -> Optional[MetricsData]:
 def analyze_mlflow_experiment_structure(
     project_root: Path,
     mlflow_model_type: str,
-    mlruns_dir: Optional[Path] = None
+    mlruns_dir: Optional[Path] = None,
+    experiment_id: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Analyze MLflow experiment structure by collecting metadata from all runs.
@@ -2882,6 +3223,7 @@ def analyze_mlflow_experiment_structure(
         project_root: Project root directory
         mlflow_model_type: MLflow model_type tag to filter runs
         mlruns_dir: Path to mlruns directory (defaults to project_root / "mlruns")
+        experiment_id: Optional experiment ID to filter by (if provided, only analyzes this experiment)
     
     Returns:
         Dictionary containing experiment structure data:
@@ -2907,6 +3249,10 @@ def analyze_mlflow_experiment_structure(
     
     for exp_dir in mlruns_dir.iterdir():
         if not exp_dir.is_dir() or not exp_dir.name.isdigit():
+            continue
+        
+        # Filter by experiment_id if provided
+        if experiment_id and exp_dir.name != str(experiment_id):
             continue
         for run_dir in exp_dir.iterdir():
             if not run_dir.is_dir() or not (run_dir / "tags").exists():

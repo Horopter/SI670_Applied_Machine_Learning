@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/92aac1e1422f4f24b28e438fb46fbc19/artifacts
+end_time: 1766352001012
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: 92aac1e1422f4f24b28e438fb46fbc19
+run_name: secretive-carp-892
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1766350959713
+status: 3
+tags: []
+user_id: santoshd

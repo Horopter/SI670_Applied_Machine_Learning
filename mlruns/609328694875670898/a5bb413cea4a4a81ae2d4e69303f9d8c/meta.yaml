@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/609328694875670898/a5bb413cea4a4a81ae2d4e69303f9d8c/artifacts
+end_time: 1766377878852
+entry_point_name: ''
+experiment_id: '609328694875670898'
+lifecycle_stage: active
+run_id: a5bb413cea4a4a81ae2d4e69303f9d8c
+run_name: vaunted-wolf-406
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1766366974389
+status: 3
+tags: []
+user_id: santoshd

@@ -50,7 +50,7 @@ matplotlib.rcParams.update({
 
 STAGE5_DIR = project_root / "data" / "stage5"
 LOGS_DIR = project_root / "logs" / "stage5"
-TRAINING_LOGS_DIR = project_root / "logs"
+TRAINING_LOGS_DIR = project_root / "logs" / "stage5"
 
 
 def parse_time_string(time_str: str) -> Optional[float]:

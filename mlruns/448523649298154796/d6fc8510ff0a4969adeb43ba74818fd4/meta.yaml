@@ -1,0 +1,14 @@
+artifact_uri: file:///gpfs/accounts/si670f25_class_root/si670f25_class/santoshd/fvc/mlruns/448523649298154796/d6fc8510ff0a4969adeb43ba74818fd4/artifacts
+end_time: 1766339487805
+entry_point_name: ''
+experiment_id: '448523649298154796'
+lifecycle_stage: active
+run_id: d6fc8510ff0a4969adeb43ba74818fd4
+run_name: powerful-mare-958
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1766328174924
+status: 3
+tags: []
+user_id: santoshd

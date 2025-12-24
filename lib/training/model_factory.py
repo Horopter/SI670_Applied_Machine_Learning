@@ -488,7 +488,8 @@ def is_pytorch_model(model_type: str) -> bool:
     sklearn_models = {
         "logistic_regression", "svm",
         "logistic_regression_stage2", "logistic_regression_stage2_stage4",
-        "svm_stage2", "svm_stage2_stage4"
+        "svm_stage2", "svm_stage2_stage4",
+        "sklearn_logreg"
     }
     # XGBoost models are not PyTorch models (they use PyTorch for feature extraction only)
     if is_xgboost_model(model_type):
